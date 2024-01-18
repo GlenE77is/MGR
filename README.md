@@ -45,16 +45,23 @@ The "GTK MENU" has this process:
 (*) Calls to external routines are "if [ -f " tested, and 'stub' controlled, as needed.
 The controlling "flag" (gcSysKillProc) is set at the beginning of the script file.
 :roll:
-Total project is aprox. 7K lines of Bash/Gtk.
+Total project is aprox. 8K lines of Bash/Gtk.
 
-======================================================
-This is Linux Puppy Distro ....... This is Free Open Source ....... So Read the Code !
-======================================================
-:roll:
+=====================================
+
+** This is Linux Puppy Distro
+
+** This is Free Open Source 
+
+** So, Read the Code ! 
+
+======================================
+
+******:roll:
 
 MGR_Screen-Shot.jpg
     MGR_Screen-Shot.jpg	
-    MGR_Screen_231220-1807.jpg (171.46 KiB) Viewed 8 times
+    MGR_Screen_231220-1807.jpg (171.46 KiB)
 
 :roll:
 
@@ -62,7 +69,7 @@ MGR_Screen-Shot.jpg
 
 rc.z_MGR-5-sh-231220-1802.zip
     MGR_Executable_Script_231220-1802	
-    (55.99 KiB) Downloaded 1 time
+    (55.99 KiB)
 
 
 :roll:
@@ -79,25 +86,44 @@ TESTING base:
 Our script has been tested successfuly
 on our 17 running Official Puppy Linux systems :
 "Official" Puppy Frugal Systems via Woof-CE :
+
 *** Developed in and Tested on these "official" Puppy 32/64 bit systems built via Woof-CE ***
+
 ####### Running Tests on 17 OS, including:
+
 #!~ iso-KineticPup32-22.10+2_____________230604
+
 #!~ iso-BionicPup32-8.0+30_BionicBeaver220407
 ---- +1,+3,+4,+5,+10, +12, +14, +16, +17, +18 , +19, +20, +21, +23, +24, +25, +26, +27, +28, +29, +30
+
 #!~ iso-BionicPup32-19.03-K5.9_231209.iso_231209
+
 #!~ iso-ManticPup32-23.10+1________231209
+
 #!~ iso-JammyPup32-22.04+8_JammyJellyfish_22123
+
 #!~ iso-UPupFF+D-20.12+4_Focal-Fossa__201210
+
 #!~ iso-UpupTahr-6.0.6-k4.1.30-uefi____190211
+
 #!~ iso-Slacko-7.0_DpupS7_14.2_______220205
+
 #!~ iso-Xenial-64_7.5_XL______________220401
+
 #!~ iso-S15Pup-64_22.12+1-T___________220922
+
 #!~ iso-Quirky_April-7.0.1F-uefi_________200511 beta
+
 #!~ iso_devuanpup-9.7.0-chimaera_4.0_i386211206 beta
+
 #!~ iso_BookwormPup32-23.11-B4__________231210
+
 #!~ iso_LxPupSc-slacko-20.01+0-T-k64__200129
+
 #!~ iso_slacko64_14.2_32-674-bit_compatible_220227
+
 #!~ iso_ManticPup32-23.10+1______________231209
+
 :roll:
 Last edited by glene77is on Wed Dec 20, 2023 7:51 pm, edited 25 times in total.
 
