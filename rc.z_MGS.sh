@@ -155,7 +155,7 @@ export gcMgrVer="-6.3-Dev"   #"-lint" "-TXN" "-DEV"
 #! ### gcSysKillProc #####################
 #! ### purpose: disable GTK gui splash <button> process 
 #! ###    for sample distribution we kill calls to external programs.
-export gcSysKillProc=0	### used by Sbr_KillProc
+export gcSysKillProc=0	### used by Sbr_KillProc to prevent users from running a subRoutine .
 #! if [ ${gcSysKillProc} -eq 0 ] then do "enable" all GTK gui <button> process
 #! if [ ${gcSysKillProc} -eq 1 ] then do "stub kill" for some GTK gui <button> process
 #! ### gcSysKillProc #####################
