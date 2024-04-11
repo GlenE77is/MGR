@@ -2,7 +2,7 @@
 #! rc.z_MGR.sh  :::  "MGR{7}" 
 #! "Manager" for project development across 20 Puppy OS Distributions. 
 #! ***************************************************************************
-#!  IDME-JV4J-A9YI-UJFX
+#!  JV4J-A9YI-UJFX
 #! ***************************************************************************
 #! Development "5" moved on to a revised "MGR 6" 
 #! Development "6" moved on to a revised "MGR 7" 
