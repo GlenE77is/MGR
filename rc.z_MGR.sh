@@ -1,84 +1,229 @@
-#!/bin/sh
-#! rc.z_MGR.sh  :::  "MGR{8}" 
-#! "Manager" for project development across 20 Puppy OS Distributions. 
-#! ***************************************************************************
-#!  JV4J-A9YI-UJFX
-#! ***************************************************************************
-#! Development "5" moved on to a revised "MGR 6" 
-#! Development "6" moved on to a revised "MGR 7" 
-#! Development "7" moved on to a revised "MGR 8" 
-#!      with independent floating windows for the NoteBook main screen. 
-#!      with compacted "NoteBook" and "PageBook" style main screen. 
-#!      "NoteBook" and "PageBook" used in order to 'fit' in the screen universally. 
+#!/bin/bash
+#!  L#10421
+#~ export gcMgrSysDob="250725-1140/1726"     
+export gcMgrSysDob="250801-0723"
+#! 
+export gcMGRname="Manager" 
+export gcMgrDevId="MGR"  
+#!
+export gcSysNameBase="MGR"  #: used code as system label some 40 times. 
+export gcMgrVer="11"     # -dev-1056"   # "v:#" 
+export gcMgrVerExt=".2-A"  #! current dev is based on GTK "notebook" page/menu function Primary Screen     
+#!
+#! rc.z_MGR.sh  :::  MGR-11
+#! BASH "Page" based main GUI code "pages"
+#! GTK "NoteBook" based main GUI code "pages" 
+#! 10376 lines 
+#! 480 K bytes
 #! ******************************************************************************
+#! note:
+#! /root/my-applications/bin/ is in the standard executable search path,
+#!     as created by "init" and "profile" during bootup. 
+#!     as set by environment variable PATH.
+#! Therefore, any executables placed in there will be found.
+#! 
+#! ******************************************************************************
+#!
+#! "MGR 10"  utilizes  GTK "notebook" as the basic graphical presentation method. 
+#!
+#! "MGR 11"  utilizes TWO different main GUI code methods, for comparison. 
+#!      BASH "Page" based main GUI code "pages"
+#!      GTK "NoteBook" based main GUI code "pages" 
+#!
+#! ******************************************************************************
+#!
+#! MGR-11 
+#! "Manager" for project development across 22 Puppy OS , 
+#! all "cased, cloned, hacked" by gae, 240101 initially. 
+#!
+#! ***************************************************************************
+#! v2.0.0 there could be a save tmpfs->persistent-storage running...
+#! while [ "`pidof snapmergepuppy`" ]; do sleep 1 ; done
+#!
+#! MGR.sh call:    echo -e "=="   is into  existing graphical < windows >  
+#! all text output to MGR system must be    #>/dev/console    
+#!
+#! BASH in XTERM :  WITH display :   
+#!      echo -e "==" >/dev/console
+#!
+#! BASH in XTerm : with NO display 
+#!      echo -e "==" 2>/dev/null
+#!
+#! *** Notes ************************************************************************
+#! Development "MGR 5" moved on to a revised "MGR 6" 
+#! Development "MGR 6" moved on to a revised "MGR 7" 
+#! Development "MGR 7" moved on to a revised "MGR 8" 
+#! Development "MGR 8" moved on to a revised "MGR 9" 
+#! Development "MGR 9"  : Production  with BASH "PageBook" via GTK "toggle" 
+#!      with BASH coded independent floating windows "Back" "Dox" "Utility" "Vmb" 
+#!      with GTK Toggled System Page morphing screen for "MENU" select/build/reboot.
+#!
+#! Development "MGR 10" : Production  with GTK "NoteBook"
+#!      with GTK coded independent floating windows "Main" "Menu" "Dox" "Utility" 
+#!      with compacted "GTK NoteBook" style screen. 
+#!
+#!
+#! Development "MGR 11" : Production  with BASH method of "Pages" 
+#!      to be compatible with DebBookWorm.
+#!      with BASH coded independent floating windows "System" "Menu" "BackUp" "Dox" "Utility" 
+#!
+#! ***********************************************************************************************
+#!
+#!          This BASH + GTK method is intended to work with Debian BookWorm Distros. 
+#!          Debian BookWorm GTK has formatting problems. 
+#!
+#! ***********************************************************************************************
+#!
+#! ==================================================================================
+#! PET install not required, 
+#!      MGR "project" has all required (dependent) scripts
+#!      so, just place downloaded script into /root/my-applications .
+#! Puppy Linux automatically provides /root/my-applications via "/etc/profile" script. 
+#!   just place downloaded script into /root/my-applications. 
+#! ==================================================================================
+#!
+#! **********************************************************************************
+#! BASH is just a "shell" command interpreter as per POSIX definition. 
+#! GTK is a GUI library, and meant to be imported in actual programming projects. 
+#! You can't use GTK "directly" in BASH scripts.  
+#! You can't use BASH scripts "directly" in Gtk.  
+#! ********************************************************************************
 #!  rc.z_MGR.   #!  sh:64:3: note: Not following: 
 #!  /etc/DISTRO_SPECS was not specified as input (see shellcheck -x). [SC1091]
-#! ******************************************************************************
-#(: all "cased, cloned, hacked" by gae.
+#! ***************************************************************************
+#! rc.shutdown req: #! /usr/sbin/asktosave_session
 #! ***************************************************************************
 #!  error note from GTK:
-#!  widget_vbox_input_by_command() : <input> not implemented for this widget
-#!  Google Widget_vbox_input_by_command () input not implemented for this widget windows
+#!  widget_vbox_input_by_command() : "<input> not implemented for this widget"
+#!  "Google Widget_vbox_input_by_command () input not implemented for this widget windows"
 #!
-#! #######################################
-export gcSysDevDob="240501-0645"
-export gcSysDevDob="240502-0807"
-export gcSysDevDob="240503-0808"
-export gcSysDevDob="240503-0901"
-export gcSysDevDob="240505-0915"
-export gcSysDevDob="240506-0652"
-#! #######################################
+#!     [ ! -d "${TMP_PATH}" ] && mkdir -p "${TMP_PATH}"
 #!
-#! PATH: 
-PATH=$PATH:/usr/lib/gtkdialog:/root/my-applications/bin:/initrd/mnt/dev_save/MY_/usr-share/My_Dev_/Edit_MGR 
+#! ***************************************************************************
+#! if  [ [ "$DISPLAY" ] || [ "$WAYLAND_DISPLAY" ] || [ "$XDG_CONFIG_HOME" ] ] ; then
+#!	#ac.cidenta.lly ru.nning this sc.ript k.il.ls the sy.stem "MGR"
+#!	exit
+#! fi
+#! ************************************************************************************
+#! 
+#! MGR can Change DISTRO bootup by rewriting "default" of "menu.lst" and then ReBooting
+#!
+#! 
+#! ************************************************************************************
+#!
+#!
+export gcMgrNameBaseAll="${gcSysNameBase}${gcMgrVer}${gcMgrVerExt}"
+export gcMgrNameBase_All="${gcSysNameBase}${gcMgrVer}-${gcMgrVerExt}"
+#!
+export gcMgrTextTitle="' ooo- Manager: ${gcMgrVer}${gcMgrVerExt} -ooo '"  #! ooo-Bionic-ooo   :64bit:   :B-64-B:
+export gcMgrVerNote="Embedded-Graphic__Bash-pageSystem__GTK 'notebook' function Primary Screen"
+export gcMgrNameBaseAll="${gcSysNameBase}${gcMgrVer}"
+export gcMgrVerID="${gcSysNameBase}${gcMgrVer} " # not used
+export gcMgrVerTitle="Manager: ${gcMgrVer}${gcMgrVerExt} "  # req for "System Gui" title with '"ooo-"'  gcMgrVerTitle  '"-ooo"'
+export gcMgrBashPid="$BASHPID"
+export gcMgrLogInKey="JV4J-A9YI-UJFX"   #! 1 
+export gcMgrIdMe="JV4J-A9YI-UJFX-iso60"
+export gcMgrDt="`date +%y%m%d-%H%M-%S`"
+export gcMgrKey="${gcMgrNameBaseAll}--${gcMgrIdMe}-${gcMgrDt}"
+export gcMgrIsoDate="${gcMgrDt}" #! temp start date pulled from iso for "ID" testing. 
+export gcMgrDistroSymbol="..."	#! assigned to match 
+export gcDistroEOL="${gcMgrDt}"  #! default temp 'End Of Life' date pulled from DISTRO_SPECS or PUPSTATE 
+export gcMgrIP="108.82.30.204"
+#! export gcDistroPuppyDate='Dec 2021' #! Published Date
+#! *****************************************************
+#!
 #! ************************************************************
-. /etc/rc.d/PUPSTATE      #  gather basic "state" of Puppy "system"
-. /etc/DISTRO_SPECS     #  gather basic Distro data
+#~ clear   #! also at main ()
+#! PATH: always include :/root/my-applications/bin to find dependency files 
+#! Files Stored will be carried with the saveDATA 
+PATH=$PATH::/root/my-applications:/usr/lib/gtkdialog:/root/my-applications/bin:/initrd/mnt/dev_save/MY_/usr-share/My_Dev_/Edit_MGR 
+#! ************************************************************
+. /etc/DISTRO_SPECS       #  gather basic DISTRO data via Linux 
+
+#     echo "0='$0'" >> /etc/rc.d/PUPSTATE 
+ echo "Zero=${0}" >> /etc/rc.d/PUPSTATE
+. /etc/rc.d/PUPSTATE      #  gather basic "STATE" of Puppy operating system 
+#! ************************************************************
+#! ######################################################################################
 #!
+#! export gctoggle_X="true"    #! Not Used, was for  GUI GTK Toggle Control 
+#! export gctoggleVmbX="true"  #! Not Used, was for GUI GTK Toggle Control 
+#! default 
+export  gcDistroReboot="wmreboot"   #! standard if distro fails to "re"boot !
+#!
+#! example: DISTRO_NAME="BionicPup32"
+export gcSysDistroName="${DISTRO_NAME}"
+export GTKDIALOG=gtkdialog
+#! *****************************************************
+#!
+export gcMrgBit32="1"   # 32bit flag  , assigned per each Distro , "0" is 64bit. #!not used.
+export gcMrgBit64="1"   # 64bit flag  , assigned per each Distro , "1" is 32bit. #!not used.
+#!
+export  gcDistroReboot="wmreboot"   #! default
+#!
+#! *****************************************************
+export  gcLnchBshPge="0"  #! control for GTK-Launch-Bash-Page-msgWindows #! ??? Not Used 
+#! button #1 to write flag config + Restart. 
+#! ReStart to read flag config, Enable/DisAble "BASH Page Mode". 
+#! button #2 to clear flag config + Restart.
+#! *****************************************************
+#!
+#! *****************************************************
+#! export gcMgrDevIdFull="MGR-${gcMgrVer}${gcMgrVerExt}"  
+#! export gcMgrDevSubId=",,," #!  BXB    shows "Kernal#" 
+#!      must be copy/paste from current active "DISTRO_SPECS, "PUPSAVE",  "PUPSFS", 
+#!      given: 'sda1,ext4,/pup_UpupBXB-SDA/upupbbsave-BXB' ,  generate "BXB" 
+#!
+#! DISTRO-SPECS does not reveal full ID string , must generate
+#!  PUPSFS='sda1,ext4,/pup_UpupB4B-SDA/puppy_upupbb_19.03.sfs'
+#!  PUPSAVE='sda1,ext4,/pup_UpupB4B-SDA/upupbbsave-B4B'
+#! example ID : "B4B", "B5B", "B64B", "N8N", "T-6" is extracted from PUPSAVE .
+export  gcMgrDevSubId="`echo -n "$PUPSAVE" | cut -f 3 -d '-'`"
+#! *********************************************************
+#! gcMgrVerAll req for MAIN RUNNING Terminal Screen 
+#!      "Sbr_Cbx_ReStart" First-Time-Running msg 
+export gcMgrVerAll="Manager:${gcMgrId}${gcMgrVer}" #! Not Active
+#! *********************************************************
+#!
+#! MB Multi-Button  P.A.G.E. VERTICAL is deprecated. Not Used . 
+#! export  gcOsSubId="VERT"    # Not Used.  "VERT" section deprecated.
 #!
 if [ 0 -eq 1 ] ; then
-	lnDummy=0
+    n=0  #! example of testing a stub conrol
 fi # end: if [ 0 -eq 1 ]
 #!
-export GTKDIALOG=gtkdialog
-export gcIDME="JV4J-A9YI-UJFX"
-#! *****************************************************
-export gcMgrDevId="MGR"  
-#! *****************************************************
-export gcMgrVerBase="-8"  
-export gcMgrVer="-8"   # "v:#" 
-export gcMgrVerExt="-8.1"   # "v:#" # "-lint" "-TXN" "-DEV"   ### use this:  "gcSysNameVer"
-#! *********************************************************
-#! 
-#! export gcMgrDevSubId=",,," # B4B or B5B   
-#!      must be copy/paste from DISTRO_PUPPYDATE, PUPSAVE,  PUPSFS
-#!      given: 'sda1,ext4,/pup_UpupB5B-SDA/upupbbsave-B5B' ,  generate "B5B" 
-export  gcMgrDevSubId="`echo -n "$PUPSAVE" | cut -f 3 -d '-'`"
-export  gcOsSubId="???"
-#!
-#!
 #! Debug controllers:
-    # set -xe		 # Start - x e
-    # set +xe      # Stop  + x e
+    #! set -xe       # Start - x e
+    #! set +xe      # Stop  + x e
 #!
+#(:  =======================================================================
+#(:
+#(:   "why" gtkdialog/box_help is used: 
+#(:         gtkdialog/box_help will handle format and embedded color text codes.
+#(:         MGR contains a Sbr of our hacked version of "box_help" 
+#(:   "why" xmessage is not used; 
+#(:         xmessage will NOT handle format and color embedded text codes.
+#(:         gxmessage is preferred to handle format codes. 
 #!
-#(:  ======================================================
-#(:   
-#(:  	gtkdialog/box_help will handle format and embedded color text codes.
-#(:  	xmessage will NOT handle format and color embedded text codes.
-#!
-#(: ==================================================
+#(: ==========================================================================
 #(:  begin: 
 #(:  example of regular function header 
 #(:     Each regular "function" has a "header" that begins with label like this:
 #(:     The #(: lines are exported, via TXN.sh to become "Program Documentation". 
-#(:     Programmers can build a stand-alone summary of each Code Module .
-#(:  function Sys() : Main Code Modules, which call "Sbr" .
-#(:  function Sbr()  : Sub Modules , called by "Main Code Modules". 
+#(:     Programmers can build a stand-alone summary of All Code Modules .
+#(: function Sys() : Main Code Modules, which call "Sbr" .
+#(: function Sbr() : Sub Modules , called by "Main Code Modules". 
 #(: 
 #(: ==================================================
-#(: function Sbr()
-#(:  name: unknown
+#(: fx Sbr_Sys_yg3()  
+#(: name: 
+#(: param:
+#(: purpose: Puppy Ascii Graphic Image for rc.sysinit and rc.shutdown 
+#(: @param  #(:  @return  #(: call this way:  #(: called by:  #(: calls to: 
+#(: returns:  #(: method:  #(: rationale:  #(: note:
+#(: ==================================================
+#(: function Sbr()  # example
+#(:  name: 
 #(: param:
 #(: purpose:
 #(:  @param
@@ -93,22 +238,392 @@ export  gcOsSubId="???"
 #(:
 #(: # end:  example of regular "funxtion" label
 #(: ==================================================
+#!
+#! ==================================================================================================
+#! #! #! Developing Left-Right Center control 
+#! Margin Adjustment for MGR application. 
+#! for Main and Minor Gui Screens, 
+#! purpose: to control different GTK format actions of 22 Puppy Linux Distros. 
+#! use of "gcMrgOut"Adj control var may be deprecated as development continues. 
+#!
+#! ==================================================================================================
+#! rationale: 
+#!      GTK is 'almost' the same, across 22 Puppy Linux OS, 
+#!      but some differences have been found in GTK screen placement and "homogeneous" command. 
+#!      GTK DebianBookWorm has serious GTK format problems. 
+#!      All others are controllable.
+#!
+#! rationale:  
+#!  Each DISTRO may handle GTK graphics slightly differently, 
+#!      specifically < window > "width" and "height" values. 
+#!  GTK Variations make a problem when building a consistent graphic screen layout. 
+#!  Below, we present a method of control for "lateral placement" of GTK screen objects: 
+#!      "adjustment" memvar are being tested against DISTRO_SPECS data, this way: 
+#!      case "${gcSysDistroName}" in  
+#!         "BionicPup32" )     gcMrgAdjOut="false" &&  gcMrgAdjL="false"  &&  gcMrgRAdj="false"  ;;
+#!         "bionicpup64")      gcMrgAdjOut="false" &&  gcMrgAdjL="false"  &&  gcMrgRAdj="false"  ;;
+#! the first several are implemented by filling in proper numbers 
+#! ------------------------------------------------------------
+#! Margin Adjust variables are left over  from MGR-9 , used for positioning GUI (test) in MGR-11.
+export gcMrgAdjOut="true"    # Left/Right OutEdge Margin icon, overall control, 
+#!  used one time in NoteBook GUI. 
+#!  implemented for B4B, et al, to control interaction with "homogenenous" placement 
+#!  goal: control this System GUI "Title" block to a centralized position on graphic layout, top line. 
+#!                 <label>"'-System--'"</label>
+#!                 <label>"'-Menu--'"</label>
+#!                 <label>"'-BackUp-'"</label>
+#!                 <label>"'-Dox/Help--'"</label>
+#!                 <label>"'-Util--'"</label> <action> "0"</action></button>
+#!
+#! Margin Adjust var may NOT be required in MGR-11. 
+#! Margin Adjust are left over  from MGR-9 , used for positioning GUI for different Puppy Distro GTK. 
+#!
+#! ### begin: Margin Adjust var #######################################################################
+#! before <label> "'-System--'"</label>
+export gcMrgAdjL="false"      # left end pad, before PageBook_Main_page-top, <label>"'-MAIN--'"</label>
+#! after <label> "'-Util--'  "</label>
+export gcMrgRAdj="false"      # right end pad, after PageBook_Main_page-top, <label>"'-VMB--'"</label>
+#!
+#! Margin Adjust were used in MGR-9 , some are still required for MGR-11, 
+#! Margin Adjust are used for positioning GUI . 
+#! Each different Puppy OS may have different GTK screen position controls, as "default" .  
+#! adjustments to Left Margain, overall control 
+#! These are not used in MGR-11 : gcMrgAdjOut  gcMrgAdjL  gcMrgRAdj  
+#!
+#! Default Margin Adjustments.
+export gcMrgAdjL1="7"
+export gcMrgAdjL2="7"  
+export gcMrgAdjL3="7"  
+#! adjustments to Right Margain, overall control/dimensions 
+export gcMrgAdjR1="7"  
+export gcMrgAdjR2="7"  
+export gcMrgAdjR3="7"   
+#!
+#!
+#! ==================================================================================================
+#! NOTE from MGR-9 about adjusting screen values to accomodate GTK across 22 different Puppy Distros. 
+#! System GUI dimensions may require Adjustment across 22 different Puppy Linux Distros: 
+#! Many Puppy Distros will run OK, without adjustments.  
+#! Puppy Linux GTK assumes these screen setting at Main Gui 
+#!  Set this way:     width-request="'${gcMrgGuiWid}'"
+#!  Set this way:     height-request="'${gcMrgGuiHgt}'"
+#!
+#! Therefore any adjustments to fit GTK must be by a variable pushed to 
+#!    <hseparator width-request="$variable"> </hseparator>
+#!
+#! Important Calculating NoteBook screen adjustments !!!
+#! Begin: calculate Adjustments for GTK in 22 different Puppy Linux Distros: 
+#!
+#!--- differentiate Source for each Distro via DISTRO_SPECS :
+#!    via "DISTRO_NAME" 
+#!    via "DISTRO_PUPPYDATE" 
+#!    via "DISTRO_PUPPYDATE" 
+#!
+#!--- differentiate each Distro via PUPSTATE or via "PSUBDIR" or via Date-of-ISO. 
+#!
+#! ***************************************************************************
+#! for MGR with "Deep Thought" theme. 
+        #! Screen : so gcMrgGuiWid="1200"
+#! for MGR with "Default" theme. 
+        #! Screen : so gcMrgGuiWid="1100"
+        #!
+        #! more tests required to differentiate various "themes" and screen dimensions 
+        #!  which alter font size and screen usage. 
+        #!
+#!
+#! === start ======================================================================
+#!--- process to match dimensions of NoteBook GUI with current OS via "Distro_Name" 
+function Sbr_Calculate_NoteBook_Gui_Position() {  #! Not Active   #! marker 
+ n=0 
+ }
+function  Sbr_Case_Distro_Name() {  #! Not Active   #! marker 
+n=0
+}
+#! default  "NoteBook_Gui_Position" : 
+export gcMrgGuiWid="1200"   #! GENERIC GUESS.  YMMV!   Your Milage May Vary ! 
+export gcMrgGuiHgt="880"    #! GENERIC GUESS.  YMMV!   Your Milage May Vary ! 
+export gcMrgBit32="1"       #! GENERIC GUESS.  YMMV!   Your Milage May Vary ! 
+#!
+#! develop testing required to differentiate 
+#!      v9, v10, v11   vs   22 different Distro OS. 
+#! to obtain "width-request" adjustment for "main gui":  
+#!
+#! these default values are close to 'best' for all Distros.
+#! will be ignored as development continues across all Distros. 
+                 gcMrgAdjOut="0" &&  gcMrgAdjL="1"  &&  gcMrgRAdj="0"   
+                 gcMrgAdjL1="1"  &&  gcMrgAdjL2="1"  &&  gcMrgAdjL3="1"  
+                 gcMrgAdjR1="1"  &&  gcMrgAdjR2="1"  &&  gcMrgAdjR3="1"  
+#!
+#!      gcMrgAdj var may be deprecated, if not requred in NoteBook+BASH methods. 
+#! -------------------------------------------------------------------------------------
+#! GTK dimensions will vary , depenending on current "GTK Theme" installed by user !!!
+#! -------------------------------------------------------------------------------------
+#!
+#! ================================================================================
+#!  Sbr_Case_Distro_Name   to calc NoteBook_Gui_Position
+#! ================================================================================
+#!
+        case "${gcSysDistroName}" in
+
+#! ========================================================================
+       "BionicPup32" )      
+            #!
+            #! B4B and B5B have same SysDistroName 
+            #! more test required to differentiate "B4B" , "B5B" versus various "themes" 
+                 #! standard width-request for "main gui":  
+                    #!  v9:     B4B="1150"
+                    #!  v10:    B4B="1100"
+                    #!  v11:    B4B="1200"
+                 #! 
+                 #! 
+            if [ "${DISTRO_PUPPYDATE}" = "Dec 2021" ] ; then  
+                #! values obtained from Distro 
+                export gcMgrDistroSymbol="{B_4_B-21}"  #! ":K4"  B4B21 
+                export gcMgrIsoDate="iso_B4B_bionicpup32-8.0+30-uefi-220407-2305"    #! 230603  #! 190314
+                export gcMgrPuppyDate="${DISTRO_PUPPYDATE}"
+                export gcDistroEOL=""
+                #!
+                #! values obtained by experiment
+                export gcMrgGuiWid="1250"      #! for MGR-10 with "Deep Thought" theme. 
+                export gcMrgBit32="1"  
+                #!
+            fi
+            #! more test required to differenciate "B4B" and "B5B" 
+            #! info taken from DISTRO_SPECS     #! 
+            #! BionicPup32 Kernal 5 : B5B DISTRO_PUPPYDATE='Apr 2022'
+                 #! standard width-request for "main gui":  
+                    #!  v9:     B4B="1150"
+                    #!  v10:    B4B="1250"
+                 #! 
+            if [ "${DISTRO_PUPPYDATE}" = "Apr 2022" ] ; then  
+                #! values obtained from Distro 
+                 export gcMgrDistroSymbol="{B_4_B-22}"  #! ":K4"   B4B22
+                 export gcMgrIsoDate="iso_B4B_bionicpup32-8.0+30-uefi-220407-2305"    #! 230603  #! 190314
+                 export gcMgrPuppyDate="${DISTRO_PUPPYDATE}"
+                 export gcDistroEOL=""
+                 #!
+                 #! values obtained by experiment
+                 export gcMrgGuiWid="1250"      #! for MGR-10 with "Deep Thought" theme. 
+                 export gcMrgBit32="1"  
+                 #! 
+            fi
+            #! more test required to differenciate "B4B" and "B5B" 
+            #! info taken from DISTRO_SPECS     #! 
+            #! BionicPup32 Kernal 5 : B5B DISTRO_PUPPYDATE='Dec 2023'
+                 #! standard width-request for "main gui": 
+                    #!  v9:     B5B="11000"     
+                    #!  v10:    B5B="11000"     
+                    #!  v11:    B5B="11050"     
+                 #! 
+            if [ "${DISTRO_PUPPYDATE}" = "Dec 2023" ] ; then  
+                #! values obtained from Distro 
+                export gcMgrDistroSymbol="{B_5_B-23}"  #! :K5    B5B23
+                export gcMgrIsoDate="iso_BionicPup32-19.03-240602"   #! ? 240611 2312??
+                export gcMgrPuppyDate="${DISTRO_PUPPYDATE}"
+                #!
+                export gcMrgGuiWid="1150"  #!   
+                export gcMrgBit32="1"  
+                #!
+            fi
+            ;;
+#! ========================================================================
+        "bionicpup64")
+                #! values obtained from Distro 
+                 export gcMgrDistroSymbol="{B_64_B}"  #! :Kernal:4.19.23'"
+                 export gcMgrIsoDate="iso_BookwormPup64_10.0.7_240820"   #! 240820
+                 export gcMgrPuppyDate="${DISTRO_PUPPYDATE}"
+                 #! 
+                 #! standard width-request for "main gui":  
+                    #!  v9:     B4B="1250"     B5B="11000"     B64B="1400"
+                    #!  v10:    B4B="1250"     B5B="11000"     B64B="1250"
+                    #!  v11:    B4B="1250"     B5B="11000"     B64B="1250"
+                 #! 
+                 export gcMrgGuiWid="1250"   
+                 export gcMrgBit32="0"
+                 #!
+            ;;
+#! ========================================================================
+        "tahrpup")
+                #! values obtained from Distro 
+                export gcMgrDistroSymbol="Tahr-6"
+                export gcDistroEOL="190211"
+                export gcMgrPuppyDate="${DISTRO_PUPPYDATE}"
+                #!
+                export gcMrgBit32="1" 
+                export gcMrgGuiWid="1100"   
+                #!
+            ;;
+#! #####################################################################
+       "NoblePup32")    #! Noble v:6 and v:7 share and v:8 being tested.
+            export gcMrgBit32="1" 
+            export gcMrgGuiWid="1100"   
+            #!
+            #! ##############################################################
+            #! more test required to differenciate "v:6"  and  "v:7" 
+            #! v:6   info taken from DISTRO_SPECS or PUPSTATE    #! 
+            #! NoblePup32 N-6-N 
+            #!      iso_NoblePup32-24.04-240907
+            #!      DISTRO_PUPPYDATE='Feb 2024'
+            #!      DISTRO_DB_SUBNAME='upupnn+bw'
+			#! PUPSTATE has "PSUBDIR" unique to N-6-N 
+            if [ "${PSUBDIR}" = "/pup_UpupN6-SDA" ] ; then
+                 export gcMgrDistroSymbol="{N-6-N_K6.6.15}"  #! on system screen
+                 export gcMgrIsoDate="iso_NoblePup32-24.04-240907"   #! 
+                 export gcMgrPuppyDate="${DISTRO_PUPPYDATE}"
+            fi
+            #! ##############################################################
+            #! more test required to differenciate "v:6"  and  "v:7" 
+            #! v:7   info taken from DISTRO_SPECS or PUPSTATE    #! 
+            #! NoblePup32 N-7-N
+            #!      iso_NoblePup32-24.04-240907
+            #!      DISTRO_PUPPYDATE='Feb 2024'
+            #!      DISTRO_DB_SUBNAME='upupnn+bw'
+			#! PUPSTATE has "PSUBDIR" unique to N-7-N 
+			if [ "${PSUBDIR}" = "/pup_UpupN7-SDA" ] ; then
+                 export gcMgrDistroSymbol="{N-7-N_K6.6.48}"  #! on system screen 
+                 export gcMgrIsoDate="iso_NoblePup32-24.04-240907"   #!
+                 export gcMgrPuppyDate="${DISTRO_PUPPYDATE}"
+            fi
+            #!
+            #! ############################################################## 
+            #! more test required to differenciate "v:7"  and  "v:8" 
+            #! NoblePup32 N-8-N
+            #! iso_NoblePup32-24.04-241101
+            #!      iso_NoblePup32-24.04-241101
+            #!      DISTRO_PUPPYDATE='Feb 2024'
+            #!      DISTRO_VERSION='24.04'
+            #!      DISTRO_DB_SUBNAME='upupnn+bw'
+			if [ "${PSUBDIR}" = "/pup_UpupN8-SDA" ] ; then
+                 export gcMgrDistroSymbol="{N-8-N_K6.6.48}"  #! on system screen 
+                 export gcMgrIsoDate="iso_NoblePup32-24.04-241101"   #!
+                 export gcMgrPuppyDate="${DISTRO_PUPPYDATE}"
+            fi
+            ;;
+#! #####################################################################
+#! #####################################################################
+#! #####################################################################
+       "ManticPup32")
+         gcMrgAdjOut="true"  &&   gcMrgAdjL="1" &&  gcMrgRAdj="1"  
+         gcMrgBit32="1"      && gcMgrDistroSymbol="M-6-M"
+         gcMrgAdjL1="1"  &&  gcMrgAdjL2="1"  &&  gcMrgAdjL3="1"  
+         gcMrgAdjR1="1"  &&  gcMrgAdjR2="1"  &&  gcMrgAdjR3="1" 
+            gcMrgGuiWid="1100"   
+           ;;
+       "S15Pup64")
+         gcMrgAdjOut="true"  &&   gcMrgAdjL="1" &&  gcMrgRAdj="1"  
+         gcMrgBit32="0"      && gcMgrDistroSymbol="S1564"
+         gcMrgAdjL1="1"  &&  gcMrgAdjL2="1"  &&  gcMrgAdjL3="1"  
+         gcMrgAdjR1="1"  &&  gcMrgAdjR2="1"  &&  gcMrgAdjR3="1" 
+            gcMrgGuiWid="1100"   
+            ;;
+       "JammyPup32")        
+         gcMrgAdjOut="false"  &&  gcMrgAdjL="false"  && gcMrgRAdj="false"   
+         gcMrgBit32="1"      && gcMgrDistroSymbol="J-J"
+         gcMrgAdjL1="1"  &&  gcMrgAdjL2="1"  &&  gcMrgAdjL3="1"  
+         gcMrgAdjR1="1"  &&  gcMrgAdjR2="1"  &&  gcMrgAdjR3="1"  
+            gcMrgGuiWid="1100"   
+       ;;
+       "KineticPup32")      
+         gcMrgAdjOut="false"  && gcMrgAdjL="false"  &&  gcMrgRAdj="false"  
+         gcMrgBit32="1"      && gcMgrDistroSymbol="K-K"
+         gcMrgAdjL1="1"  &&  gcMrgAdjL2="1"  &&  gcMrgAdjL3="1"  
+         gcMrgAdjR1="1"  &&  gcMrgAdjR2="1"  &&  gcMrgAdjR3="1"  
+            gcMrgGuiWid="1100"   
+       ;;
+        "xenialpup64")   gcMgrDistroSymbol="X64"
+         gcMrgAdjOut="false"  && gcMrgAdjL="false"  &&  gcMrgRAdj="false"  
+         gcMrgBit32="0"      
+         gcMrgAdjL1="1"  &&  gcMrgAdjL2="1"  &&  gcMrgAdjL3="1"  
+         gcMrgAdjR1="1"  &&  gcMrgAdjR2="1"  &&  gcMrgAdjR3="1"  
+            gcMrgGuiWid="1100"   
+        ;;
+        "ImpishPup32")    gcMgrDistroSymbol="I-I"
+         gcMrgAdjOut="false"  && gcMrgAdjL="false"  &&  gcMrgRAdj="false"  
+         gcMrgBit32="1"      
+         gcMrgAdjL1="1"  &&  gcMrgAdjL2="1"  &&  gcMrgAdjL3="1"  
+         gcMrgAdjR1="1"  &&  gcMrgAdjR2="1"  &&  gcMrgAdjR3="1"  
+            gcMrgGuiWid="1100"   
+        ;;
+        "Slacko64 Puppy")   gcMgrDistroSymbol="S64"
+         gcMrgAdjOut="false"  && gcMrgAdjL="false"  &&  gcMrgRAdj="false"  
+         gcMrgBit32="0"     
+         gcMrgAdjL1="1"  &&  gcMrgAdjL2="1"  &&  gcMrgAdjL3="1"  
+         gcMrgAdjR1="1"  &&  gcMrgAdjR2="1"  &&  gcMrgAdjR3="1"  
+            gcMrgGuiWid="1100"   
+        ;;
+        "UPupFF+D")      gcMgrDistroSymbol="F-F"
+         gcMrgAdjOut="true"  && gcMrgAdjL="false"  &&  gcMrgRAdj="false"  
+         gcMrgBit32="1"   
+         gcMrgAdjL1="1"  &&  gcMrgAdjL2="1"  &&  gcMrgAdjL3="1"  
+         gcMrgAdjR1="1"  &&  gcMrgAdjR2="1"  &&  gcMrgAdjR3="1"  
+            gcMrgGuiWid="1100"   
+        ;;
+        "xenialpup")     gcMgrDistroSymbol="X708"
+         gcMrgAdjOut="true"  && gcMrgAdjL="false"  &&  gcMrgRAdj="false"  
+         gcMrgBit32="1"  
+         gcMrgAdjL1="1"  &&  gcMrgAdjL2="1"  &&  gcMrgAdjL3="1"  
+         gcMrgAdjR1="1"  &&  gcMrgAdjR2="1"  &&  gcMrgAdjR3="1"  
+            gcMrgGuiWid="1100"   
+        ;;
+        "LxPupSc")       gcMgrDistroSymbol="SLxSc"
+         gcMrgAdjOut="true"  && gcMrgAdjL="false"  &&  gcMrgRAdj="false"   
+         gcMrgBit32="1"      
+         gcMrgAdjL1="1"  &&  gcMrgAdjL2="1"  &&  gcMrgAdjL3="1"  
+         gcMrgAdjR1="1"  &&  gcMrgAdjR2="1"  &&  gcMrgAdjR3="1"   
+            gcMrgGuiWid="1100"   
+            ;;
+        "EasyOS")         gcMgrDistroSymbol="EasyOS"
+         gcMrgAdjOut="true"  && gcMrgAdjL="false"  &&  gcMrgRAdj="false"   
+         gcMrgBit32="1"      
+         gcMrgAdjL1="1"  &&  gcMrgAdjL2="1"  &&  gcMrgAdjL3="1"  
+         gcMrgAdjR1="1"  &&  gcMrgAdjR2="1"  &&  gcMrgAdjR3="1"   
+            gcMrgGuiWid="1100"   
+            gcMrgGuiHgt="600" 
+            ;;
+        "Quirky April")  gcMgrDistroSymbol="Qk7"   
+         gcMrgAdjOut="1"  && gcMrgAdjL="1"  &&  gcMrgRAdj="1"   
+         gcMrgBit32="1"     && gcDistroReboot="wmreboot"
+         gcMrgAdjL1="1"  &&  gcMrgAdjL2="1"  &&  gcMrgAdjL3="1"  
+         gcMrgAdjR1="1"  &&  gcMrgAdjR2="1"  &&  gcMrgAdjR3="1"   
+            gcMrgGuiWid="1100"  
+            gcMrgGuiHgt="850" 
+            ;;
+#! #####################################################################
+       "BookwormPup32")
+            export gcMgrDistroSymbol="B32W"
+            export gcDistroEOL="231209"
+             gcMrgAdjOut="true" &&  gcMrgAdjL="true"  &&  gcMrgRAdj="true"   
+             gcMrgBit32="1"      && gcMgrDistroSymbol=":DBW-32:"
+             gcMrgAdjL1="1"  &&  gcMrgAdjL2="1"  &&  gcMrgAdjL3="1"  
+             gcMrgAdjR1="1"  &&  gcMrgAdjR2="1"  &&  gcMrgAdjR3="1"   
+           gcMrgGuiWid="900"   #!    BW32
+           gcMrgGuiHgt="530" 
+            ;;
+       "BookwormPup64")     
+            export gcMgrDistroSymbol="B-64-W"
+            export gcDistroEOL="231210"
+             gcMrgAdjOut="true" &&  gcMrgAdjL="true"  &&  gcMrgRAdj="true"   
+             gcMrgBit32="0"      && gcMgrDistroSymbol="DBW-64"
+             gcMrgAdjL1="1"  &&  gcMrgAdjL2="1"  &&  gcMrgAdjL3="1"  
+             gcMrgAdjR1="1"  &&  gcMrgAdjR2="1"  &&  gcMrgAdjR3="0"
+          gcMrgGuiWid="900"    #!   BW64
+          gcMrgGuiHgt="530" 
+            ;;
+#! #####################################################################
+           *)       #! default 
+            gcMgrDistroSymbol="-"
+         gcMrgAdjOut="true"   && gcMrgAdjL="true"  &&  gcMrgRAdj="true"   
+         gcMrgBit32="0"     
+         gcMrgAdjL1="1"  &&  gcMrgAdjL2="1"  &&  gcMrgAdjL3="1"  
+         gcMrgAdjR1="1"  &&  gcMrgAdjR2="1"  &&  gcMrgAdjR3="1"  
+            gcMrgGuiWid="1100"   
+            ;;
+        esac
+#! === end ========================================================================
+#!--- process to match dimensions of main screen with current OS via "Distro_Name" 
+#! ================================================================================
+#!
 #! 
-#! "--- "
-#! <span foreground='blue'>"-------------------------------------"</span>
-#! "--- "
-#! <span foreground='red'>"Message Box Routines used:  "</span>
-#! "--- "
-#! <span foreground='green'>"#: Sbr_Box_Message :  "</span>
-#! <span foreground='green'>"#: ... custom rewrite of gtkdialog Box_Help"</span>
-#! <span foreground='green'>"#: ... used by 'HELP' , 'Distro', 'Proc', 'FAQ' "</span>
-#! "--- "
-#! <span foreground='green'>"#: gxMessage : "</span>
-#! <span foreground='green'>"#: ...    used by: PUP, GUI, SRC, IMG, UPL, SYS. "</span>
-#! <span foreground='green'>"#: ...    expects plain text . "</span>
-#! <span foreground='green'>"#: ...    displays 45 char long, then wraps. "</span>
-#! <span foreground='green'>"#: ...    line-length expands to 72++ "</span>
-#! "--- "
 #!
 #! #############################################
 #! top: Fall-Thru "initz" 
@@ -122,34 +637,49 @@ export  gcOsSubId="???"
 #! 
 #! GNU bash is the shell.
 #! Gtk is the gui / dialogue builder.
-export gcMgrDevFirstRun="1"
 #!
-export gcMgrDevID="M.G.R.EmGr.DblClk.MnxGen"
-export gcMgrDevName="Manager.Master.Embedded-Graphics.DblClk."
+#! ========================================================================
+#! GTK is almost the same, across 21 Puppy Linux OX, but some differences.
+#! These memvar are tested against DISTRO_SPECS like this: 
+#!      case "${gcSysDistroName}" in  
+#!         "bionicpup64")      gcMrgAdjOut="'${false}'" ;;
+#!  early developmental versions used these to conrol screen position:
+#!  gcMrgAdj Out ,  gcMrgAdj LLL  ,  gcMrgAdj RRR  
 #!
-export gcSysNameBase="MGR"  #: used in ${gcSysNameBase} code as systemlabel
-export gcSysNameVer="-8"      # "v:#" # "-lint" "-TXN" "-DEV"
-export gcMGRname="Manager" 
+#!  gcMrgAdj var are being deprecated, because not requred in NoteBook method. 
+#!
+#!
+#! ------------------------------------------------------------
+export gcMgrDevFirstRun="1"     
+#!
+export gcMgrDevID="Manager:.EmGr.DblClk.MnxGen.GTK-NoteBook" 
+export gcMgrDevName="MGR....Embedded-Graphics..DoubleClickButtons...GTK-NoteBook..."
 #!
 export gcSysSave="`echo -n "$PUPSAVE" | cut -f 3 -d ','`"
 export gcSysSaveFn="`echo -n "$gcSysSave" | cut -f 3 -d '/'`"
-export gcSysIdFull="${gcSysSave}"			# ${PUPSAVE} # like "iso-KineticPup32-22.10"
+export gcSysIdFull="${gcSysSave}"           # ${PUPSAVE} # like "iso-KineticPup32-22.10"
 #!
-export gcSysDevHw="MCT-AMD-500_Bios2009_"	# Dev Computer HardWare
+export gcSysDevHw="MCT-AMD-500_Bios2009_64-32"  # Dev Computer HardWare. see "Sbr_Dump_SYS-Declare" 
+#! * system: machine: `uname -m` 
+#! * processor: `uname -p`      
+#! * platform: `uname -i` 
+#! * operating sys: `uname -o` 
 #!
-export gcBootOsHd="SDA"			# OS Hard-Drive
-export gcBootOsExe="${0}"		# OS Executable
+export gcBootOsHd="SDA"         # OS Hard-Drive, required in menu.lst build
+export gcBootOsExe="${0}"       # This Executable Bash Script
 #!
 #!
 #! ### gcSysKillProc #####################
 #! ### purpose: disable certain routines, hide from public access. 
 #! ###    for example: 
 #! ###    in a "sample distribution" we kill calls to external programs, 
-#! ###    These processes are "requisites" but not delivered.
-export gcSysKillProc=0	### used by Sbr_KillProc to enable/inhibit some subroutines. 
-#! if [ ${gcSysKillProc} -eq 0 ] then do "enable" all GTK gui <button> DEV process, 
-#! if [ ${gcSysKillProc} -eq 1 ] then do "stub kill" for some GTK gui <button> PRODUCTION process
+#! ###    These external programs are "requisites" but not delivered via this sample project.
+export gcSysKillProc=0  ### used by Sbr_KillProc to enable/inhibit some subroutines. 
+#! if [ ${gcSysKillProc} -eq 0 ] then do "enable" all GTK dialog <button> DEV process, 
+#! if [ ${gcSysKillProc} -eq 1 ] then do "stub kill" for some GTK dialog <button> PRODUCTION process
 #! ### gcSysKillProc #####################
+#! ###    some of these external programs were written internal in the "MGR" source code.
+#! ###    some of these external programs were deleted.
 #!
 #! ************************************************************
 #! E3R "basename" : E3R will run two paths ***
@@ -159,26 +689,23 @@ export gcRootApps="/root/my-applications/"  # Puppy Linux always paths to this.
 #! PET install not required, just place downloaded scripts in /root/my-applications.
 #! *************************************************************************************
 #!
+export gcSysDistro_File_Prefix="${DISTRO_FILE_PREFIX}"  # Not Used
 export gcSysDistroName="${DISTRO_NAME}" 
 export gcSysDistroVersion="${DISTRO_VERSION}"
 export gcSysDistroPuppySFS="${DISTRO_PUPPYSFS}"
-export gcSysDistro_Db_Subname="$DISTRO_DB_SUBNAME"
 export gcSysDistro_DB_Subname="${DISTRO_DB_SUBNAME}"
-
-
-#~ export gcE3rAllBakFlg="E3R-All-Bak-Flg"  # used by Sbr_E3rAllBak  Flag Name
 #!
 export gcSysKernPup="`uname -r`"
 export gcSysKernName="Kern:`uname -r`"
 #!
 #! touch "/tmp/MGR_Page_Control.flg"
-export MGR_Page_Control_flg="/tmp/MGR_Page_Control.flg" # Not Used 
+export MGR_Page_Control_flg="/tmp/MGR_Page_Control.flg"  
 #!
 export gcNBWC="false"     # flip +/- gcNBWC
 #(: ================================================
 #! 
 #! Data & Flag for Embedded Graphic Image ### backup and flag-file
-export gcEmGaImgFnTrgTxtMaster="/tmp/EmGa-Master-IMG.txt"	# Image Master 
+export gcEmGaImgFnTrgTxtMaster="/tmp/EmGa-Master-IMG.txt"   # Image Master 
 #!
 export lcGuiColorbrn="brown"
 export lcGuiColorgrn="green"
@@ -187,152 +714,19 @@ export lcGuiColorred="red"
 export lcGuiColorora="orange"
 #!
 #!
-#(:
 #! ################################################
 #! end: Fall-Thru "initz" 
 #! ################################################
 #!
 #!
 #!
+#! ################################################
+#! begin: Fall-Thru "fx Sbr SubRoutines" 
+#! ################################################
 #!
 #!
-#!
-function fnEchoDateTime() {
-	lcSysDts="`date +%y%m%d-%H%M-%S`"   
-    echo "${lcGuiFrameTitle}...${lcSysDts}"
-}
-export -f fnEchoDateTime
-#! ###########################
-
-
-#(: ==================================================
-#(: fx(Sbr_Splash_Banner)
-#(: called by:  fx(FT_EXIT='CBXARS')
-#(: param:
-#(: purpose:
-#(: calls:        Sbr_Splash_Banner "$lcMsgStr" "32m" "35m" & sleep .5
-#(: method:
-#(: sends:
-#(: rationale:
-#(: note : 
-#(:
-#! ##################################################
-function Sbr_Splash_Banner() {   # ACTIVE
-	n=0
-	/bin/echo -e "\\033[0G\\033[1;${3}*** \\033[1;${2} ${lcMsgStr} \\033[1;${3}***\\033[0;39m" 
-} #
-export -f Sbr_Splash_Banner
-#!
-#!
-#!
-#(: ==================================================
-#(: fx(Sbr_Splash_Flip3)
-#(: called by:  
-#(: param:
-#(: purpose:
-#(: calls:        Sbr_Splash_Banner "$lcMsgStr" "32m" "35m" & sleep .5
-#(: ---called-this-way------------------
-#(:  Sys_Splash_Flip ${lcMsgStr}
-#(:  kill ${GtkPidFlip1} 
-#(:  kill ${GtkPidFlip2} 
-#(:  kill ${GtkPidFlip3} 
-#(: -----------------------------------------
-#(: method:  Sbr_Splash_Flip3 ${string}
-#(: sends:
-#(: rationale:
-#(: note : 
-#(:
-#! ##################################################
-function Sbr_Splash_Flip3() {   #: NOT ACTIVE
-    n=0
-    lcParam1="${1}"
-#--- flipping colors ---red/yel---------------------------------------------------------------------
-/usr/lib/gtkdialog/box_splash -fg red -bg yellow -border true  -close never -text " ${lcParam1} " &  
-	GtkPidFlip1=$!	### kill splash
-sleep .7    # minimum screen activation time
-#--- flipping colors ---yel/blk-----------------------------------------------------------------------
-/usr/lib/gtkdialog/box_splash -fg yellow -bg black -border true  -close never -text " ${lcParam1} " &  
-	GtkPidFlip2=$!	### kill splash
-sleep .9    # minimum screen activation time
-#--- flipping colors ---yel/grn-----------------------------------------------------------------------
-/usr/lib/gtkdialog/box_splash -fg yellow -bg green -border true  -close never -text " ${lcParam1} " &  
-	GtkPidFlip3=$!	### kill splash
-sleep .9    # minimum screen activation time
-#-----------------------------------------------------------------------------------------------------
-    kill ${GtkPidFlip1} 
-    kill ${GtkPidFlip2} 
-    kill ${GtkPidFlip3} 
-#-----------------------------------------
-} #
-export -f Sbr_Splash_Flip3
-#!
-#!
-#!
-#!
-#(: ==================================================
-#(: fx(Sbr_Splash_It)
-#(: param: msg string
-#(: purpose:
-#(: called by:  
-#(: calls to :        
-#(: method: Simple Splash : param "Str" "fg" "bg" "sleep" "opt"
-#(: sends:
-#(: rationale:
-#(: note : 
-    #(: ! Standard Splash routine:
-    #(: !  Sbr_Splash_It "${lcMsgStr}:" "yellow" "purple" "3" 
-    #(: ! working on default params.
-    #(: ! param = "." will trigger a default value, sometimes 
-    #(: !               " "  or "0" not allowed.  
-    #(: !               ""   converts to 'sleep "1"'  which may be too fast. 
-    #(: ! color: system, red, yellow, orange, green, blue, purple
-    #(: !
-    #(: ! working on default params.
-    #(: ! param = "." will trigger a default value, sometimes 
-    #(: !               " "  or "0" not allowed.  
-    #(: !               ""   converts to 'sleep "0"'  
-    #(: ! color: system, red, yellow, orange, green, blue, purple
-    #(: ! <window dimensions must be hard-code.
-    #!
-#(:
-function Sbr_Splash_It() {   # Active # Simple Splash : param "Str" "fg" "bg" "sleep" "opt"
-#(: =====================================================
-	n=0 
-lcMsgStr="$1"
-lcMsgColorFg="$2"   # ForeGround
-if [ ! $2  ] ; then 
-    lcMsgColorFg="yellow"   # good default 
-fi    
-#!
-lcMsgColorBg="$3"   # BackGround
-if [ ! $3  ] ; then 
-    lcMsgColorBg="blue"  # good default
-fi    
-#!
-lcMsgSlp="$4"       # sleep  default is "1"
-if [ ! $4 ] ; then  # Sleep 
-    lcMsgSlp="1"  # < 1  usually does not make it to the screen, timing issues. 
-fi    
-#!
-    #! -D---
-/usr/lib/gtkdialog/box_splash -fg ${lcMsgColorFg} -bg ${lcMsgColorBg} -border true  -close never -text "${lcMsgStr}     " &
-    RETVAL=$?
-	GTKPID_Cold_Splash=$!
-	sleep ${lcMsgSlp}
-#!
-lcMsgOpt="$5"   # standard is do the kill 
-if [ ! $5 ] ; then  # IF   No Option,  THEN   kill pid ( compatible / normal)
-    kill ${GTKPID_Cold_Splash}
-    #!   if NOT flag, then KILL.  This is Normal.
-fi    
-#!
-} #
-export -f Sbr_Splash_It
-#!
-#!
-#!
-#(: ==========================================================
-#(: fx(Sbr_Str2DevTrm)  #  Preferred for Terminal display.
+#(: ==========================================================================
+#(: fx Sbr_Str2DevTrm  #! Standard  Terminal/devconsole display.    #! ACTIVE   
 #(: last edit: 240218-0500   
 #(: called by: everyone.  #  Preferred for Terminal display.
 #(: param:
@@ -347,20 +741,21 @@ export -f Sbr_Splash_It
 #(: sends:
 #(: rationale:
 #(: note :
-#! ############################################################
-function Sbr_Str2DevTrm() {   #: ACTIVE   #  Preferred for Terminal display.
+#! #################################################################################
+function Sbr_Str2DevTrm() {  #! ACTIVE   #! Standard  Terminal/devconsole display.
+#! Preferred for Terminal/console display.
 #! # param:  "char string"  "color"  "margin" "Console-Terminal"
 lcS2TStr=${1}   # ## STRING message
-lcS2TClr=${2}   # ## COLOR name or number
+lcS2TClr=${2}   # ## COLOR name or number #! COLOR:  1 is 31  ;  2 is 32  ;  3 is 33 
 lcS2TMrg=${3}   # ## MARGIN number 1,5,10 ... 2,3,4,5,etc
-lcS2Topt=${4}	# ## "C"onsole "T"erminal  # default to "T"erminal ###
+lcS2Topt=${4}   # ## option "C"onsole or "T"erminal  #! default to "T"erminal ###
 #!
-lcDevConsole=""	   # ${4} # default to "T"erminal ###
+lcDevConsole=""    # ${4} # default to "T"erminal ###
 #!
 case "${lcS2Topt}" in   #! TARGET 
    "C") lcDevConsole=" > /dev/console" ;;
    "T") lcDevConsole="" ;;
-    *)  lcDevConsole="" ;;	#: default "T"erminal mode for use with Geany "T"erminal process.
+    *)  lcDevConsole="" ;;  #: default "T"erminal mode for use with Geany "T"erminal process.
 esac
 #!
 case "${lcS2TMrg}" in   #! MARGIN
@@ -368,381 +763,444 @@ case "${lcS2TMrg}" in   #! MARGIN
     *) /bin/echo -n -e "\\033[${lcS2TMrg}G"  ${lcDevConsole} ;;
 esac
 #!
-case "${lcS2TClr}" in   #!COLOR:  1 is 31  ;  2 is 32  ;  3 is 33 
+case "${lcS2TClr}" in   #! COLOR:  1 is 31  ;  2 is 32  ;  3 is 33 
     ""|"0")                                         /bin/echo -n -e "\\033[1;33m"   ${lcDevConsole} ;; #: default yellow
     "31"|"32"|"33"|"34"|"35"|"36"|"37"|"38"|"39")   /bin/echo -n -e "\\033[1;${lcS2TClr}m"   ${lcDevConsole} ;; 
-    *)  /bin/echo -n -e "\\033[1;3${lcS2TClr}m"   ${lcDevConsole} ;; #: inject specific color nbr
+    *)  /bin/echo -n -e "\\033[1;3${lcS2TClr}m"   ${lcDevConsole} ;; #: auto update/inject specific color nbr
 esac
-#! CLEAR Lingering Color setup
-	/bin/echo -n "${lcS2TStr}"  ${lcDevConsole} 
-	/bin/echo -e "\\033[0;m"  ${lcDevConsole} 
-	return  0
+#! CLEAR Lingering Color setup at end-of-line
+    /bin/echo -n "${lcS2TStr}"  ${lcDevConsole} 
+    /bin/echo -e "\\033[0;m"  ${lcDevConsole} 
+    return  0
 #!
 } #
-export -f Sbr_Str2DevTrm
+export -f Sbr_Str2DevTrm     #! Standard  Terminal/devconsole display.    #! ACTIVE   
+#!
+#(: ==================================================
+#(: fx Sbr_Show_in_Path   # NOT ACTIVE 
+#(: called by:  pageVMB (deprecated)  written as "Sbr_Dump_Path"
 #!
 #!
 #!
-#!
-#!
-#!
-#!
-#!
-#!
-#! === _MB_ === VERT === top ================================
-#! ## top ###  MB Multi-Button  P.A.G.E. VERTICAL  #  "pageV"  "pageVert"
-#! === _MB_ === VERT === top ================================
-#!
-#!
-#!
-#! === _MB_ === VERT === S2F1 ================================
-function Sbr_MB_S2F1() {   #  called by Sbr_MB
-    n=0
-    export lcFlgGitHub="<STD>"
-    export lcRunFile="snapmergepuppy  /initrd/pup_ro1 /initrd/pup_rw"
-    lcRunCnt="1" 			# 2
-    lcNiceNum="19" 		# 3
-    #! Sbr_Splash_It "=== Sbr_MB_S2F1 === ${lcRunFile} ===" "yellow" "purple" "3"    #! -D---
-    #
-    #! need gtkdialog here, so to split the splash/kill        
-lcMsgStr="-- Running  ${lcRunFile}  -- "
-    #! -D---
-/usr/lib/gtkdialog/box_splash -fg yellow -bg brown -border true  -close never -text "\
-.   --- Running  Sbr_MB_S2F-${lcRunCnt}---    
-.     "&
-    RETVAL=$?
-    GTKPID_MB_S2F_Init1=$!	# capture PID
-    sleep 1
-    #!
-    Sbr_Sys_Sync   "1"   # '/sbin/sync' is a link into 'busybox' binary '/bin/busybox'     #! -D---
-/usr/lib/gtkdialog/box_splash -fg yellow -bg blue -border true  -close never -text "     --- Running  Sbr_MB_S2F-1---    "&
-    RETVAL=$?
-    GTKPID_MB_S2F_Init2=$!	# capture PID
-    nice -n ${lcNiceNum} ${lcRunFile} /initrd/pup_ro1 /initrd/pup_rw
-    #!
-    sleep .1
-    kill ${GTKPID_MB_S2F_Init2}
-    kill ${GTKPID_MB_S2F_Init1}
-    #!
-    Sbr_ClearFlagsSystem 0  	# so that ReStart can run.
-} # 
-export -f Sbr_MB_S2F1
-#! === _MB_ === VERT === s2f1 ================================
-function Sbr_MB_s2f1() {
-    n="0"
-    Sbr_MB_S2F1
-} #   
-export -f Sbr_MB_s2f1
-#!
-#!
-#!
-#! === _MB_ === VERT === S2F3 ================================
-function Sbr_MB_S2F3() {    #   #  ACTIVE     #  called by Sbr_MB_ALL   
-    n="0"
-    Sbr_Sys_Sync   "1"   # '/sbin/sync' is a link into 'busybox' binary '/bin/busybox' 
-    #!
-	lcS2FstartCount="1"
-    lcS2FwaitCount="1"
-    lcS2FloopCount="3"
-    lcGtkDialog="1"
-    #!
-    /bin/echo -en "\\033[0;39m"		>  /dev/console
-    /bin/echo -en "\\033[60G"    >/dev/console
-    /bin/echo -en "\\033[1;31m "    >/dev/console
-    #!
-        sleep .5
-        n=0
-        export lcFlgGitHub="<STD>"
-        export lcRunFile="snapmergepuppy  /initrd/pup_ro1 /initrd/pup_rw"
-        #! Sbr_Splash_It "=== Sbr_MB_S2F3 === ${lcRunFile} ===" "yellow" "purple" "3"    #! -D---
-        lcSysNowDts00="`date +%y%m%d-%H%M-%S`"   ### grave-mark in date() !!!
-        lcSysNowDts00="`date +%y%m%d-%H%M-%S`"		### grave-mark in date() !!!
-        lcSysNowDts01="`date +%y%m%d-%H%M-%S`" 		### allow visual timing of each cycle
-        lcMsgStrTime="    --- Start Time --- ${lcSysNowDts00} "
-        #! 
-        #! -D---  Background is Stable
-/usr/lib/gtkdialog/box_splash -fg yellow -bg brown -border true  -close never -text "\
-*!    MB-Vert-Save-2-Flash () : ${lcS2FDtsVer} 
-*!             ${PSUBDIR}
-*!             (${lcS2FloopCount}) loops
-*!       ${lcMsgStrTime} 
-*!
-*!
-*!
-*!
-*!
-*!
-*!
-*!
-*!      nice -> snapmergepuppy ${lcFlgGitHub}
-*!                                                                        "&
-            RETVAL=$?
-            GTKPIDMAIN2=$!
-            sleep 3 # ${lcS2FSleep}
-            #! kill ${GTKPIDMAIN2} # test to clear lingering splash
-          /bin/echo "- "
-          /bin/echo "- "
-          /bin/echo "- "
-        #!
-	WAITCNT="${lcS2FstartCount}"	# MGR-S2F-3 will Loop 1,2,3 times.
-    while [ ${WAITCNT} -lt 4 ];do
-		lcRunCnt="${WAITCNT}" 			# 2
-		lcNiceNum="19" 					# 3
-		lcFlgGitHub="${lcFlgGitHub}"	# 4
-		#!
-		lcMsgStr="-- Running Cnt:${lcRunCnt} -- Nice:${lcNiceNum} --"
-        #! -D--- Foreground Action
-		/usr/lib/gtkdialog/box_splash -fg yellow -bg blue -border true  -close never -text "$lcMsgStr" &
-		GTKPIDRUNC=$!
-        #!
-		nice -n ${lcNiceNum} ${lcRunFile} /initrd/pup_ro1 /initrd/pup_rw
-        #!
-		sleep .5 # ${lcS2FSleep}
-		kill $GTKPIDRUNC
-		#!
-		WAITCNT=`expr $WAITCNT + 1`		### count down to zero
-		sleep .1
-    done
-    #! ## that's all.
-   /bin/echo "- " >/dev/console
-   /bin/echo " - " >/dev/console
-   /bin/echo "  - " >/dev/console
-   /bin/echo "   - " > /dev/console
-    #!
-	if [ "$lcGtkDialog" -eq "1" ] ; then
-		sleep .1
-		kill ${GTKPIDSMP}	# ## has lingered
-		sleep .1
-		kill ${GTKPIDMAIN2}	# ## has lingered
-	fi #
-
-        # head of shell error, PID does not clear from screen.
-		kill ${GTKPIDSMP}	# ## has lingered
-        kill ${GTKPIDMAIN2}	# ## has lingered
-        kill ${GTKPIDMAIN2} # test to clear lingering splash
-
-	echo "<<< running Save2Flash ============================="
-    #~ Sbr_Cbx_ReStart 1   # no wait
-} # end 
-export -f Sbr_MB_S2F3      #     called by Sbr_MB_s2f3   
-#!
-#! === _MB_ === VERT === s2f3 ================================
-function Sbr_MB_s2f3() {
-    n="0"
-    Sbr_MB_S2F3
-}    
-export -f Sbr_MB_s2f3
-#!
-#!
-#! === _MB_ === VERT === sfs_load ================================
-function Sbr_MB_sfs_load() {    #   Sbr_MB_All
-    n=0
-	Sbr_ClearFlagsSystem 0  	### clear lockfile so that ReStart can run.
-    lcFnRun="/usr/sbin/sfs_load"
-    [ -f "$lcFnRun" ]  &&  ${lcFnRun}     # Run  SFS Loader App
-	#~ Sbr_Cbx_ReStart 1 	 # no wait
-} #
-export -f Sbr_MB_sfs_load
-#! === _MB_ === VERT === SFS_LOAD ================================
-function Sbr_MB_SFS_LOAD() {      # called by Sbr_MB_All
-    n=0
-    Sbr_MB_sfs_load
-} #
-export -f Sbr_MB_SFS_LOAD
-#!
-#! === _MB_ === VERT === jwd ================================
-function Sbr_MB_jwd() {     # called by Sbr_MB_All
-    n=0
-	Sbr_ClearFlagsSystem 0  	### clear lockfile so that ReStart can run.
-	lcFnRun="/usr/local/jwmdesk/jwmdesk"
-    [ -f "$lcFnRun" ]  &&  ${lcFnRun}   # jwmdesk
-    #~ Sbr_Cbx_ReStart 1   # no wait
-} #
-export -f Sbr_MB_jwd
-#!
-#! === _MB_ === VERT === JWD ================================
-function Sbr_MB_JWD() {      # called by Sbr_MB_All
-    n=0
-    Sbr_MB_jwd
-} #
-export -f Sbr_MB_JWD
-#!
-#!
-#!
-#! === _MB_ === VERT === ppr ================================
-function Sbr_MB_ppr() {     # called by Sbr_MB_All     
-    n=0
-	Sbr_ClearFlagsSystem 0  	### clear lockfile so that ReStart can run.
-	lcFnRun="/usr/local/bin/pprocess"   # pprocess
-    [ -f "$lcFnRun" ]  &&  ${lcFnRun}
-    #~ Sbr_Cbx_ReStart 1 	 # no wait
-	#~ exit 0
-} #
-export -f Sbr_MB_ppr
-#!
-#! === _MB_ === VERT === PPR ================================
-function Sbr_MB_PPR() {        # NOT USED # was called by guiPPR
-    n=0
-    Sbr_MB_ppr
-} #
-export -f Sbr_MB_PPR
-#!
-#!
-#! === _MB_ === VERT === rox ================================
-function Sbr_MB_rox() {      # calls system "ROX" file manager. 
-    n=0
-	Sbr_ClearFlagsSystem 0  	### clear lockfile so that ReStart can run.
-    # called by ROX with no parameter.  Tahr_6.06 skips the ReStart, runs .rox "OK". 
-    # dropped the ReStart, unnecessary complicaton. 
-    # interaction with ROX code. 
-    # Sbr_Cbx_ReStart & ### must continue thru ReStart to hit . rox 
-    Sbr_ClearFlagsSystem  ""  #: clear lockfile, etc,  so that Start/ReStart can run.
-    #~ cd /initrd/mnt/dev_save/MY_/usr-share/My_Dev_
-    . rox  &
-    Sbr_Cbx_ReStart  # & ### must continue thru ReStart 
-    #~ exit
-    #~ return
-} # 
-export -f Sbr_MB_rox
-#!
-#! === _MB_ === VERT === ROX ================================
-function Sbr_MB_ROX() {
-    n=0
-    Sbr_MB_rox
-} #
-export -f Sbr_MB_ROX
-#!
-#!
-#! === _MB_ === VERT === p_mnt ================================
-function Sbr_MB_p_mnt() {        # called from Page UTIL 
-    n=0
-    Sbr_Splash_It "Sbr_MB_p_mnt" "yellow" "red" "3"
-	Sbr_Sys_KillProc "${EXIT}"	    # gui-P-MntInt
-    Sbr_Sys_pMount_All "1"      ### Sbr -> internal
-	#~ Sbr_Cbx_ReStart &           # no wait
-	#~ Sbr_Cbx_ReStart 1           # no wait
-} #
-export -f Sbr_MB_p_mnt
-#!
-#! === _MB_ === VERT === P_MNT ================================
-function Sbr_MB_P_MNT() {
-    n=0
-    Sbr_MB_p_mnt
-} #
-export Sbr_MB_P_MNT
-#!
-#!
-#! === _MB_ === VERT === u_mnt ================================
-function Sbr_MB_u_mnt() {        # 
-    n="0"
-    Sbr_Splash_It "Sbr_MB_u_mnt" "yellow" "red" "3"
-	Sbr_Sys_KillProc "${EXIT}"	    # gui-U_MntInt
-    Sbr_Sys_uMount_All "1"      ### Sbr -> internal
-	#~ Sbr_Cbx_ReStart &           # no wait
-	#~ Sbr_Cbx_ReStart 1           # no wait
-} #
-export -f Sbr_MB_u_mnt
-#!
-#! === _MB_ === VERT === U_MNT ================================
-function Sbr_MB_U_MNT() {
-    n=0
-    Sbr_MB_u_mnt
-} #
-export Sbr_MB_U_MNT
-#!
-#!
-#!
-#!
-#!
-#!
-#! contained in function Sbr_MB_gui_xml
-#!
-#! === _MB_ === VERT === GUI  ALL ==========================
-#! === _MB_ === VERT === GUI  ALL ==========================
-#! === _MB_ === VERT === GUI  ALL ==========================
-#!
-#(: fx(Sbr_MB_All)       # pageV pageVert
-#(: called by : Main_GUI, ft(EXIT:Sbr_MB)
-#(: purpose :  Simple Sample of Buttons
-#(: receives param : none
-#(: returns :
-#(: note:
-#(:		eval will not initiate the "action"
-#(:		gtdialog will activate the "action"
-#(:       bash will import the "key-selection"
-#(:       bash will execute the "key-selection" 
+#(: ==================================================
+#(: fx Sbr_Splash_Flip3    #! ACTIVE 
+#(: called by:  
+#(: param:
+#(: purpose:   three splashes, flipping three colors. 
+#(: calls:      
+#(: called by : Sbr_Cbx group 
+#(: method:  Sbr_Splash_Flip3 ${string}
+#(: sends:
+#(: rationale:
+#(: note : 
 #(:
-#(:  	gtkdialog/box_help will handle format and embedded color text codes.
-#(:  	xmessage will NOT handle format and color embedded text codes.
+#! ##################################################
+function Sbr_Splash_Flip3() {   #! ACTIVE 
+#! Splash_Flip3 ${string}
+    n=0
+    lcParam1="${1}"
+#--- flipping colors ---red/yel---------------------------------------------------------------------
+/usr/lib/gtkdialog/box_splash -fg red -bg yellow -border true  -close never -text " ${lcParam1} " &  
+    GtkPidFlip1=$!   2>/dev/null ### kill splash
+sleep ${2}
+#--- flipping colors ---yel/blk-----------------------------------------------------------------------
+/usr/lib/gtkdialog/box_splash -fg yellow -bg purple -border true  -close never -text " ${lcParam1} " &  
+    GtkPidFlip2=$!   2>/dev/null ### kill splash
+sleep ${2}
+#--- flipping colors ---red/yel---------------------------------------------------------------------
+/usr/lib/gtkdialog/box_splash -fg red -bg yellow -border false  -close never -text " ${lcParam1} " &  
+    GtkPidFlip3=$!   2>/dev/null ### kill splash
+sleep ${2}
+#--- flipping colors ---yel/grn-----------------------------------------------------------------------
+/usr/lib/gtkdialog/box_splash -fg yellow -bg green -border true  -close never -text " ${lcParam1} " &  
+    GtkPidFlip4=$!   2>/dev/null ### kill splash
+sleep ${2}
+#--- flipping colors ---yel/blu-----------------------------------------------------------------------
+/usr/lib/gtkdialog/box_splash -fg yellow -bg blue -border true  -close never -text " ${lcParam1} " &  
+    GtkPidFlip5=$!   2>/dev/null ### kill splash
+sleep 1
+#-----------------------------------------------------------------------------------------------------
+    kill ${GtkPidFlip1}  2>/dev/null
+    kill ${GtkPidFlip2}  2>/dev/null 
+    kill ${GtkPidFlip3}  2>/dev/null
+    kill ${GtkPidFlip4}  2>/dev/null
+    kill ${GtkPidFlip5}  2>/dev/null
+} #
+export -f Sbr_Splash_Flip3
 #!
-#! === _MB_ === VERT === GUI  ALL ==========================
-function Sbr_Vmb_Config() {  # ACTIVE   # pageV pageVert
-    #!       config method not developed yet
-	n=0
-    #~ Sbr_MB_gui_xml      # call the Page-Vertical XML GUI code.   # pageV pageVert
-    #! 
-    #! === build config code from {Sbr_ARB_Init} ===
-    lcMbCfgFn="/0-MGR_MB_RetVal.cfg"
-    lcMbCfgId=`cat ${lcMbCfgFn}`   #:  extract {Fn} to lcVar
+#!
+#(: ==================================================
+#(: fx Sbr_Splash_It    #! Standard Splash #! ACTIVE
+#(: Standard Splash_It : param "Str" "fg"     "bg"  "sleep" "opt"
+#(: Standard Splash_It : param "Msg" "yellow" "blue" "3"    ""
+#(: called by: many ! 
+#(: param:
+#(: purpose: Standard Splash
+#(: method:  /usr/lib/gtkdialog/box_splash
+#(: sends:
+#(: rationale:
+#(: note : 
+#! ##################################################
+function Sbr_Splash_It() {   #! ACTIVE   #! Standard Splash 
+    #!  Standard Splash : param "Str" "fg" "bg" "sleep" "opt"
+        n=0 
+    lcMsgStr="$1"
+    lcMsgColorFg="$2"   # ForeGround
+    if [ ! $2  ] ; then 
+        lcMsgColorFg="yellow"   # good default 
+    fi    
     #!
-    #! ===================================
-    #! Sbr_Splash_It "!!! TRACE: ${lcMbCfgFn} delivered 
-                  #!  {{ ${lcMbCfgId} }} <<<" "yellow" "purple" "3"  # two line splash Config Delivered
-    #! ===================================
-    #! Returned with token filename lcMbCfgFn
-    #! Express (execute) the FnTarget as a "command' 
-    lcMsgStr="${lcMbCfgId}"
-    ${lcMbCfgId}    # Express the ".filename" and "Sbr_filename"  "As-Is" ! 
+    lcMsgColorBg="$3"   # BackGround
+    if [ ! $3  ] ; then 
+        lcMsgColorBg="blue"  # good default
+    fi    
     #!
-    #! ===================================
-    #! the token filename can refer to a "local" SubRoutine or "external" executble. 
+    #! gather "sleep" param 
+    lcMsgSlp="$4"       
+    #! test for no param
+    if [ ! $4 ] ; then  # Sleep safe default
+        lcMsgSlp="1"  # < 1  usually does not make it to the screen, timing issues. 
+    fi
+    #! test for Sleep quick
+    if [ "0" = "$4" ] ; then  # Sleep quick
+        lcMsgSlp=".5"  # < .5  usually does not make it to the screen, timing issues. 
+     fi   
+    #! else keep the sleep param as sent originally 
     #!
-    # test: if "." is first char of ConfigID,  so to run on external external funxtion
-    #       rc.z_MGS.sh ; rc.z_CTX.sh ; rc.z_S2F.sh ; SFS-load ; JWDesk ; pProcess ; Cold-Tar-Backup ; 
-    # test: if "EXIT" is first char of ConfigID, so to Fall-Thru to internal "if [ $EXIT' routine
-    #       
-    # test: else simply call the "configID" ( it is internal to this program, and recognizable as a 'funxtion()' )
-    # 
-    # Sbr_MB must embed key format, then export key, MGR will import key, execute key. 
-    #       "."Fn is a real, external, direct file.  Fn must exist in visible system space. 
-    #       "Sbr_" is a local SubRoutine.  Special "Sbr_MB_???" routines are written to handle this.   
-    #       "EXIT" is a Fall-Thru "If [ $EXIT" routine.  ( method Not Used ).
-    #! IF MB_call has been executed, THEN program will be running that target Fn code.
-    #! ELSE   Fall-Thru to this standard Sbr_Cbx_ReStart.
+        #! -D---
+    /usr/lib/gtkdialog/box_splash -fg ${lcMsgColorFg} -bg ${lcMsgColorBg} -border true  -close never -text "${lcMsgStr}     " &
+        RETVAL=$?
+        GTKPID_Cold_Splash=$!
+        sleep ${lcMsgSlp}
     #!
-    #! Sbr_Vmb_Config  
-    #! Stay In This  "Sbr_Vmb_Config"  Gui Page 
-    #!  Sbr_Cbx_ReStart 1
+    lcMsgOpt="$5"   # if not, then standard is do the kill 
+    if [ ! $5 ] ; then  # IF   No Option,  THEN   kill pid ( compatible / normal)
+        kill ${GTKPID_Cold_Splash}  2> /dev/null
+        #!   IF   NOT flag, then KILL.  This is Normal.
+        #!   ELSE  must kill manually in calling subroutine. 
+    fi    
+    } #
+    export -f Sbr_Splash_It
     #!
- } #  end: Multi-Button
-export -f Sbr_Vmb_Config     # pageV pageVert
+#(: =====================================================
+#(: fx Sbr_Splash_Banner
+#(: called by: Main GUI "QUIT Loose-Code Program"
+#(: param:
+#(: purpose: #! "QUIT Loose-Code Program"
+#(: called by :  " Fall Thru " for Loose-Code End of Program.
+#(: method: Standard End of Source Banner  
+#(: sends:
+#(: rationale:
+#(: note : 
+#(:
+#! #####################################################################
+function Sbr_Splash_Banner() {  #! ACTIVE    
+        n=0
+        echo
+        echo
+        echo "*======== $1 ========*"  
+        lcMsgStr0=$1
+        #!
+        echo
+        echo        
+        lcMsgStr="*===->->-> ${lcMsgStr0} ===*"    # text fg mrg
+        Sbr_Str2DevTrm "$lcMsgStr" "7" "7" 
+        Sbr_Str2DevTrm "$lcMsgStr" "6" "6" 
+        Sbr_Str2DevTrm "$lcMsgStr" "5" "5" 
+        Sbr_Str2DevTrm "$lcMsgStr" "4" "4" 
+        Sbr_Str2DevTrm "$lcMsgStr" "3" "3" 
+        Sbr_Str2DevTrm "$lcMsgStr" "2" "2" 
+        Sbr_Str2DevTrm "$lcMsgStr" "1" "1" 
+        Sbr_Str2DevTrm "$lcMsgStr" "2" "2" 
+        Sbr_Str2DevTrm "$lcMsgStr" "3" "3" 
+        Sbr_Str2DevTrm "$lcMsgStr" "4" "4" 
+        Sbr_Str2DevTrm "$lcMsgStr" "5" "5" 
+        Sbr_Str2DevTrm "$lcMsgStr" "6" "6" 
+        Sbr_Str2DevTrm "$lcMsgStr" "7" "7" 
+        echo 
+         #! colorful rainbow splash for FALL-THRU 
+         #! and trap for 'loose' code.  Str, Mgn, Color
+         lcMsgStr="======================================= "  &&     Sbr_Str2DevTrm "$lcMsgStr" "3" "5"
+        DISTRO_NAME_Z="DistroName: $DISTRO_NAME"
+        lcMsgStr="=== ${DISTRO_NAME_Z} "  &&     Sbr_Str2DevTrm "$lcMsgStr" "3" "7"
+        DISTRO_NAME_Z="Alpha:"$(echo $DISTRO_NAME | tr -dc 'A-z')
+        lcMsgStr="=== Orig ${DISTRO_NAME_Z} "  &&     Sbr_Str2DevTrm "$lcMsgStr" "3" "7"
+        DISTRO_NAME_Z="Numbers:"$(echo $DISTRO_NAME | tr -dc '0-9')
+        lcMsgStr="=== Orig ${DISTRO_NAME_Z} "  &&     Sbr_Str2DevTrm "$lcMsgStr" "3" "7"
+        lcMsgStr="  " && Sbr_Str2DevTrm "$lcMsgStr" "2" "3"
+        lcMsgStr="======================================= "  &&     Sbr_Str2DevTrm "$lcMsgStr" "3" "5"
+} # end
+export -f Sbr_Splash_Banner
 #!
-#! === _MB_ === VERT === GUI  ALL ==========================
-#! ## bot ###  MB P.A.G.E. VERTICAL  #  "pageV"  "pageVert"
-#! ## bot ###  MB P.A.G.E. VERTICAL  #  "pageV"  "pageVert"
-#! ## bot ###  MB P.A.G.E. VERTICAL  #  "pageV"  "pageVert"
-#! === _MB_ === VERT === GUI  ALL ==========================
+#(: =====================================================
+#(: fx Sbr_Splash_Pup   #! 
+#(: called by: Main Quit
+#(: param:
+#(: purpose: 
+#(: calls:
+#(: method:
+#(: sends:
+#(: rationale:
+#(: note : 
+#(:
+#! #####################################################
+function Sbr_Splash_Pup() {  # Active
+    echo  " "   #>/dev/console
+###########################################################
+#(: ==================================================
+#(: fx Sbr_Sys_yg3()  
+#(: name: 
+#(: param:
+#(: purpose: Puppy Ascii Graphic Image ( also for rc.sysinit and rc.shutdown )
+#(: @param #(:  @return #(: call this way: #(: called by: #(: calls to: 
+#(: returns: #(: method: #(: rationale: #(: note:
+#(:
+/bin/echo -en "......." # > /dev/console 
+/bin/echo -en "......." # > /dev/console 
+/bin/echo -en "......." # > /dev/console 
+n=0
+lcMsgStr1="/     -/osyyyysosyhhhhhyys+-
+    -ohmNNmh+/hMMMMMMMMNNNNd+dMMMMNM+
+  yMMMMNNmmddo/NMMMNNNNNNNNNo+NNNNNy
+.NNNNNNmmmddds:MMNNNNNNNNNNNh:mNNN/
+-NNNdyyyhdmmmd dNNNNNmmmmNNmdd/os/"
+lcMsgStr2="/
+.Nm+shddyooo+/smNNNNmmmmNh.   :mmd.
+ NNNNy:    ./hmmmmmmmNNNN:     hNMh
+ NMN-    -++- +NNNNNNNNNNm+..-sMMMM-
+.MMo    oNNNNo hNNNNNNNNmhdNNNMMMMM+
+.MMs    /NNNN/ dNmhs+:-  yMMMMMMMM+
+ mMM+     .. sNN+.      hMMMMhhMMM-
+ +MMMmo:...:sNMMMMMms:  hMMMMm.hMMy"
+lcMsgStr3="/ yMMMMMMMMMMMNdMMMMMM::/+o+/
+   sMMMMMMMMMMN+:oyyo:sMMMNNMMMNy
+    :mMMMMMMMMMMMmddNMMMMMMMMmh/
+      /dMMMMMMMMMMMMMMMMMMNdy/
+        .+hNMMMMMMMMMNmdhs/.
+            .:/+ooo+/:-." 
+lcMsgStr11="'\\033[1G\\033[1;31m ${lcMsgStr1}'"
+lcMsgStr12="'\\033[1G\\033[1;37m ${lcMsgStr2}'"
+lcMsgStr13="'\\033[1G\\033[1;34m ${lcMsgStr3}'"
+/bin/echo -en "${lcMsgStr11}" # > /dev/console 
+/bin/echo -en "${lcMsgStr12}" # > /dev/console 
+/bin/echo -en "${lcMsgStr13}" # > /dev/console 
+/bin/echo -en "${lcMsgStr11}" > /dev/console 
+/bin/echo -en "${lcMsgStr12}" > /dev/console 
+/bin/echo -en "${lcMsgStr13}" > /dev/console 
+echo " "
+#! that's all !
+} # end 
+export -f Sbr_Splash_Pup
+#(: =====================================================
+#(: fx Sbr_Splash_Neo   #! Not Active
+#(: called by: Main Quit 
+#(: param:
+#(: purpose: 
+#(: note:     #! All Distros Do NOT have "neofetch" available. 
+#!
+function Sbr_Splash_Neo() { #! Not Active
+    echo -e "         = = "      #>/dev/console
+    echo -e "       =     ="     #>/dev/console
+    echo -e "      =       = "   #>/dev/console
+    #! many Puppy Distro do not have a "neofetch"  available. .  
+    #! very long delay during seek "not-found" for filename ! 
+        neofetch  --ascii_colors 3 1 2   
+        #! echo "neo 3 1 2" > /dev/console &&   echo "neo 3 1 2" 
+        #! lcMsgStr="...    neo 3 1 2    ... " && Sbr_Str2DevTrm "${lcMsgStr}" "2" "7"
+    #! else,  let it ignore and skip over, non-fatal-error ! 
+    #! not called because main ( ) screen titling is quicker / more important.
+#! that's all !
+} # end 
+export -f Sbr_Splash_Neo
+#!
+#! ### END ### Splash ####!
+#!
+#!
+#(: =====================================================
+#(: fx Sbr_FnNotFound
+#(: called by: ReStart, ReBoot, ReQuit PowerOff
+#(: param:
+#(: purpose: if system file is Not Found
+#(: calls:
+#(: method:
+#(: sends:
+#(: rationale:
+#(: note :
+#! ###########################################################
+function Sbr_FnNotFound() {  # ACTIVE
+    n=0
+        echo "---  ERROR: ${1}  File Not Found. --- " 
+        Sbr_Splash_It " ERROR: ${1}  File Not Found."  "yellow" "black" "5"   #! -D---
+} #! end 
+export -f Sbr_FnNotFound
 #!
 #!
 #!
+#(: ######################################################################################
+#(: fx Sbr_Box_Message    # Simple Message sbr based on gtkdialog box_help  written by GAE
+#(: called by :
+#(:    GuiHLP+  to  Sbr_Dump_HLP
+#(:    GuiFAQ+  to  Sbr_Dump_FAQ
+#(:    GuiFAQ+  to  Sbr_Dump_Proc 
+#(:    GuiFAQ+  to  Sbr_Dxstro_Window
+#(:
+#(: fx Sbr_Box_Message   by gae 240101
+#(: receives param : Header$1 and loads '/tmp/box_help' for Top-Edge Window Title. 
+#(:
+#(: fx Sbr_Box_Message   by gae 240101
+#(: purpose : publish '/tmp/box_help'
+#(:   "case and hack"  rewrite based on "box_help" , by gae 240101
+#(:   provides wider screen width.
+#(:   based directly on gtkdialog box_help code processes.
+#(:
+#(: fx Sbr_Box_Message   by gae 240101
+#(:   usage :
+#(:   HEADING is a short "title bar" description.
+#(:   XML code is custom written to format "/tmp/box_help".
+#(: returns:
+#(:
+#(: fx Sbr_Box_Message   by gae 240101
+#(: method:
+#(:     gtkdialog --center -p XML-Format-file (which loads /tmp/box_help )
+#(: purpose : publish '/tmp/box_help'
+#(:   "case and hack"  rewrite based on "box_help" 
+#(:   based on gtkdialog box_help code processes.
+#(:   provides wider screen width.
+#(:
+#(: first written : fx Sbr_Box_Message   by gae 240101
+#(: note:
+#(: purpose :  Simple Message sbr based on gtkdialog box_help
+#(:   "case and hack"  rewrite based on "box_help" 
+#(:   which allows author to change the "lead-in" XML code
+#(:   and thus change the "format" of this custom "message_box".
+#(:     Sbr_Box_Message does provide a "OK" user button.
+#(:     Sbr_Box_Message does provide a "markup" on text for colors.
+#(:     Sbr_Box_Message does allow dimension changes to box.
+#(:     Sbr_Box_Message does not require a "URL" param.
+#(:     Sbr_Box_Message requires using the "OK" button to exit.
+#(: note:
+#(:     XML assumes /tmp/box_help and "gtkdialog -p" internal code.
+#(:     XML sets up the markup and color options for the imported text.
+#(:     XML sets up the "OK" control button, and will show/close/"OK"
+#(:
+#(: - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+#(: Message Box Routines used:  Sbr_Box_Message  and  gxMessage 
+#(:
+#(: fx Sbr_Box_Message   ,  by gae 240101
+#(:  SPECIAL: internal hack on gtkdialog box_help, rewrite by gae, 240101
+#(: used by "Hlp" , "Distro", "Proc", "Faq"
+#(:
+#(: gxMessage   Display Information: by gae 240101
+#(:     expects plain text .
+#(:     displays 45 char long, then wraps.
+#(:     line-length expands to 72++
+#(: 
+#! ###############################################################
+function Sbr_Box_Message() {  # ACTIVE   #! special rewrite by gae, 240101
+    n=0
+    export TEXTDOMAIN=libstardust
+    export OUTPUT_CHARSET=UTF-8
+    #
+    if [ "$1" ] ; then
+        Box_Msg_Heading="${1}"
+    else
+        Box_Msg_Heading="$(gettext '---Sbr_Box_Message---')"
+    fi
+    #!
+#! Is Used by Help and FAQ  : 
+export Box_MessageXML='
+<window title="MGR_'${Box_Msg_Heading}'"
+default-height="550"
+default-width="760"
+visible="true" >
+<vbox space-expand="true" space-fill="true">
+  <vbox space-expand="true" space-fill="true">
+    <vbox scrollable="true" shadow-type="3" space-expand="true" space-fill="true">
+      <vbox space-expand="false" space-fill="false">
+        <text xpad="10" ypad="15" use-markup="true"><input file>'/tmp/box_help'</input></text>
+      </vbox>
+    </vbox>
+  </vbox>
+  <hbox space-expand="false" space-fill="false">
+    <button>
+      '"`/usr/lib/gtkdialog/xml_button-icon ok`"'
+      <label>'$(gettext 'Ok')_!-required-!'</label>
+    </button>
+  </hbox>
+</vbox>
+</window>'
+#!
+    gtkdialog --center -p Box_MessageXML    # assumes '/tmp/box_help'    #! -D---
+    #!
+    } #
+    export -f Sbr_Box_Message
+#! ACTIVE   for Dump_PROC and Dump_FAQ
 #!
 #!
 #!
+#(: ================================================================
+#(: fx Sbr_S2F1_MI    #! Internal   :1: SMP1_MI : #! ACTIVE
+#(: called by:  To Do: call direct INTERNAL ( no dependency ) 
+#(: param:  
+#(: purpose: wrapper for external system call to SMP "Save2File" 
+#(: method: 
+#(: sends:
+#(: rationale:
+#! #######################################################
+function Sbr_S2F1_MI() {   #! ACTIVE 
+    n=0
+    #! =======================
+    Sbr_Splash_It ":1: SMP1_MI :"  "black" "yellow"  ""         #! -D---
+    ionice -c 1 snapmergepuppy   
+    sleep 1
+    #! kill ${GTKPID_Cold_Splash}  2> /dev/null
+    sleep 2
+    #! kill ${GTKPID_Cold_Splash}  2> /dev/null
+} #! end
+export -f Sbr_S2F1_MI    
 #!
 #!
-#! ===Build_Menu.lst_=======================================================
-#! ## begin: MenuMain_Echo   
-#! ## MenuStandard  
-#! ## Menu_Standard_Selection_Header
-#! ===Build_Menu.lst_=======================================================
 #!
-#(: ====================================================
-#(: fx(Sbr_Menu_Standard_Selection_Header)    # MainMenu
+#(: ================================================================
+#(: fx Sbr_S2F3_MI  # Internal  #! :3: SMP3_MI  #!  #! ACTIVE   
+#(: called by:  To Do: call direct INTERNAL ( no dependency ) 
+#(: param:  
+#(: purpose: wrapper for external system call to SMP "Save2File" 
+#(: method: 
+#(: sends:
+#(: rationale:
+#! #######################################################
+function Sbr_S2F3_MI() {   #! ACTIVE  
+     n="0"
+    Sbr_Splash_It  ":1: SMP3_MI :==="  "black" "yellow"  ""         #! -D---
+    ionice -c 1 snapmergepuppy    
+        sleep 1
+    Sbr_Splash_It " :2: SMP3_MI :==="  "black" "yellow"  ""         #! -D---
+    ionice -c 1 snapmergepuppy    
+        sleep 1
+    Sbr_Splash_It " :3: SMP3_MI :==="  "black" "yellow"  ""         #! -D---
+    ionice -c 1 snapmergepuppy    
+        sleep 1
+    Sbr_Splash_It ": DONE : SMP3_MI :"  "yellow" "red"  ""         #! -D---
+        sleep 2
+} #! end
+export -f Sbr_S2F3_MI    
+#! #################################################################
+#!
+#!
+#! === Build_Menu.lst_=== Build_Menu.lst_==== Build_Menu.lst_===========
+#! ## begin: Menu_Main_Echo   
+#! ## Standard Selection Menu Header
+#! === Build_Menu.lst_=== Build_Menu.lst_==== Build_Menu.lst_===========
+#!
+#!
+#(: ===========================================================================
+#(: fx Sbr_Menu_Standard_Selection_Header    # MainMenu # Menu Standard Menu 
 #(: called by: Menu Echo Short and Long 
 #(: param: 
 #(: purpose: Standard Menu Options, both Short and Long 
 #(: calls:
-#(: method: standard "echo" 
+#(: method: Change DISTRO by rewriting portions of "menu.lst" and then ReBooting 
 #(: sends:
 #(: rationale: most changes/updates occur here, shared Short and Long Menu.
 #(: note : same STANDARD 'header' for long menu and short menu. 
@@ -750,101 +1208,142 @@ export -f Sbr_Vmb_Config     # pageV pageVert
 #(: Prep "if [ " code will declare/assign menu paramters. 
 #!
 #! method: echo Standard Main Menu Options into ""Short and "Long" Menu.lst file output. 
-#! ########################################################
-function Sbr_Menu_Standard_Selection_Header() {  # ACTIVE # Standard Menu Selection Header 
-		echo "###  ${gcBootOsHd} ### echo Standard Main Menu Options ##########"
-		echo "###################################{ Kinetic Kudu +D.22 } "
-		echo "title  1 { K-K }-----UpupKK+D-22.  -------K:5--------------- \n Kinetic Kudu  \n   \n"
-		echo "  find --set-root --ignore-floppies --ignore-cd   /MARK-${gcBootOsHd}"
-		echo "  kernel /pup_UpupKK-${gcBootOsHd}/vmlinuz    psubdir=/pup_UpupKK-${gcBootOsHd} pmedia=usbflash pfix=fsck,copy"
-		echo "  initrd /pup_UpupKK-${gcBootOsHd}/initrd.gz"
-		echo "###################################{ Bionic Beaver  K:5  }"
-		echo "title  2 {!!!_B5B_!!!}--<UpupBB-K5> ---Edit----K:5---FF--LO------  \n Bionic Beaver  \n   \n"
-		echo "  find --set-root --ignore-floppies --ignore-cd   /MARK-${gcBootOsHd}"
-		echo "  kernel /pup_UpupB5B-${gcBootOsHd}/vmlinuz    psubdir=/pup_UpupB5B-${gcBootOsHd} pmedia=usbflash pfix=fsck,copy"
-		echo "  initrd /pup_UpupB5B-${gcBootOsHd}/initrd.gz"
-		echo "###################################{ Jammy Jellyfish +D+22.04 }"
-		echo "title  3 { J-J }-----UpupJJ+D+22.04 L6 ---K:5--------------- \n Jazzy Jellyfish  \n   \n"
-		echo "  find --set-root --ignore-floppies --ignore-cd   /MARK-${gcBootOsHd}"
-		echo "  kernel /pup_UpupJJ-SDA/vmlinuz  psubdir=/pup_UpupJJ-SDA pmedia=usbflash pfix=fsck,copy"
-		echo "  initrd /pup_UpupJJ-SDA/initrd.gz"
-		echo "###################################{ S15pup64 Slacko"
-        echo "title  4 { S1564 }---S15pup64-20.01 -----K:5---FF--LO------ \n  \n  \n"
+#! ############################################################################################
+function Sbr_Menu_Standard_Selection_Header() {  # ACTIVE    
+    #! Standard Menu Selection Header 
+        echo "###  ${gcBootOsHd} ### echo Standard Main Menu Options #########"
+        echo "###################################{ Bionic 4 Beaver  K:4 32bit }"
+        echo "title  1 {[=_B4B_==]}---< UpupBB-K:4.9  > ------------K:4_32--220407 \n  \n   \n"
+        echo "  find --set-root --ignore-floppies --ignore-cd   /MARK-${gcBootOsHd}"
+        echo "  kernel /pup_UpupB4B-${gcBootOsHd}/vmlinuz    psubdir=/pup_UpupB4B-${gcBootOsHd} pmedia=usbflash pfix=fsck,copy"
+        echo "  initrd /pup_UpupB4B-${gcBootOsHd}/initrd.gz"
+        echo "###################################{ Bionic 5 Beaver  K:5 32bit }"
+        echo "title  2 {[=_B5B_==]}---< UpupBB-K:5.10 >-------------K:5_32- 230612 \n  \n   \n"
+        echo "  find --set-root --ignore-floppies --ignore-cd   /MARK-${gcBootOsHd}"
+        echo "  kernel /pup_UpupB5B-${gcBootOsHd}/vmlinuz    psubdir=/pup_UpupB5B-${gcBootOsHd} pmedia=usbflash pfix=fsck,copy"
+        echo "  initrd /pup_UpupB5B-${gcBootOsHd}/initrd.gz"
+        echo "###################################{ Bionic Beaver    K:4 64bit }"
+        echo "title  3 {[=_B64B_=]}---< UpupB64B-K:6 > -------------K:4_64- 231219   \n   \n   \n"
+        echo "  find --set-root --ignore-floppies --ignore-cd   /MARK-${gcBootOsHd}"
+        echo "  kernel /pup_UpupB64B-${gcBootOsHd}/vmlinuz    psubdir=/pup_UpupB64B-${gcBootOsHd} pmedia=usbflash pfix=fsck,copy"
+        echo "  initrd /pup_UpupB64B-${gcBootOsHd}/initrd.gz"
+        echo "# ###################################{ Noble Numbat   K:6-32bit }"
+        echo "title  4 {[=_N8N_=]}----< Noble-Numbat k:6.1.15>------K:6_32- 241101  \n  \n   \n"
+        echo "  find --set-root --ignore-floppies --ignore-cd   /MARK-SDA"
+        echo "  kernel /pup_UpupN8-${gcBootOsHd}/vmlinuz  psubdir=/pup_UpupN8-${gcBootOsHd} pmedia=usbflash pfix=fsck"
+        echo "  initrd /pup_UpupN8-${gcBootOsHd}/initrd.gz"
+        #!
+        echo "##################################{ Debian Book Worm 32 K:6 64bit }"
+        echo "title  5 {[=_DBW32_=]}--< Debian Book-Worm 32 >-------K:6 _32- 231119 \n   \n   \n"
+        echo "  find --set-root --ignore-floppies --ignore-cd    /MARK-${gcBootOsHd}"
+        echo "  kernel /pup_DpupBW32-${gcBootOsHd}/vmlinuz    psubdir=/pup_DpupBW32-${gcBootOsHd} pmedia=usbflash pfix=fsck,copy"
+        echo "  initrd /pup_DpupBW32-${gcBootOsHd}/initrd.gz"
+        echo "###################################{ Tahr-6.06}       K:3-32bit }"
+        echo "title  6 {[=_T-6_=]}----< Tahr-6.06 K:3 > ------------K:3-32- 190211   \n \n   \n"
+        echo "  find --set-root --ignore-floppies --ignore-cd   /MARK-${gcBootOsHd}"
+        echo "  kernel /pup_UpupT6-${gcBootOsHd}/vmlinuz    psubdir=/pup_UpupT6-${gcBootOsHd}  pmedia=usbflash  pfix=fsck,copy"
+        echo "  initrd /pup_UpupT6-${gcBootOsHd}/initrd.gz"
+        #!
+        echo "###################################{ S15pup64 Slacko  K:5-64bit }"
+        echo "title  7 {_S1564_}------ S15pup64-20.01 --------------K:5_64- 230724 \n \n \n"
         echo "  find --set-root --ignore-floppies --ignore-cd   /MARK-${gcBootOsHd}"
         echo "  kernel /pup_S15pup64-${gcBootOsHd}/vmlinuz    psubdir=/pup_S15pup64-${gcBootOsHd} pmedia=usbflash pfix=fsck,copy"
         echo "  initrd /pup_S15pup64-${gcBootOsHd}/initrd.gz"
-		echo "###################################{ Mantic Minotaur }"
-		echo "title  5 {!!!_uMM_!!!}_< UpupMM-23.11 > Mantic-Minotaur-L6-K:6 - \n   \n   \n"
-		echo "  find --set-root --ignore-floppies --ignore-cd    /MARK-${gcBootOsHd}"
-		echo "  kernel /pup_UpupMM-SDA/vmlinuz    psubdir=/pup_UpupMM-SDA pmedia=usbflash pfix=fsck,copy"
-		echo "  initrd /pup_UpupMM-SDA/initrd.gz"
-		echo "###################################{ Tahr-6.06}"
-		echo "title  6 {!!!_T-6_!!!}----Tahr-6.06  -------------------------   \n Trusty Tahr  \n   \n"
-		echo "  find --set-root --ignore-floppies --ignore-cd   /MARK-${gcBootOsHd}"
-		echo "  kernel /pup_UpupT6-SDA/vmlinuz    psubdir=/pup_UpupT6-SDA  pmedia=usbflash  pfix=fsck,copy"
-		echo "  initrd /pup_UpupT6-SDA/initrd.gz"
-		echo "###################################{ Xenial-64-750}"
-		echo "title  7 { X64 }-----Xenial-64-750  ------K:4---FF--LO----------  \n   \n   \n"
-		echo "  find --set-root --ignore-floppies --ignore-cd   /MARK-${gcBootOsHd}"
-		echo "  kernel /pup_UpupX64-SDA/vmlinuz  psubdir=/pup_UpupX64-SDA pmedia=usbflash pfix=fsck,copy"
-		echo "  initrd /pup_UpupX64-SDA/initrd.gz"
-		echo "###################################{ Mantic Minotaur }"
-		echo "title  8 { DBW }-----DpupBW       Debian Book-Worm-K:6 ----- \n   \n   \n"
-		echo "  find --set-root --ignore-floppies --ignore-cd    /MARK-${gcBootOsHd}"
-		echo "  kernel /pup_DpupBW-SDA/vmlinuz    psubdir=/pup_DpupBW-SDA pmedia=usbflash pfix=fsck,copy"
-		echo "  initrd /pup_DpupBW-SDA/initrd.gz"
-        #!
-		echo "###################################"
-        #!
-		echo "###################################{ SpupSlacko64 }"
-		echo "title  9  { S-7 }----pup Slacko7+14.2 ----------------------  \n   \n   \n"
-		echo "  find --set-root --ignore-floppies --ignore-cd   /MARK-${gcBootOsHd}"
-		echo "  kernel /pup_SpupS7-${gcBootOsHd}/vmlinuz    psubdir=/pup_SpupS7-${gcBootOsHd}  pmedia=usbflash  pfix=fsck,copy"
-		echo "  initrd /pup_SpupS7-${gcBootOsHd}/initrd.gz"
-	    echo "# #####################################{ S15Slacko-64 }"
-		echo "title 10 { S64 }-----SpupSlacko64  ------------- 64 ------- \n   \n   \n"
-		echo "  find --set-root --ignore-floppies --ignore-cd   /MARK-${gcBootOsHd}"
-		echo "  kernel /pup_Spup64-${gcBootOsHd}/vmlinuz  psubdir=/pup_Spup64-${gcBootOsHd} pmedia=usbflash pfix=fsck,copy"
-		echo "  initrd /pup_Spup64-${gcBootOsHd}/initrd.gz"
-		echo "###################################{ Impish Indri }"
-		echo "title 11 { I-I }-------Upup-Impish-Indri ------------------------ \n   \n   \n"
-		echo "  find --set-root --ignore-floppies --ignore-cd   /MARK-${gcBootOsHd}"
-		echo "  kernel /pup_UpupII-${gcBootOsHd}/vmlinuz  psubdir=/pup_UpupII-${gcBootOsHd} pmedia=usbflash pfix=fsck,copy"
-		echo "  initrd /pup_UpupII-${gcBootOsHd}/initrd.gz"
+        echo "###################################{ Kinetic Kudu +D.22 } "
+        echo "title  8 { K-K }------- UpupKK+D-22.  ----------------K:5_32- 230604 \n \n   \n"
+        echo "  find --set-root --ignore-floppies --ignore-cd   /MARK-${gcBootOsHd}"
+        echo "  kernel /pup_UpupKK-${gcBootOsHd}/vmlinuz    psubdir=/pup_UpupKK-${gcBootOsHd} pmedia=usbflash pfix=fsck,copy"
+        echo "  initrd /pup_UpupKK-${gcBootOsHd}/initrd.gz"
+        echo "####################34###############{ Xenial-64-750}"
+        echo "title  9 {_X64_}---- Xenial-64-750  -------FF--LO-----K:4_64- 220401  \n   \n   \n"
+        echo "  find --set-root --ignore-floppies --ignore-cd   /MARK-${gcBootOsHd}"
+        echo "  kernel /pup_UpupX64-${gcBootOsHd}/vmlinuz  psubdir=/pup_UpupX64-SDA pmedia=usbflash pfix=fsck,copy"
+        echo "  initrd /pup_UpupX64-${gcBootOsHd}/initrd.gz"
+        echo "###################################{ pup Slacko7+14.2 }"
+        echo "title 10 {_S-7 }---- pup Slacko7+14.2 ----------------S_32- 220205 \n   \n   \n"
+        echo "  find --set-root --ignore-floppies --ignore-cd   /MARK-${gcBootOsHd}"
+        echo "  kernel /pup_SpupS7-${gcBootOsHd}/vmlinuz    psubdir=/pup_SpupS7-${gcBootOsHd}  pmedia=usbflash  pfix=fsck,copy"
+        echo "  initrd /pup_SpupS7-${gcBootOsHd}/initrd.gz"
+        echo "# #####################################{ Spup64- }"
+        echo "title 11 {_S64_7 }----Spup64  ------------------------K:5_ 64- 230724 \n   \n   \n"
+        echo "  find --set-root --ignore-floppies --ignore-cd   /MARK-${gcBootOsHd}"
+        echo "  kernel /pup_Spup64-${gcBootOsHd}/vmlinuz  psubdir=/pup_Spup64-${gcBootOsHd} pmedia=usbflash pfix=fsck,copy"
+        echo "  initrd /pup_Spup64-${gcBootOsHd}/initrd.gz"
+        echo "###################################{ Impish Indri }"
+        echo "title 12 { I-I }----Upup-Impish-Indri ----------------I-32- 220201 \n   \n   \n"
+        echo "  find --set-root --ignore-floppies --ignore-cd   /MARK-${gcBootOsHd}"
+        echo "  kernel /pup_UpupII-${gcBootOsHd}/vmlinuz  psubdir=/pup_UpupII-${gcBootOsHd} pmedia=usbflash pfix=fsck,copy"
+        echo "  initrd /pup_UpupII-${gcBootOsHd}/initrd.gz"
         echo "###################################{ UpupFF+D08.20.12 Focal-Fossa }"
-		echo "title 12 { F-F }------Focal-Fossa  -------FireFox-----------  \n Focal-Fossa  \n   \n"
-		echo "  find --set-root --ignore-floppies --ignore-cd    /MARK-${gcBootOsHd}"
-		echo "  kernel /pup_UpupFF-SDA/vmlinuz    psubdir=/pup_UpupFF-SDA pmedia=usbflash pfix=fsck,copy"
-		echo "  initrd /pup_UpupFF-SDA/initrd.gz"
-		echo "# #####################################{ XenialX7.08 }"
-		echo "title 13 { X708}----Xenial-7.08  -------------------         \n   \n   \n"
-		echo "  find --set-root --ignore-floppies --ignore-cd    /MARK-${gcBootOsHd}"
-		echo "  kernel /pup_UpupX708-${gcBootOsHd}/vmlinuz    psubdir=/pup_UpupX708-${gcBootOsHd}  pmedia=usbflash  pfix=fsck,copy"
-		echo "  initrd /pup_UpupX708-${gcBootOsHd}/initrd.gz"
-		echo "# #######################{ Slacko-LxSc }"
-		echo "title 14 { SLxSc }- Pup_Slacko-LxSc-20.01 --K:5.4--64--- \n SLxSc \n  \n"
-		echo "  find --set-root --ignore-floppies --ignore-cd    /MARK-${gcBootOsHd}"
-		echo "  kernel /pup_Slacko-LxSc-${gcBootOsHd}/vmlinuz    psubdir=/pup_Slacko-LxSc-${gcBootOsHd} pmedia=usbflash pfix=fsck,copy"
-		echo "  initrd /pup_Slacko-LxSc-${gcBootOsHd}/initrd.gz"
-		echo "# #####################################{ Quirky April 7 }"
-		echo "title 15 { Quirky 7 }--- Quirky-7 ---beta--------------    \n   \n   \n"
-		echo "  find --set-root --ignore-floppies --ignore-cd    /MARK-${gcBootOsHd}"
-		echo "  kernel /pup_Quirky-${gcBootOsHd}/vmlinuz    psubdir=/pup_Quirky-${gcBootOsHd} pmedia=usbflash pfix=fsck,copy"
-		echo "  initrd /pup_Quirky-${gcBootOsHd}/initrd.gz"
-		echo "###################################{ Bionic Beaver  K:4  }"
-		echo "title 16 { B4B }--- UpupBB-K:4  -----------------------    \n   \n   \n"
-		echo "  find --set-root --ignore-floppies --ignore-cd   /MARK-${gcBootOsHd}"
-		echo "  kernel /pup_UpupB4B-${gcBootOsHd}/vmlinuz    psubdir=/pup_UpupB4B-${gcBootOsHd} pmedia=usbflash pfix=fsck,copy"
-		echo "  initrd /pup_UpupB4B-${gcBootOsHd}/initrd.gz"
+        echo "title 13 { F-F }----Focal-Fossa  ---------------------F-32- 210410 \n \n   \n"
+        echo "  find --set-root --ignore-floppies --ignore-cd    /MARK-${gcBootOsHd}"
+        echo "  kernel /pup_UpupFF-${gcBootOsHd}/vmlinuz    psubdir=/pup_UpupFF-${gcBootOsHd} pmedia=usbflash pfix=fsck,copy"
+        echo "  initrd /pup_UpupFF-${gcBootOsHd}/initrd.gz"
+        echo "# #####################################{ XenialX7.08 }"
+        echo "title 14 { X708}----Xenial-7.08  ---------------------X-32- 220401 \n   \n   \n"
+        echo "  find --set-root --ignore-floppies --ignore-cd    /MARK-${gcBootOsHd}"
+        echo "  kernel /pup_UpupX708-${gcBootOsHd}/vmlinuz    psubdir=/pup_UpupX708-${gcBootOsHd}  pmedia=usbflash  pfix=fsck,copy"
+        echo "  initrd /pup_UpupX708-${gcBootOsHd}/initrd.gz"
+        echo "# #######################{ Slacko-LxSc }"
+        echo "title 15 { SLxSc }-- Pup_Slacko-LxSc-20.01 ---------- S-K:5.4-64- 200101 \n \n  \n"
+        echo "  find --set-root --ignore-floppies --ignore-cd    /MARK-${gcBootOsHd}"
+        echo "  kernel /pup_Slacko-LxSc-${gcBootOsHd}/vmlinuz    psubdir=/pup_Slacko-LxSc-${gcBootOsHd} pmedia=usbflash pfix=fsck,copy"
+        echo "  initrd /pup_Slacko-LxSc-${gcBootOsHd}/initrd.gz"
+        echo "# #####################################{ SLK64 --- }"
+        echo "title 16 { EasyOS }--- EasyOS---FNF--------------------E-K:5.10 _64- 230400    \n   \n   \n"
+        echo "  find --set-root --ignore-floppies --ignore-cd    /MARK-${gcBootOsHd}"
+        echo "  kernel /pup_EasyOS-${gcBootOsHd}/vmlinuz    psubdir=/pup_EasyOS-${gcBootOsHd} pmedia=usbflash pfix=fsck,copy"
+        echo "  initrd /pup_EasyOS-${gcBootOsHd}/initrd"
+        echo "# #####################################{ Quirky April 7 }"
+        echo "title 17 { Quirky-7 }--- Quirky-7 ---beta-------------Q7-32- 200423  \n   \n   \n"
+        echo "  find --set-root --ignore-floppies --ignore-cd    /MARK-${gcBootOsHd}"
+        echo "  kernel /pup_Quirky-7-${gcBootOsHd}/vmlinuz    psubdir=/pup_Quirky-7-${gcBootOsHd} pmedia=usbflash pfix=fsck,copy"
+        echo "  initrd /pup_Quirky-7-${gcBootOsHd}/initrd.gz"
+        echo "###################################{ Jammy Jellyfish +D+22.04 }"
+        echo "title 18 { J5J }------- UpupJJ+D+22.04 L6 -----------K:5-32- 221230 \n  \n   \n"
+        echo "  find --set-root --ignore-floppies --ignore-cd   /MARK-${gcBootOsHd}"
+        echo "  kernel /pup_UpupJJ-${gcBootOsHd}/vmlinuz  psubdir=/pup_UpupJJ-${gcBootOsHd} pmedia=usbflash pfix=fsck,copy"
+        echo "  initrd /pup_UpupJJ-${gcBootOsHd}/initrd.gz"
+        echo "###################################{ Mantic Minotaur  K:6-32bit }"
+        echo "title 19 {_M6M_}--< UpupMM-23.11 > Mantic-Minotaur-L6-K:6_32- 231226 \n   \n   \n"
+        echo "  find --set-root --ignore-floppies --ignore-cd    /MARK-${gcBootOsHd}"
+        echo "  kernel /pup_UpupMM-SDA/vmlinuz    psubdir=/pup_UpupMM-SDA pmedia=usbflash pfix=fsck,copy"
+        echo "  initrd /pup_UpupMM-SDA/initrd.gz"
+        echo "##################################{ Debian Book Worm 64 K:6 64bit }"
+        echo "title 20 {==_DBW64_==}- Dpup-BW-64     - Debian BW--K:6 _64- 231119 \n   \n   \n"
+        echo "  find --set-root --ignore-floppies --ignore-cd    /MARK-${gcBootOsHd}"
+        echo "  kernel /pup_DpupBW64-${gcBootOsHd}/vmlinuz    psubdir=/pup_DpupBW64-${gcBootOsHd} pmedia=usbflash pfix=fsck,copy"
+        echo "  initrd /pup_DpupBW64-${gcBootOsHd}/initrd.gz"
+        echo "# #####################################{ Quirky April 140 }"
+        echo "title 21 { Quirky 140 }--- Quirky-140 ---beta--------------    \n   \n   \n"
+        echo "  find --set-root --ignore-floppies --ignore-cd    /MARK-${gcBootOsHd}"
+        echo "  kernel /pup_Quirky-140-${gcBootOsHd}/vmlinuz    psubdir=/pup_Quirky-140-${gcBootOsHd} pmedia=usbflash pfix=fsck,copy"
+        echo "  initrd /pup_Quirky-140-${gcBootOsHd}/initrd.gz"
+        echo "# #####################################{ DVN9 }"
+        echo "title 22 { Devuan 9.7.0-chimaera_4.0 }--- Devuan ---beta--------------    \n   \n   \n"
+        echo "  find --set-root --ignore-floppies --ignore-cd    /MARK-${gcBootOsHd}"
+        echo "  kernel /pup_Devuan-${gcBootOsHd}/vmlinuz    psubdir=/pup_Devuan-${gcBootOsHd} pmedia=usbflash pfix=fsck,copy"
+        echo "  initrd /pup_Devuan-${gcBootOsHd}/initrd.gz"
+        echo "###################################{ pup_Racy }"
+        echo "title  23 {_RACY_}---< RACY_5.5-130302  > ------------K:-130302 \n  \n   \n"
+        echo "  find --set-root --ignore-floppies --ignore-cd   /MARK-${gcBootOsHd}"
+        echo "  kernel /pup_Racy-${gcBootOsHd}/vmlinuz    psubdir=/pup_Racy-${gcBootOsHd} pmedia=usbflash pfix=fsck,copy"
+        echo "  initrd /pup_Racy-${gcBootOsHd}/initrd.gz"
+        echo "###################################{ Jammy Jellyfish +D+22.04 }"
+        echo "title  24 { J6J }----pup_LxPupJammy+D+22.04 L6 -----------K:5-32- 221230 \n  \n   \n"
+        echo "  find --set-root --ignore-floppies --ignore-cd   /MARK-${gcBootOsHd}"
+        echo "  kernel /pup_LxPupJammy-${gcBootOsHd}/vmlinuz  psubdir=/pup_LxPupJammy-${gcBootOsHd} pmedia=usbflash pfix=fsck,copy"
+        echo "  initrd /pup_LxPupJammy-${gcBootOsHd}/initrd.gz"
+        #~ echo "# #####################################{ BFB }" #! CD LIVE ONLY ? 
+        #~ echo "title 23 { Bionic Friendly Bionic }--- Bionic ---beta--------------    \n   \n   \n"
+        #~ echo "  find --set-root --ignore-floppies --ignore-cd    /MARK-${gcBootOsHd}"
+        #~ echo "  kernel /pup_UpupBFB-${gcBootOsHd}/vmlinuz    psubdir=/pup_UpupBFB-${gcBootOsHd} pmedia=usbflash pfix=fsck,copy"
+        #~ echo "  initrd /pup_UpupBFB-${gcBootOsHd}/initrd.gz"
+        echo "# ###################################{ Noble Numbat N8  K:6-32bit }"
+
+#!
 } #  Any Other Puppy Distro Calls can be listed without Numbers. 
 export -f Sbr_Menu_Standard_Selection_Header
-		#! echo "# ### Devuan Not Ready for Prime Time ###########{ pup_Devuan }"
-		#! echo "title  17 { Devuan X }--- pup_Devuan-SDA   -------- \n   \n   \n"
-		#! echo "  find --set-root --ignore-floppies --ignore-cd    /MARK-${gcBootOsHd}"
-		#! echo "  kernel /pup_Devuan-${gcBootOsHd}/vmlinuz    psubdir=/pup_Devuan-${gcBootOsHd} pmedia=usbflash pfix=fsck,copy"
-		#! echo "  initrd /pup_Devuan-${gcBootOsHd}/initrd.gz"
-#!
-#!
 #!
 #! ====================================================
 #! ## end: Menu_Main_Echo   
@@ -855,10 +1354,8 @@ export -f Sbr_Menu_Standard_Selection_Header
 #! ## begin: Menu_Long_List  
 #! ====================================================
 #!
-#!
-#!
 #(: ====================================================
-#(: fx(Sbr_Menu_Standard_End)    # MainMenu
+#(: fx Sbr_Menu_Standard_End    # MainMenu
 #(: called by: Menu Echo Short and Long 
 #(: param: 
 #(: purpose: Standard Menu End , both Short and Long 
@@ -869,19 +1366,67 @@ export -f Sbr_Menu_Standard_Selection_Header
 #(: note : same STANDARD 'end' for long menu and short menu. 
 #!
 #! method: echo Standard  ""Short and "Long" Menu.lst file output. 
-#! ########################################################
-function Sbr_Menu_Standard_End() {  # ACTIVE # Standard Menu Standard End
-	echo "# ############################################################"
-	echo "# ****************************************************************************"
-	echo "# In itself ...  Godly Living is a benefit without consequence. "
-	echo "# I can hear God laughing at us, and saying, "
-    echo "# 'I gave you one law, then ten ... you made a hundered, then a thousand  "
-	echo "# 'I gave you my soul to live a good life, and you play parlor games. '"
-	echo "# 'I gave you my NAME    and now   you want a !sign! that I AM  ? ' "  
-	echo "# ****************************************************************************"
+#! #############################################################################
+function Sbr_Menu_Standard_End() {  # ACTIVE      
+    #! ************************************************************
+	 echo "#*	"
+	 echo "#**(: Linux_Grub4Dos_system_commands.txt   "
+	 echo "#*	13.3 The list of command-line and menu entry commands   "
+	 echo "#*   "
+	 echo "#*These commands are usable in the command-line and in menu entries. "
+	 echo "#* If you forget a command, you can run the command help (see help).   "
+	 echo "#*   "
+	 echo "# *blocklist: Get the block list notation of a file   "
+	 echo "# *boot: Start up your operating system   "
+	 echo "# *cat: Show the contents of a file   "
+	 echo "# *chainloader: Chain-load another boot loader   "
+	 echo "# *cmp: Compare two files   "
+	 echo "# *configfile: Load a configuration file   "
+	 echo "# *debug: Toggle the debug flag   "
+	 echo "# *displayapm: Display APM information   "
+	 echo "# *displaymem: Display memory configuration   "
+	 echo "# *embed: Embed Stage 1.5   "
+	 echo "# *find: Find a file   "
+	 echo "# *fstest: Test a filesystem   "
+	 echo "# *geometry: Manipulate the geometry of a drive   "
+	 echo "# *halt: Shut down your computer   "
+	 echo "# *help: Show help messages   "
+	 echo "# *impsprobe: Probe SMP   "
+	 echo "# *initrd: Load an initrd   "
+	 echo "# *install: Install GRUB   "
+	 echo "# *ioprobe: Probe I/O ports used for a drive   "
+	 echo "# *kernel: Load a kernel   "
+	 echo "# *lock: Lock a menu entry   "
+	 echo "# *makeactive: Make a partition active   "
+	 echo "# *map: Map a drive to another   "
+	 echo "# *md5crypt: Encrypt a password in MD5 format   "
+	 echo "# *module: Load a module   "
+	 echo "# *modulenounzip: Load a module without decompression   "
+	 echo "# *pause: Wait for a key press   "
+	 echo "# *quit: Exit from the grub shell   "
+	 echo "# *reboot: Reboot your computer   "
+	 echo "# *read: Read data from memory   "
+	 echo "# *root: Set GRUBs root device   "
+	 echo "# *rootnoverify: Set GRUB's root device without mounting   "
+	 echo "# *savedefault: Save current entry as the default entry   "
+	 echo "# *setup: Set up GRUB's installation automatically   "
+	 echo "# *testload: Load a file for testing a filesystem   "
+	 echo "# *testvbe: Test VESA BIOS EXTENSION   "
+	 echo "# *uppermem: Set the upper memory size   "
+	 echo "# *vbeprobe: Probe VESA BIOS EXTENSION   "
+    #! ************************************************************
+    #! Standard Menu Standard End
+    echo "# ############################################################"
+    echo "# ****************************************************************************"
+    echo "# In itself ...  Godly Living is a benefit without consequence. "
+    echo "# I can hear God laughing at us, and saying, "
+    echo "# 'I gave you one law, you wanted ten ... you made a hundered, a thousand  "
+    echo "# 'I gave you my soul to live a good life, and you play parlor games. '"
+    echo "# 'I gave you my NAME    and now   you want a !sign! that "'I AM'"  ? ' "  
+    echo "# ****************************************************************************"
+    #! simple fall back. 
 } #
 export -f Sbr_Menu_Standard_End
-
 #!
 #! ===Build_Menu.lst_=======================================================
 #! ## end: Menu_Main_Echo   
@@ -893,261 +1438,258 @@ export -f Sbr_Menu_Standard_End
 #! ===Build_Menu.lst_=======================================================
 #!
 #(: ====================================================
-#(: fx(Sbr_Menu_LongList)	#: Active
+#(: fx Sbr_Menu_Org_LongList    #: Active
 #(: called by: main gui 
 #(: purpose: (MGR) Build Menu Long format. 
 #(: receives param:
 #(: returns:
 #(: note:
 #(:
-#! ##############################################################
-function Sbr_Menu_LongList() {  # ACTIVE # Standard Menu Long List 
+#! #####################################################################
+function Sbr_Menu_Org_LongList() {  # ACTIVE      
+    #! Standard Menu Long List 
     n=0
     #! initz was done by caller 
     #! Build Long Menu parameters 
     #!
-	#! Main Menu Long with two color schemes: ARB_ORGCBYR ARB_ORGGBYR
+    #! Main Menu Long with two color schemes: ARB_ORGCBYR ARB_ORGGBYR
     lcOsSubDef="0"   # "Original" Main Menu Long ALWAYS DEFAULTS to "0"  "MainMenu" "MenuLong"
     lcOsSubId="ORG"
     gcC3MOsSubId="{SDA}"
     gcMgrArCfgIdd="ORG"
     lcOsSubDir="Main"
-    #~ export lcOsSubFn="/mnt/home/menu-orig.lst"  # NOT USED 
     export lcOsSubSplXpm="${lcOsSubClrBase}/xpm-c-yel.xpm"
     export lcOsSubSplClr="red"
-    export lcOsSubTout="120"	# very long wait , then default = ?
-	#!
-    # color NORMAL            HIGHLIGHT       HELPTEXT       HEADING
-    #       f/b               f/b              f/b           f/b
-    # color green/black   yellow/red       cyan/black    light-blue/black
-    # color cyan/black    yellow/red       cyan/black    light-blue/black
+    #~ #! export lcOsSubTout="-" # very long wait , then default = 0
+    #!
     #! 
     lcOsSubSplClrStr="color cyan/black   yellow/red       cyan/black    light-blue/black"
     #! Short Menu :  "color cyan/black   yellow/red       cyan/black    light-blue/black"
     lcOsSubSplClrID="bg=green/Black fg=yellow/red"
     lcOsSubSplClrIfg="yellow"
-    lcOsSubSplClrIbg="blue"	
-	#!
+    lcOsSubSplClrIbg="blue" 
+    #! 
     #! -D-----
 /usr/lib/gtkdialog/box_splash -fg ${lcOsSubSplClrIfg} -bg ${lcOsSubSplClrIbg} -border true --center -close never -text "\
-.     MGR - Build 'Large' Menu.lst:
-.  ${lcOsSubSplClrID}
+.     MGR - Build 'ORG' 'Long' Menu.lst:
+.  ${lcOsSubSplClrID}  +KLM+ReStart
 .  ${EXIT} = menu.lst ${gcC3MOsSubId}
 .       
-. 	                                    "&
-		RETVAL=$?
-		GtkPid_Mnu_Box_Splash=$!	# capture PID
-		sleep 3
+.
+.                                       "&
+        RETVAL=$?
+        GtkPid_Mnu_Box_SplashBOL=$!    # capture PID
+        sleep 3
+
         #! =============================================================
         (
         echo "#!/bin/bash"
-        echo "#=========================================="
         echo "# OS=${lcOsSubId} : Menu System LONG"
         echo "# DTS=${gcSysDts} : date generated"
-        echo "# DTS=${gcSysDevDob} : date generated"
-        echo "#======================================================"
-        echo "# menu.lst Long Menu "
+        echo "# DTS=${gcMgrSysDob} : date generated"
+        echo "# menu.lst Long Menu " 
         echo "# menu-orig.lst is the standard "original" full menu.lst "
         echo "# MARK-${gcBootOsHd}  Main SDA HardDrive 500G / 2"
-        echo "#======================================================"
         echo "# Long Menu is a Build by 'MGR'"
         echo "# written by rc.z_MGR.sh & rc.z_C3M.sh"
         echo "#    insert user selected OS parameters"
         echo "#    compare to MGR ft(EXIT=ARB_00) in MGR fx(Sbr_ARB_00)"
-        echo "#    ${gcSysDevDob} Glen Ellis"
+        echo "#    ${gcMgrSysDob} Glen Ellis"
         echo "#======================================================"
         echo "### produced by grub4dosconfig-v1.9.3"
         echo "#"
         echo "### Windows MBR is still installed in the MBR of /dev/${gcBootOsHd}"
         echo "### M$ MBR calls a faux /ntldr , which contains /grldr code"
-		echo "# Default colors , bg is black  , letters yellow on red "
-		echo "# color NORMAL            HIGHLIGHT       HELPTEXT       HEADING"
-		echo "#       f/b               f/b              f/b           f/b"
-		echo "# color green/black   yellow/red       cyan/black    light-blue/black"
-		echo "# color cyan/black    yellow/red       cyan/black    light-blue/black"
-		echo "# graphicsmode -1 800 600"
-		echo " "
-		echo "color ${lcOsSubSplClrStr}"
-		echo " # splashimage=/boot/grub/xpm-c-drkred.xpm"
-		echo " # splashimage=/boot/grub/xpm-c-red.xpm"
+        echo "# Default colors , bg is black  , letters yellow on red "
+        echo "# color NORMAL            HIGHLIGHT       HELPTEXT       HEADING"
+        echo "#       f/b               f/b              f/b           f/b"
+        echo "# color green/black   yellow/red       cyan/black    light-blue/black"
+        echo "# color cyan/black    yellow/red       cyan/black    light-blue/black"
+        echo "# graphicsmode -1 800 600"
+        echo " "
+        lcOsSubSplClrStr="color green/black  yellow/red       cyan/black    light-blue/black"
+        echo "${lcOsSubSplClrStr}"
+        echo " # splashimage=/boot/grub/xpm-c-drkred.xpm"
+        echo " # splashimage=/boot/grub/xpm-c-red.xpm"
         echo "timeout ${lcOsSubTout}"
-		echo "default ${lcOsSubDef}"
-	echo "###################################{ Menu with Wait }"
-	echo "title  0 { ${gcBootOsHd} } --- Long Menu --- { ${gcBootOsHd} } -------"
-	echo "  # configfile /menu.lst"
-	echo "  #find --set-root --ignore-floppies --ignore-cd /MARK-${gcBootOsHd}"
-	echo "  #kernel /pup_UpupBB-${gcBootOsHd}/vmlinuz    psubdir=/pup_UpupBB-${gcBootOsHd} pmedia=usbflash pfix=fsck,copy"
-	echo "  #initrd /pup_UpupBB-${gcBootOsHd}/initrd.gz"
-	echo "  root (hd0,0)"
-	Sbr_Menu_Standard_Selection_Header # function  #  LONG Standard Selection Header 
-	echo "###################################"
-	echo "	title    " "\_"
-	echo "	root (hd0,0)"
-	echo "	title    " "\_"
-	echo "	root (hd0,0)"
-	echo "	title    " "\_"
-	echo "	root (hd0,0)"
-	echo "	title    " "\_"
-	echo "	root (hd0,0)"
-	echo "	title    " "\_"
-	echo "	root (hd0,0)"
-	echo "	title    " "\_"
-	echo "	root (hd0,0)"
-	echo "	title    " "\_"
-	echo "	root (hd0,0)"
-	echo "	# ##########################################################{ FIT }"
-	echo "	title  { SDA }--------------- "
-	echo "	  find --set-root --ignore-floppies --ignore-cd /MARK-SDA "
-	echo "	  configfile /menu.lst " "\_"
-	echo "	# ##########################################################{ FIT }"
-	echo "	title   { KLM1 }- "
-	echo "	  find --set-root --ignore-floppies --ignore-cd /MARK-KLM1 "
-	echo "	  configfile /menu.lst " "\_"
-	echo "	# ##########################################################{ FIT }"
-	echo "	title   { FIT64 }- Lenovo "
-	echo "	  find --set-root --ignore-floppies --ignore-cd /MARK-FIT64 "
-	echo "	  configfile /menu.lst " "\_"
-	echo "	# ##########################################################{ FIT }"
-	echo "	title   { FIT16A }-  " "\_"
-	echo "	  find --set-root --ignore-floppies --ignore-cd /MARK-FIT16A "
-	echo "	  configfile /menu.lst "
-	echo "	# ##########################################################{ FIT }"
-	echo "	title   { FIT16B }-  " "\_"
-	echo "	  find --set-root --ignore-floppies --ignore-cd /MARK-FIT16B "
-	echo "	  configfile /menu.lst "
-	echo "	# ##########################################################{ FIT }"
-	echo "# ############################################################"
-	echo "title    " "\_"
-	echo "root (hd0,0)"
-	echo "title    " "\_"
-	echo "root (hd0,0)"
-	echo "title    " "\_"
-	echo "root (hd0,0)"
-	echo "##################################### "
-	echo "title    " "\_"
-	echo "root (hd0,0)"
-	echo "title    " "\_"
-	echo "root (hd0,0)"
-	echo "title    " "\_"
-	echo "root (hd0,0)"
-	echo "title    " "\_"
-	echo "root (hd0,0)"
-	echo "#####################"
-	echo "title    " "\_"
-	echo "root (hd0,0)"
-	echo "#####################"
-	echo "title    " "\_"
-	echo "root (hd0,0)"
-	echo "#####################"
-	echo "title    " "\_"
-	echo "root (hd0,0)"
-	echo "# #######################################################"
-	echo "title ==={ P-M }  Any Parted-Magic }---"
-	echo "	lock"
-	echo "	find --set-root --ignore-floppies --ignore-cd  /pmagic/bzImage"
-	echo "	kernel  /pmagic/bzImage  noapic  load_ramdisk=1  prompt_ramdisk=0  pmedia=ataflash rw  vga=791  sleep=3  loglevel=0  keymap=us"
-	echo "	initrd  /pmagic/initramfs"
-	echo "# #######################################################"
-	echo "title    " "\_"
-	echo "root (hd0,0)"
-	echo "#####################"
-	echo "title    " "\_"
-	echo "root (hd0,0)"
-	echo "#####################"
-	echo "title    " "\_"
-	echo "root (hd0,0)"
-	echo "#;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;"
-	echo "title  Six More Puppy OS below:  " "\_"
-	echo "root (hd0,0)"
-	echo "#______________________________________"
-	echo "title   " "\_"
-	echo "root (hd0,0)"
-	echo "#####################"
-	echo "title    "
-	echo "root (hd0,0)"
-	echo "#####################"
-	echo "title    n"
-	echo "root (hd0,0)"
-	echo "#####################"
-	echo "title    n"
-	echo "root (hd0,0)"
-	echo "#####################"
-	echo "title    n"
-	echo "root (hd0,0)"
-	echo "#####################"
-	echo "title    "
-	echo "root (hd0,0)"
-	echo "#####################"
-	echo "title    "
-	echo "root (hd0,0)"
-	echo "title === Visible UTL ========================================="
-	echo "	root (hd0,0)"
-	echo "title Help - Boot Params"
-	echo "  configfile /menu_phelp.lst"
-	echo "title Boot Partition Sector first hard drive (hd0,0)"
-	echo "  root (hd0,0)"
-	echo "  # chainloader +1 || chainloader /grldr"
-	echo "  chainloader +1 || chainloader /wxldr"
-	echo "  # chainloader +1 || chainloader /bootmgr"
-	echo "#;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;"
-	echo "title    "
-	echo "root (hd0,0)"
-	echo "# #######################################################"
-	echo "  "
-	echo "title >>> ${gcBootOsHd} >>> menu-Boot-NamedDrive.lst ==="
-	echo "    find --set-root --ignore-floppies --ignore-cd /MARK-${gcBootOsHd}"
-	echo "	configfile /menu-Boot-NamedDrive.lst"
-	echo " "
-	echo "title >>> ${gcBootOsHd} >>> menu-Boot-ChainLoader.lst ==="
-	echo "    find --set-root --ignore-floppies --ignore-cd /MARK-${gcBootOsHd}"
-	echo "	configfile /menu-Boot-ChainLoader.lst"
-	echo " "
-	echo "title >>> ${gcBootOsHd} >>> Advanced menu"
-	echo "		find --set-root  --ignore-floppies --ignore-cd  /MARK-${gcBootOsHd}  "
-	echo "	configfile /menu-advanced.lst"
-	echo "	  commandline"
-	echo "# #######################################################"
-	echo " "
-	echo "title    *** Grub4Dos commandline *** "
-	echo "  commandline"
-	echo " "
-	echo "title    *** Absolute 'HALT' to computer *** "
-	echo "  halt"
-	echo " "
-	echo "title    *** Re-BOOT command *** "
-	echo "  reboot"
-	echo "            "
-	echo "# ########################################################"
-	echo "title   { 'SDA' }---{ set-root to self SDA }-------------"
-	echo "	find --set-root --ignore-floppies --ignore-cd /MARK-SDA"
-	echo "	configfile /menu.lst 	"
-	echo "# ############################################################"
-	echo "# *"
-	Sbr_Menu_Standard_End # function  
-	echo "# ### END Long menu.lst ######################################"
-	) > /mnt/home/menu.lst
+        echo "default ${lcOsSubDef}"
     #!
-	kill ${GtkPid_Mnu_Box_Splash}
+    echo "###################################{ Jump Menu }"
+    echo "title  0 { from SDA } --- Long Menu --- /MARK-KLM   === on { KLM } -------"
+    echo "  find --set-root --ignore-floppies --ignore-cd /MARK-KLM"
+    echo "  configfile /menu.lst"
+    echo "  root (hd0,0)"
+    Sbr_Menu_Standard_Selection_Header  
+    #!
+    echo "###################################"
+    echo "  title    " "\_"
+    echo "  root (hd0,0)"
+    echo "  title    " "\_"
+    echo "  root (hd0,0)"
+    echo "  title    " "\_"
+    echo "  root (hd0,0)"
+    echo "  title    " "\_"
+    echo "  root (hd0,0)"
+    echo "  title    " "\_"
+    echo "  root (hd0,0)"
+    echo "  title    " "\_"
+    echo "  root (hd0,0)"
+    echo "  title    " "\_"
+    echo "  root (hd0,0)"
+    echo "# ############################################################"
+    echo "title    " "\_"
+    echo "root (hd0,0)"
+    echo "title    " "\_"
+    echo "root (hd0,0)"
+    echo "title    " "\_"
+    echo "root (hd0,0)"
+    echo "# #######################################################"
+    echo "title ==={ P-M }  Any Parted-Magic }---"
+    echo "  find --set-root --ignore-floppies --ignore-cd  /pmagic/bzImage"
+    echo "  kernel  /pmagic/bzImage  noapic  load_ramdisk=1  prompt_ramdisk=0  pmedia=ataflash rw  vga=791  sleep=3  loglevel=0  keymap=us"
+    echo "  initrd  /pmagic/initramfs"
+    #~ echo "# #######################################################"
+    #~ echo "title ==={ pmagic-6.6 }  Any Parted-Magic }---"
+    #~ echo "  find --set-root --ignore-floppies --ignore-cd  /pmagic-6.6/bzImage"
+    #~ echo "  kernel  /pmagic-6.6/bzImage  noapic  load_ramdisk=1  prompt_ramdisk=0  pmedia=ataflash rw  vga=791  sleep=3  loglevel=0  keymap=us"
+    #~ echo "  initrd  /pmagic-6.6/initramfs"
+    #~ echo "title    " "\_"
+    #~ echo "root (hd0,0)"
+    #~ echo "# #######################################################"
+    #~ echo "title ==={ pmagic-6.7 }  Any Parted-Magic }---"
+    #~ echo "  find --set-root --ignore-floppies --ignore-cd  /pmagic-6.7/bzImage"
+    #~ echo "  kernel  /pmagic-6.7/bzImage  noapic  load_ramdisk=1  prompt_ramdisk=0  pmedia=ataflash rw  vga=791  sleep=3  loglevel=0  keymap=us"
+    #~ echo "  initrd  /pmagic-6.7/initramfs"
+    echo "title    " "\_"
+    echo "root (hd0,0)"
+    echo "#####################"
+    echo "title    " "\_"
+    echo "root (hd0,0)"
+    echo "#######################################################"
+    echo "title === KNOPPIX ==="
+    echo "  root (hd3,0)"
+    echo "title === G4D => Boot KNOPPIX   #3 partition  (hd3,0) --->  "
+    echo "  root (hd3,0)"
+    echo "  chainloader +1 || chainloader /grldr "
+    echo "title === KNOPPIX ==="
+    echo "  root (hd3,0)"
+    echo "#####################"
+    echo "title    " "\_"
+    echo "root (hd0,0)"
+    #~ echo "#;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;"
+    #~ echo "title  Six More Puppy OS below:  " "\_"
+    #~ echo "root (hd0,0)"
+    echo "#______________________________________"
+    echo "title   " "\_"
+    echo "root (hd0,0)"
+    echo "#####################"
+    echo "title    "
+    echo "root (hd0,0)"
+    echo "#####################"
+    echo "title    n"
+    echo "root (hd0,0)"
+    echo "#####################"
+    echo "title    n"
+    echo "root (hd0,0)"
+    echo "#####################"
+    echo "title    n"
+    echo "root (hd0,0)"
+    echo "#####################"
+    echo "title    "
+    echo "root (hd0,0)"
+    echo "#####################"
+    echo "title    "
+    echo "root (hd0,0)"
+    echo "title === Visible UTL ========================================="
+    echo "  root (hd0,0)"
+    echo "title Help - Boot Params"
+    echo "  configfile /menu_phelp.lst"
+    echo "title Boot Partition Sector first hard drive (hd0,0)"
+    echo "  root (hd0,0)"
+    echo "   chainloader +1 || chainloader /grldr"
+    echo "  # chainloader +1 || chainloader /wxldr"
+    echo "  # chainloader +1 || chainloader /bootmgr"
+    echo "#;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;"
+    echo "title    "
+    echo "root (hd0,0)"
+    echo "# #######################################################"
+    echo "  "
+    echo "title >>> ${gcBootOsHd} >>> menu-Boot-NamedDrive.lst ==="
+    echo "    find --set-root --ignore-floppies --ignore-cd /MARK-${gcBootOsHd}"
+    echo "  configfile /menu-Boot-NamedDrive.lst"
+    echo " "
+    echo "title >>> ${gcBootOsHd} >>> menu-Boot-ChainLoader.lst ==="
+    echo "    find --set-root --ignore-floppies --ignore-cd /MARK-${gcBootOsHd}"
+    echo "  configfile /menu-Boot-ChainLoader.lst"
+    echo " "
+    echo "title >>> ${gcBootOsHd} >>> Advanced menu"
+    echo "      find --set-root  --ignore-floppies --ignore-cd  /MARK-${gcBootOsHd}  "
+    echo "  configfile /menu-advanced.lst"
+    echo "    commandline"
+    echo "# #######################################################"
+    echo "title >>> All-Out-FIND-CONFIG   "
+        echo "root (hd0,0)"
+        echo "title    "
+        echo "root (hd0,0)"
+        echo "    "
+        echo "title find /menu.lst, /boot/grub/menu.lst, /grub/menu.lst   "
+        echo "	errorcheck off   "
+        echo "	configfile /menu.lst   "
+        echo "	configfile /boot/grub/menu.lst   "
+        echo "	configfile /grub/menu.lst   "
+        echo "	find --set-root --ignore-floppies --ignore-cd /menu.lst && configfile /menu.lst   "
+        echo "	find --set-root --ignore-floppies --ignore-cd /boot/grub/menu.lst && configfile /boot/grub/menu.lst   "
+        echo "	find --set-root --ignore-floppies --ignore-cd /grub/menu.lst && configfile /grub/menu.lst   "
+        echo "	errorcheck on   "
+        echo "	commandline   "
+    echo "# ########################################################"
+        echo "title    *** Grub4Dos commandline *** "
+        echo "  commandline"
+        echo " "
+        echo "title    *** Re-BOOT command *** "  "\_"
+        echo "  reboot"
+        echo " "
+        echo "title    *** Power-Off command *** "  "\_"
+        echo "  shutdown"
+        echo " "
+        echo "title    *** Halt computer ***  \_ ( for experts only )"
+        echo "  halt"
+        echo " "
+    echo "# ########################################################"
+        echo "title   { 'SDA' }---{ set-root to self SDA }-------------"
+        echo "  find --set-root --ignore-floppies --ignore-cd /MARK-SDA"
+        echo "  configfile /menu.lst    "
+    echo "# ############################################################"
+    echo "# *"
+    #!
+    kill ${GtkPid_Mnu_Box_SplashBOL}   2> /dev/null
+    #!
+    Sbr_Menu_Standard_End # function    # proverb ending 
+    echo "# ### END Long menu.lst ######################################"
+    ) > /mnt/home/menu.lst
+    #!
     #!
     export gcC3MConfigArbId="${gcC3MConfigArbId}"
     echo "${gcMgrArCfgIdd}" > "${gcMgrArbCfgFn}"  # config of menu
     #! -D---
 /usr/lib/gtkdialog/box_splash -fg cyan -bg darkred -border true  -close never -text "\
-.   Install 'Original' Menu.lst:
+.   Install 'Original' 'Long' Menu.lst:
 .         ( DONE )
 . ${EXIT} = menu.lst ${gcMgrArCfgIdd} 
-.     
-. 					                "&
-		GtkPid_Mnu_Box_Splash=$!	# capture PID
-		sleep 3
-		kill ${GtkPid_Mnu_Box_Splash} # after return
-		#
+.     !!!!!!!!!!!!!!!!!
+.                                   "&
+        GtkPid_Mnu_Box_SplashDOL=$!    # capture PID
+        sleep 3
+        #
+        kill ${GtkPid_Mnu_Box_SplashDOL}   2> /dev/null 
+        kill ${GtkPid_Mnu_Box_SplashBOM}   2> /dev/null 
+        #
         #=============== now
-        Sbr_Cbx_ReStart  "1"
+        Sbr_Cbx_ReStart  1
         #=============== now
     #
 } #
-export Sbr_Menu_LongList
+export Sbr_Menu_Org_LongList
 #
 #! ===Build_Menu.lst_=======================================================
 #! ## end: Menu_Long_List   ############################################
@@ -1157,308 +1699,398 @@ export Sbr_Menu_LongList
 #!
 #! ===Build_Menu.lst_=======================================================
 #! ## begin: Menu_Short_List   ##########################################
-#(: note:   Loads Parameters for each of 20 Distro Menu.lst
+#(: note:   Loads Running Details for each of 22 Distro Menu.lst
 #! ===Build_Menu.lst_=======================================================
 #!
 #(: ===========================================================
-#(: fx(Sbr_Menu_ShortList)	#: Active
+#(: fx Sbr_Menu_ShortList   #: Active
 #(: called by: main gui 
-#(: purpose: (MGR) Build Menu Short format. 
+#(: purpose: (MGR) Simple Build Menu Short format. 
 #(: receives param:
 #(: returns:
-#(: note:   Loads Parameters for each of 20 Distro Menu.lst
+#(: note:   Loads Parameters for each of 22 Distro Menu.lst
 #(:
-#! #################################################################
-function Sbr_Menu_ShortList() {  # ACTIVE # Standard Menu Short List
+#! #######################################################################
+function Sbr_Menu_ShortList() {  #! INITZ then Write Menu.lst    # ACTIVE      
+    #! Standard Menu Standard Menu Short List
        #! initz was done by caller 
+       #! only SDA ! KLM must not write to /SDA/menu.lst 
        #! Sbr_Menu_ShortList sends parameters to trigger one specific OS. 
        #!
-       #! declare Preset Var. 
-		lcOsSubClrBase="/boot/grub"	# 'base' allows easy change of "menu.lst" background colors
-		lcOsSubTout="32"    # Menu.lst long "Time-Out" for default "menu.lst" selection.
-		#! Short Menu.lst is for PreSet Menu.lst.  Each Called OS must have param and Default "Position" value. 
-		#! ======================================================================
-		#! function EXIT:ARB_00 # short menu.lst   #  Not Called 
-		if [ "$EXIT" = "ARB_00" ] ; then    # EXIT:ARB_00 # short 4 option menu of major OS.
+       #! here: begin "Build-Menu-Splash" 
+       #!
+       #! declare Preset Var for Standard Menu Option < buttons > . 
+        lcOsSubClrBase="/boot/grub" # 'base' allows easy change of "menu.lst" background colors
+        lcOsSubDef="0"      # "0" default position-selection in "menu.lst"  
+        lcOsSubTout="33"    # prep Menu.lst long "Time-Out" as default "menu.lst" selection.
+        #!
+        #! Declare Preset Var for "Menu" < buttons > . 
+        #!
+        #! ======================================================================
+        #(: fx IF EXIT:ARB_ORG     # Original type Long Menu 
+        if [ "$EXIT" = "ARB_ORG" ] ; then    # EXIT:ARB_ORGinal initz  
                         lcOsSubDef="0"   # "00" default position-selection in "menu.lst"  
                         lcOsSubId="ARB"
-                        gcMgrArCfgIdd="ARB_00"
-                        lcOsSubDir="Main-00-Generic-SDA" 
-                        lcOsSubFn="/mnt/home/menu.lst00"   # Not Used for "00" 
+                        gcMgrArCfgIdd="ARB_ORGinal"
+                        lcOsSubDir="Main-ORG-ORGinal-SDA" 
+                        lcOsSubFn="/mnt/home/menu.lstORG"   
                         lcOsSubSplXpm="${lcOsSubClrBase}/xpm-c-yel.xpm"
-                        lcOsSubSplClrBg="red"
-                        lcOsSubTout="96"   # very long wait time
-		fi
-		#! ======================================================================
-		#! function EXIT:ARB_KK # short menu.lst
-		if [ "$EXIT" = "ARB_KK" ] ; then
-			lcOsSubDef="1"   # default position-selection
-			lcOsSubId="KK"
-			gcMgrArCfgIdd="Upup-Kenitic-Kudo"
-			lcOsSubDir="pup_UpupKK-SDA"
-			lcOsSubFn="/mnt/home/menu.lstKK"
-			lcOsSubSplXpm="${lcOsSubClrBase}/xpm-c-grn.xpm"
-			lcOsSubSplClrFg="red"
-			lcOsSubSplClrBg="orange"
-			lcOsSubTout="12"
-		fi
-		#! ======================================================================
-		#! function EXIT:ARB_B5B # short menu.lst
-		if [ "$EXIT" = "ARB_B5B" ] ; then
-			lcOsSubDef="2"   # default position-selection
-			lcOsSubId="B5B"
-			gcMgrArCfgIdd="Upup-Bionic-Beaver-K5"
-			lcOsSubDir="pup_UpupB5B-SDA"
-			lcOsSubFn="/mnt/home/menu.lstB5B"
-			lcOsSubSplXpm="${lcOsSubClrBase}/xpm-c-red.xpm"
-			lcOsSubSplClrFg="brown"   # "brown" is 8B6914 is "darkred"
-			lcOsSubSplClrBg="yellow" 
-			lcOsSubTout="12"
-		fi
-		#! ======================================================================
-		#! function EXIT:ARB_JJ # short menu.lst
-		if [ "$EXIT" = "ARB_JJ" ] ; then
-			lcOsSubDef="3"  # default position-selection
-			lcOsSubId="JJ" 
-			gcMgrArCfgIdd="Upup-Jazzy-Jellyfish-K5" # subdir ID
-			lcOsSubDir="pup_UpupJJ-SDA"  # /subdir-label
-			lcOsSubFn="/mnt/home/menu.lstJJ"    
-			lcOsSubSplXpm="${lcOsSubClrBase}/xpm-c-pur.xpm"  # image-background
-			lcOsSubSplClrFg="yellow"
-			lcOsSubSplClrBg="purple"   # image name
-			lcOsSubTout="12"    # menu timeout
-		fi
-		#! ======================================================================
-		#! function EXIT:ARB_S1564 # short menu.lst
-		if [ "$EXIT" = "ARB_S1564" ] ; then
-			lcOsSubDef="4"
-			lcOsSubId="S15pupS64"
-			gcMgrArCfgIdd="Slacko-S15-S64-K5"
-			lcOsSubDir="pup_S15pup64-SDA"
-			lcOsSubFn="/mnt/home/menu.lstS1564-"
-			lcOsSubSplXpm="${lcOsSubClrBase}/xpm-c-grn.xpm"
-			lcOsSubSplClrFg="red"
-			lcOsSubSplClrBg="orange"
-			lcOsSubTout="12"
-		fi
- 		#! ======================================================================
-		#! function EXIT:ARB_MM # short menu.lst
-		if [ "$EXIT" = "ARB_UMM" ] ; then
-			lcOsSubDef="5"   # default position-selection
-			lcOsSubId="MM"
-			gcMgrArCfgIdd="Mantic-Minotaur"
-			lcOsSubDir="pup_UpupMM-SDA"
-			lcOsSubFn="/mnt/home/menu.lstManticMinotaur"
-			lcOsSubSplXpm="${lcOsSubClrBase}/xpm-c-grn.xpm"
-			lcOsSubSplClrFg="blue"
-			lcOsSubSplClrBg="orange"
-			lcOsSubTout="12"
-		fi
-		#! ======================================================================
-		#! function EXIT:ARB_T6 # short menu.lst
-		if [ "$EXIT" = "ARB_T6" ] ; then
-			lcOsSubDef="6"
-            lcOsSubId="T6"
-			gcMgrArCfgIdd="Tahr"
-			lcOsSubDir="pup_UpupT6-SDA"
-			lcOsSubFn="/mnt/home/menu.lstT6"
-			lcOsSubSplXpm="${lcOsSubClrBase}/xpm-c-grn.xpm"
-			lcOsSubSplClrFg="yellow"
-			lcOsSubSplClrBg="green"
-			lcOsSubTout="12"
-		fi
-		#! ======================================================================
-		#! function EXIT:ARB_X64 # short menu.lst
-		if [ "$EXIT" = "ARB_X64" ] ; then
-			lcOsSubDef="7"   # default position-selection
-			lcOsSubId="X64"
-			gcMgrArCfgIdd="Upup-Xenial64"
-			lcOsSubDir="pup_UpupX64-SDA"
-			lcOsSubFn="/mnt/home/menu.lstX64"
-			lcOsSubSplXpm="${lcOsSubClrBase}/xpm-c-blu.xpm"
-			lcOsSubSplClrFg="white"
-			lcOsSubSplClrBg="green"
-			lcOsSubTout="12"
-		fi
-		#! ======================================================================
-		#! function EXIT:ARB_DBW # short menu.lst
-		if [ "$EXIT" = "ARB_DBW" ] ; then
-			lcOsSubDef="8"   # default position-selection
-			lcOsSubId="BW"
-			gcMgrArCfgIdd="BookWormDeb"
-			lcOsSubDir="pup_DpupBW-SDA"
-			lcOsSubFn="/mnt/home/menu.lstDpupBW"
-			lcOsSubSplXpm="${lcOsSubClrBase}/xpm-c-grn.xpm"
-			lcOsSubSplClrFg="orange"
-			lcOsSubSplClrBg="blue"
-			lcOsSubTout="12"
-		fi
+                        lcOsSubSplClrBg="blu"
+                        lcOsSubTout="- # Generic 'ORGinal' has no timeout ."   
+        fi
+        #!
+        #! ======================================================================
+        #(: fx IF EXIT:ARB_B4B    # short menu.lst
+        if [ "$EXIT" = "ARB_B4B" ] ; then
+            lcOsSubDef="1"   # default position-selection
+            lcOsSubId="B4B"
+            gcMgrArCfgIdd="Upup-Bionic-Beaver-K4"
+            lcOsSubDir="pup_UpupB4B-SDA"
+            lcOsSubFn="/mnt/home/menu.lstB4B"
+            lcOsSubSplXpm="${lcOsSubClrBase}/xpm-c-red.xpm"
+            lcOsSubSplClrFg="green"   # "brown" is 8B6914 is "darkred"
+            lcOsSubSplClrBg="yellow" 
+            lcOsSubTout="12"
+        fi
+        #! ======================================================================
+        #(: fx IF EXIT:ARB_B5B    # short menu.lst
+        if [ "$EXIT" = "ARB_B5B" ] ; then
+            lcOsSubDef="2"   # default position-selection
+            lcOsSubId="B5B"
+            gcMgrArCfgIdd="Upup-Bionic-Beaver-K5"
+            lcOsSubDir="pup_UpupB5B-SDA"
+            lcOsSubFn="/mnt/home/menu.lstB5B"
+            lcOsSubSplXpm="${lcOsSubClrBase}/xpm-c-red.xpm"
+            lcOsSubSplClrFg="blue"   # "brown" is 8B6914 is "darkred"
+            lcOsSubSplClrBg="yellow" 
+            lcOsSubTout="12"
+        fi
+        #! ======================================================================
+        #(: fx IF EXIT:ARB_B64B   # short menu.lst
+        if [ "$EXIT" = "ARB_B64B" ] ; then
+            lcOsSubDef="3"   # default position-selection
+            lcOsSubId="B64B"
+            gcMgrArCfgIdd="Upup-Bionic-Beaver_64_***"
+            lcOsSubDir="pup_UpupB64B-SDA"
+            lcOsSubFn="/mnt/home/menu.lstB64B"
+            lcOsSubSplXpm="${lcOsSubClrBase}/xpm-c-red.xpm"
+            lcOsSubSplClrFg="purple"   # "brown" is 8B6914 is "darkred"
+            lcOsSubSplClrBg="yellow" 
+            lcOsSubTout="12"
+        fi
+        #! ======================================================================
+        #(: fx IF EXIT:ARB_T-6    # short menu.lst
+        if [ "$EXIT" = "ARB_T-6" ] ; then
+            lcOsSubDef="6"
+            lcOsSubId="T-6"
+            gcMgrArCfgIdd="Tahr"
+            lcOsSubDir="pup_UpupT6-SDA"
+            lcOsSubFn="/mnt/home/menu.lstT6"
+            lcOsSubSplXpm="${lcOsSubClrBase}/xpm-c-grn.xpm"
+            lcOsSubSplClrFg="yellow"
+            lcOsSubSplClrBg="green"
+            lcOsSubTout="12"
+        fi
 
-		#! ======================================================================
-		#! ======================================================================
-		#! ======================================================================
+        #! ======================================================================
+        #(: fx IF EXIT:ARB_N6N    # short menu.lst  #! Not Used
+        if [ "$EXIT" = "ARB_N6N" ] ; then
+            lcOsSubDef="22" 
+            lcOsSubId="Nobel6"
+            gcMgrArCfgIdd="Nobel6"
+            lcOsSubDir="pup_UpupNN-SDA"
+            lcOsSubFn="/mnt/home/menu.lstNobel6"
+            lcOsSubSplXpm="${lcOsSubClrBase}/xpm-c-grn.xpm"
+            lcOsSubSplClrFg="blue"
+            lcOsSubSplClrBg="orange"
+            lcOsSubTout="12"
+        fi
+        #! ======================================================================
+        #(: fx IF EXIT:ARB_N7N    # short menu.lst  #! Not Used
+        if [ "$EXIT" = "ARB_N7N" ] ; then
+            lcOsSubDef="4" 
+            lcOsSubId="Nobel7"
+            gcMgrArCfgIdd="Nobel7"
+            lcOsSubDir="pup_UpupN7-SDA"
+            lcOsSubFn="/mnt/home/menu.lstNobel7"
+            lcOsSubSplXpm="${lcOsSubClrBase}/xpm-c-grn.xpm"
+            lcOsSubSplClrFg="blue"
+            lcOsSubSplClrBg="purple"
+            lcOsSubTout="12"
+        fi
+        #! ======================================================================
+        #(: fx IF EXIT:ARB_N8N    # short menu.lst   #! Active
+        if [ "$EXIT" = "ARB_N8N" ] ; then
+            lcOsSubDef="4" 
+            lcOsSubId="Nobel8"
+            gxcMgrArCfgIdd="Nobel8"
+            lcOsSubDir="pup_UpupN8-SDA"
+            lcOsSubFn="/mnt/home/menu.lstNobel8"
+            lcOsSubSplXpm="${lcOsSubClrBase}/xpm-c-grn.xpm"
+            lcOsSubSplClrFg="yellow"
+            lcOsSubSplClrBg="purple"
+            lcOsSubTout="12"
+        fi
 
-		#! ======================================================================
-		#! ======================================================================
-		#! function EXIT:ARB_S7 # short menu.lst
-		if [ "$EXIT" = "ARB_S7" ] ; then
-			lcOsSubDef=" 9"   # default position-selection
-			lcOsSubId="S7"
-			gcMgrArCfgIdd="S-7"
-			lcOsSubDir="pup_SpupS7-SDA"
-			lcOsSubFn="/mnt/home/menu.lstS7"
-			lcOsSubSplXpm="${lcOsSubClrBase}/xpm-c-blu.xpm"
-			lcOsSubSplClrFg="white"
-			lcOsSubSplClrBg="green"
-			lcOsSubTout="12"
-		fi
 
-		#! ======================================================================
-		#! function EXIT:ARB_UIMP # short menu.lst
-		if [ "$EXIT" = "ARB_UIMP" ] ; then
-			lcOsSubDef="10"   # default position-selection
-			lcOsSubId="UIMP"
-			gcMgrArCfgIdd="UIMP"
-			lcOsSubDir="pup_UpupII-SDA"
-			lcOsSubFn="/mnt/home/menu.lstQuirky"
-			lcOsSubSplXpm="${lcOsSubClrBase}/xpm-c-blu.xpm"
-			lcOsSubSplClrFg="white"
-			lcOsSubSplClrBg="green"
-			lcOsSubTout="12"
-		fi
-
-		#! function EXIT:ARB_S64 # short menu.lst
-		if [ "$EXIT" = "ARB_S64" ] ; then
-			lcOsSubDef="11"   # default position-selection
-			lcOsSubId="S64"
-			gcMgrArCfgIdd="S64"
-			lcOsSubDir="pup_Spup64-SDA"
-			lcOsSubFn="/mnt/home/menu.lstSlacko64"
-			lcOsSubSplXpm="${lcOsSubClrBase}/xpm-c-blu.xpm"
-			lcOsSubSplClrFg="white"
-			lcOsSubSplClrBg="green"
-			lcOsSubTout="12"
-		fi
-
-		#! ======================================================================
-		#! function EXIT:ARB_FF # short menu.lst
-		if [ "$EXIT" = "ARB_FF" ] ; then
-			lcOsSubDef="12"   # default position-selection
-			lcOsSubId="FF"
-			gcMgrArCfgIdd="F-F"
-			lcOsSubDir="pup_UpupFF-SDA"
-			lcOsSubFn="/mnt/home/menu.lstFF"
-			lcOsSubSplXpm="${lcOsSubClrBase}/xpm-c-grn.xpm"
-			lcOsSubSplClrFg="red"
-			lcOsSubSplClrBg="orange"
-			lcOsSubTout="12"
-		fi
-
-		#! ======================================================================
-		#! function EXIT:ARB_X708 # short menu.lst
-		if [ "$EXIT" = "ARB_X708" ] ; then
-			lcOsSubDef="13"
+        #! === change ===================================================================
+        #(: fx IF EXIT:ARB_DBW32    # short menu.lst
+        if [ "$EXIT" = "ARB_DBW32" ] ; then
+            lcOsSubDef="5"   # default position-selection
+            lcOsSubId="DBW"
+            gcMgrArCfgIdd="BookWormDeb32"
+            lcOsSubDir="pup_DpupBW-SDA"
+            lcOsSubFn="/mnt/home/menu.lstDpupBW32"
+            lcOsSubSplXpm="${lcOsSubClrBase}/xpm-c-grn.xpm"
+            lcOsSubSplClrFg="orange"
+            lcOsSubSplClrBg="purple"
+            lcOsSubTout="12"
+        fi
+        #! ======================================================================
+        #(: fx IF EXIT:ARB_DBW64    # short menu.lst
+        if [ "$EXIT" = "ARB_DBW64" ] ; then
+            lcOsSubDef="20"   # default position-selection
+            lcOsSubId="DBW"
+            gcMgrArCfgIdd="BookWormDeb64"
+            lcOsSubDir="pup_DpupBW64-SDA"
+            lcOsSubFn="/mnt/home/menu.lstDpupBW64"
+            lcOsSubSplXpm="${lcOsSubClrBase}/xpm-c-grn.xpm"
+            lcOsSubSplClrFg="orange"
+            lcOsSubSplClrBg="purple"
+            lcOsSubTout="12"
+        fi
+        #! ======================================================================
+        #(: fx IF EXIT:ARB_DVN9    # short menu.lst
+        if [ "$EXIT" = "ARB_DVN9" ] ; then
+            lcOsSubDef="22"   # default position-selection
+            lcOsSubId="DVN9"
+            gcMgrArCfgIdd="Devuan9"
+            lcOsSubDir="pup_Devuan-SDA"
+            lcOsSubFn="/mnt/home/menu.lstDVN9"
+            lcOsSubSplXpm="${lcOsSubClrBase}/xpm-c-grn.xpm"
+            lcOsSubSplClrFg="orange"
+            lcOsSubSplClrBg="blue"
+            lcOsSubTout="12"
+        fi
+        #! ======================================================================
+        #(: fx IF EXIT:ARB_M6M    # short menu.lst
+        if [ "$EXIT" = "ARB_M6M" ] ; then
+            lcOsSubDef="19"   # default position-selection
+            lcOsSubId="M6M"
+            gcMgrArCfgIdd="Mantic-Minotaur"
+            lcOsSubDir="pup_UpupMM-SDA"
+            lcOsSubFn="/mnt/home/menu.lstManticMinotaur"
+            lcOsSubSplXpm="${lcOsSubClrBase}/xpm-c-grn.xpm"
+            lcOsSubSplClrFg="blue"
+            lcOsSubSplClrBg="orange"
+            lcOsSubTout="12"
+        fi
+        #! === change ===================================================================
+        #(: fx IF EXIT:ARB_S1564      # short menu.lst
+        if [ "$EXIT" = "ARB_S1564" ] ; then
+            lcOsSubDef="7"
+            lcOsSubId="S15pupS64"
+            gcMgrArCfgIdd="Slacko-S15-S64-K5"
+            lcOsSubDir="pup_S15pup64-SDA"
+            lcOsSubFn="/mnt/home/menu.lstS1564-"
+            lcOsSubSplXpm="${lcOsSubClrBase}/xpm-c-grn.xpm"
+            lcOsSubSplClrFg="red"
+            lcOsSubSplClrBg="orange"
+            lcOsSubTout="12"
+        fi
+        #! ======================================================================
+        #(: fx IF EXIT:ARB_K-K    # short menu.lst
+        if [ "$EXIT" = "ARB_K-K" ] ; then
+            lcOsSubDef="8"   # default position-selection
+            lcOsSubId="K-K"
+            gcMgrArCfgIdd="Upup-Kenitic-Kudo"
+            lcOsSubDir="pup_UpupKK-SDA"
+            lcOsSubFn="/mnt/home/menu.lstKK"
+            lcOsSubSplXpm="${lcOsSubClrBase}/xpm-c-grn.xpm"
+            lcOsSubSplClrFg="red"
+            lcOsSubSplClrBg="orange"
+            lcOsSubTout="12"
+        fi
+        #! ======================================================================
+        #(: fx IF EXIT:ARB_X64    # short menu.lst
+        if [ "$EXIT" = "ARB_X64" ] ; then
+            lcOsSubDef="9"   # default position-selection
+            lcOsSubId="X64"
+            gcMgrArCfgIdd="Upup-Xenial64"
+            lcOsSubDir="pup_UpupX64-SDA"
+            lcOsSubFn="/mnt/home/menu.lstX64"
+            lcOsSubSplXpm="${lcOsSubClrBase}/xpm-c-blu.xpm"
+            lcOsSubSplClrFg="white"
+            lcOsSubSplClrBg="green"
+            lcOsSubTout="12"
+        fi
+        #! ======================================================================
+        #(: fx IF EXIT:ARB_S7     # short menu.lst
+        if [ "$EXIT" = "ARB_S-7" ] ; then
+            lcOsSubDef="10"   # default position-selection
+            lcOsSubId="S-7"
+            gcMgrArCfgIdd="S-7"
+            lcOsSubDir="pup_SpupS7-SDA"
+            lcOsSubFn="/mnt/home/menu.lstS7"
+            lcOsSubSplXpm="${lcOsSubClrBase}/xpm-c-blu.xpm"
+            lcOsSubSplClrFg="white"
+            lcOsSubSplClrBg="green"
+            lcOsSubTout="12"
+        fi
+        #! ======================================================================
+        #(: fx IF EXIT:ARB_S64    # short menu.lst
+        if [ "$EXIT" = "ARB_S64" ] ; then
+            lcOsSubDef="11"   # default position-selection
+            lcOsSubId="S64"
+            gcMgrArCfgIdd="S64"
+            lcOsSubDir="pup_Spup64-SDA"
+            lcOsSubFn="/mnt/home/menu.lstSlacko64"
+            lcOsSubSplXpm="${lcOsSubClrBase}/xpm-c-blu.xpm"
+            lcOsSubSplClrFg="white"
+            lcOsSubSplClrBg="green"
+            lcOsSubTout="12"
+        fi
+        #! ======================================================================
+        #(: fx IF EXIT:ARB_I-I    # short menu.lst
+        if [ "$EXIT" = "ARB_I-I" ] ; then
+            lcOsSubDef="12"   # default position-selection
+            lcOsSubId="I-I"
+            gcMgrArCfgIdd="I-I"
+            lcOsSubDir="pup_UpupII-SDA"
+            lcOsSubFn="/mnt/home/menu.lstQuirky"
+            lcOsSubSplXpm="${lcOsSubClrBase}/xpm-c-blu.xpm"
+            lcOsSubSplClrFg="white"
+            lcOsSubSplClrBg="green"
+            lcOsSubTout="12"
+        fi
+        #! ======================================================================
+        #(: fx IF EXIT:ARB_FF     # short menu.lst
+        if [ "$EXIT" = "ARB_F-F" ] ; then
+            lcOsSubDef="13"   # default position-selection
+            lcOsSubId="F-F"
+            gcMgrArCfgIdd="F-F"
+            lcOsSubDir="pup_UpupFF-SDA"
+            lcOsSubFn="/mnt/home/menu.lstFF"
+            lcOsSubSplXpm="${lcOsSubClrBase}/xpm-c-grn.xpm"
+            lcOsSubSplClrFg="red"
+            lcOsSubSplClrBg="orange"
+            lcOsSubTout="12"
+        fi
+        #! ======================================================================
+        #(: fx IF EXIT:ARB_X708   # short menu.lst
+        if [ "$EXIT" = "ARB_X708" ] ; then
+            lcOsSubDef="14"
             lcOsSubId="X708"
-			gcMgrArCfgIdd="X708"
-			lcOsSubDir="pup_UpupX708-SDA"
-			lcOsSubFn="/mnt/home/menu.lstX708"
-			lcOsSubSplXpm="${lcOsSubClrBase}/xpm-c-grn.xpm"
-			lcOsSubSplClrFg="red"
-			lcOsSubSplClrBg="orange"
-			lcOsSubTout="12"
-		fi
-
-		#! ======================================================================
-		#! function EXIT:ARB_SLXSC # short menu.lst K=4
-		if [ "$EXIT" = "ARB_SLXSC" ] ; then
-			lcOsSubDef="14"
-			lcOsSubId="SLXSC"
-			gcMgrArCfgIdd="SLXSC"
-			lcOsSubDir="pup_Slacko-LxSc-SDA"
-			lcOsSubFn="/mnt/home/menu.lstSLXSC"
-			lcOsSubSplXpm="${lcOsSubClrBase}/xpm-c-grn.xpm"
-			lcOsSubSplClrFg="red"
-			lcOsSubSplClrBg="orange"
-			lcOsSubTout="12"
-		fi
-
-		#! ======================================================================
-		#! function EXIT:ARB_Q7 # short menu.lst
-		if [ "$EXIT" = "ARB_Q7" ] ; then
-			lcOsSubDef="15" 
-			lcOsSubId="Quirky7"
-			gcMgrArCfgIdd="Quicky7"
-			lcOsSubDir="pup_Quirky-SDA"
-			lcOsSubFn="/mnt/home/menu.lstQuirky"
-			lcOsSubSplXpm="${lcOsSubClrBase}/xpm-c-grn.xpm"
-			lcOsSubSplClrFg="red"
-			lcOsSubSplClrBg="orange"
-			lcOsSubTout="12"
-		fi
-
-		#! ======================================================================
-		#! function EXIT:ARB_B4B # short menu.lst
-		if [ "$EXIT" = "ARB_B4B" ] ; then
-			lcOsSubDef="16"   # default position-selection
-			lcOsSubId="B4B"
-			gcMgrArCfgIdd="Upup-Bionic-Beaver"
-			lcOsSubDir="pup_UpupBB-SDA"
-			lcOsSubFn="/mnt/home/menu.lstB4B"
-			lcOsSubSplXpm="${lcOsSubClrBase}/xpm-c-red.xpm"
-			lcOsSubSplClrFg="yellow"
-			lcOsSubSplClrBg="brown" # "brown" is 8B6914 is "darkred"
-			lcOsSubTout="12"
-		fi
-
-		#! ======================================================================
-		#! function [EXIT:ARB_DV] # short menu.lst  # Not Ready for Prime Time 
-		#! if  [ "$EXIT" = "ARB_DV" ] ; then
-		#! 	lcOsSubDef="17" 
-		#! 	lcOsSubId="Devuan"
-		#! 	gcMgrArCfgIdd="Devuan"
-		#! 	lcOsSubDir="ppup_Devuan-SDA"
-		#! 	lcOsSubFn="/mnt/home/menu.lstDevual"
-		#! 	lcOsSubSplXpm="${lcOsSubClrBase}/xpm-c-grn.xpm"
-		#! 	lcOsSubSplClrFg="red"
-		#! 	lcOsSubSplClrBg="orange"
-		#! 	lcOsSubTout="120"
-		#! fi
-
+            gcMgrArCfgIdd="X708"
+            lcOsSubDir="pup_UpupX708-SDA"
+            lcOsSubFn="/mnt/home/menu.lstX708"
+            lcOsSubSplXpm="${lcOsSubClrBase}/xpm-c-grn.xpm"
+            lcOsSubSplClrFg="red"
+            lcOsSubSplClrBg="orange"
+            lcOsSubTout="12"
+        fi
+        #! ======================================================================
+        #(: fx IF EXIT:ARB_SLXSC      # short menu.lst K=4
+        if [ "$EXIT" = "ARB_SLXSC" ] ; then
+            lcOsSubDef="15"
+            lcOsSubId="SLXSC"
+            gcMgrArCfgIdd="SLXSC"
+            lcOsSubDir="pup_Slacko-LxSc-SDA"
+            lcOsSubFn="/mnt/home/menu.lstSLXSC"
+            lcOsSubSplXpm="${lcOsSubClrBase}/xpm-c-grn.xpm"
+            lcOsSubSplClrFg="red"
+            lcOsSubSplClrBg="orange"
+            lcOsSubTout="12"
+        fi
+        #! ======================================================================
+        #(: fx IF EXIT:ARB_SLK64      # short menu.lst K=4   # GTK window "width" and "height" not OK ! 
+        if [ "$EXIT" = "ARB_SLK64" ] ; then
+            lcOsSubDef="16"
+            lcOsSubId="SLX64"
+            gcMgrArCfgIdd="SLX64"
+            lcOsSubDir="pup_SLK64-SDA"
+            lcOsSubFn="/mnt/home/menu.lstSLK64"
+            lcOsSubSplXpm="${lcOsSubClrBase}/xpm-c-yel.xpm"
+            lcOsSubSplClrFg="red"
+            lcOsSubSplClrBg="orange"
+            lcOsSubTout="12"
+        fi
+        #! ======================================================================
+        #(: fx IF EXIT:ARB_EasyOS      # short menu.lst K=?
+        if [ "$EXIT" = "ARB_EOS" ] ; then
+            lcOsSubDef="16"
+            lcOsSubId="EasyOS"
+            gcMgrArCfgIdd="EasyOS"
+            lcOsSubDir="pup_EasyOS-SDA"
+            lcOsSubFn="/mnt/home/menu.lstEasyOS"
+            lcOsSubSplXpm="${lcOsSubClrBase}/xpm-c-yel.xpm"
+            lcOsSubSplClrFg="red"
+            lcOsSubSplClrBg="orange"
+            lcOsSubTout="12"
+        fi
+        #! ======================================================================
+        #(: fx IF EXIT:ARB_J5J    # short menu.lst
+        if [ "$EXIT" = "ARB_J5J" ] ; then
+            lcOsSubDef="18"  # default position-selection
+            lcOsSubId="J5J" 
+            gcMgrArCfgIdd="Upup-Jazzy-Jellyfish-K5" # subdir ID
+            lcOsSubDir="pup_UpupJJ-SDA"  # /subdir-label
+            lcOsSubFn="/mnt/home/menu.lstJJ"    
+            lcOsSubSplXpm="${lcOsSubClrBase}/xpm-c-pur.xpm"  # image-background
+            lcOsSubSplClrFg="yellow"
+            lcOsSubSplClrBg="purple" 
+            lcOsSubTout="12"    
+        fi
+        #! ======================================================================
+        #(: fx IF EXIT:ARB_Qk7    # short menu.lst
+        if [ "$EXIT" = "ARB_Qk7" ] ; then
+            lcOsSubDef="17" 
+            lcOsSubId="Quirky7"
+            gcMgrArCfgIdd="Quirky7"
+            lcOsSubDir="pup_Quirky-7-SDA"
+            lcOsSubFn="/mnt/home/menu.lstQuirky"
+            lcOsSubSplXpm="${lcOsSubClrBase}/xpm-c-grn.xpm"
+            lcOsSubSplClrFg="red"
+            lcOsSubSplClrBg="orange"
+            lcOsSubTout="12"
+        fi
+        #! ======================================================================
+#!
+#!  #! INITZ  and  default settings  are done. 
+#!
 #! ===Build_Menu.lst_=======================================================
 #! ## end: Menu_Short_List   ##########################################
-#(: note:   Loaded Parameters for each of 20 Distro Menu.lst
+#(: note:   Loaded Parameters for each of 22 Distro Menu.lst
 #! ===Build_Menu.lst_=======================================================
-
-		#! =======================================================
-		#! function [EXIT:ARB_ShortMenu() { ; n=0 ; } # based on "C3M"
-		#! config via Sys_Pup_State:  gcMgrArbCfgFn="/root/my-applications/bin/C3M_Config_Arb"
-		echo "${lcOsSubId}" > "${gcMgrArbCfgFn}" # gcMgrArCfgIdd
+    #! =======================================================
+    #(:    IF EXIT:ARB_ShortMenu    
+    #! config via Sys_Pup_State:  gcMgrArbCfgFn="/root/my-applications/bin/C3M_Config_Arb"
+    echo "${lcOsSubId}" > "${gcMgrArbCfgFn}" # gcMgrArCfgIdd
     #! -D---
-	/usr/lib/gtkdialog/box_splash -fg ${lcOsSubSplClrFg} -bg ${lcOsSubSplClrBg} -border true -close never -text "\
-	.
-	.  Install  Menu.lst     
-	.  ${gcMgrArCfgIdd}     
-	.           
-	.					                     "&
-		RETVAL=$?
-		GtkPid_Mnu_Box_Splash=$!
-		#-----------------------------------------------------------------------
-		#-----------------------------------------------------------------------
-        # Fall Thru 
-		#-----------------------------------------------------------------------
-		#-----------------------------------------------------------------------
+    /usr/lib/gtkdialog/box_splash -fg ${lcOsSubSplClrFg} -bg ${lcOsSubSplClrBg} -border true -close never -text "\
+    .
+    .  Install  Menu.lst     
+    .  ${gcMgrArCfgIdd}     
+    .           
+    .                                        "&
+        RETVAL=$?
+        GtkPid_Mnu_Box_Splash=$!
+        #-----------------------------------------------------------------------
+        #-----------------------------------------------------------------------
+        #-----------------------------------------------------------------------
+        #-----------------------------------------------------------------------
         #! ===Build_Menu.lst_=========================================
-		#=== begin menu short code =====================================
-		#(: =====================================================
-		#(: === SHORT MENU === shortmenu === menu short === MenuShort === function ===
-		#(:  SHORT MENU is a Build by 'MGR'"
-		#(:  'ID = '${gcMgrArCfgIdd}'"
-		#(:  "# used by rc.z_MGR.sh "
-		#(:  insert user selected OS parameters"
-		#(:  allow default forground/background colors"
+        #=== begin menu short code =====================================
+        #(: =====================================================
+        #(: === SHORT MENU === shortmenu === menu short === MenuShort === function ===
+        #(:  SHORT MENU is a Build by 'MGR'"
+        #(:  'ID = '${gcMgrArCfgIdd}'"
+        #(:  "# used by rc.z_MGR.sh "
+        #(:  insert user selected OS parameters"
+        #(:  allow default forground/background colors"
         #(: ## Short: note peculiar end-of-line comments 
         #(: ## Short: extra quotes may cause fault  
-		#( ======================================================"
+        #( ======================================================"
     #! color NORMAL            HIGHLIGHT       HELPTEXT       HEADING
     #!       f/b               f/b              f/b           f/b
     #! color green/black   yellow/red       cyan/black    light-blue/black
@@ -1467,136 +2099,122 @@ function Sbr_Menu_ShortList() {  # ACTIVE # Standard Menu Short List
     #! Short Menu :   "color cyan/black   yellow/red       cyan/black    light-blue/black"
         #! lcOsSubSplClrID="bg=green/Black fg=yellow/red"
         #! lcOsSubSplClrIfg="black"
-        #! lcOsSubSplClrIbg="yellow"	
+        #! lcOsSubSplClrIbg="yellow"    
         #!
-    #! ===Build_Menu.lst_============================================
- 		(
-		echo "#!/bin/bash"
-		echo "#=========================================="
-		echo "# OS=${lcOsSubId} : Menu System SHORT "
-		echo "# DTS=${gcSysDts} : date generated"
-		echo "# DTS=${gcSysDevDob} : date generated"
-		echo "#=========================================="
-		echo "#  compare to MGR ft(EXIT=ARB_00) in MGR fx(Sbr_ARB_00)"
-		echo "#  ShortMenu"	
-        echo "#  ${gcSysDevDob}"
-		echo "#=========================================="
-		echo "# Default colors , bg is black  , letters yellow on red "
-		echo "# color NORMAL            HIGHLIGHT     HELPTEXT      HEADING"
-		echo "#       f/b               f/b           f/b           f/b"
-		echo "# color green/black     yellow/red     cyan/black    light-blue/black"
-		echo "# color cyan/black      yellow/red     cyan/black    light-blue/black"
-		echo "# color light-gray/black yellow/red cyan/black light-blue/black"
-		echo "color cyan/black yellow/red cyan/black light-blue/black"
-		echo "graphicsmode  -1 800 600"
-		echo "timeout ${lcOsSubTout}"
-		echo "default ${lcOsSubDef}"
-		echo "###################################{ Menu with Wait }"
-		echo "title  0 { '${gcBootOsHd}' '00' Short Menu }-----${gcBootOsHd} \n   \n   \n"
-		echo "  find --set-root --ignore-floppies --ignore-cd /MARK-${gcBootOsHd}"
-		echo "  root (hd0,0)"
-		Sbr_Menu_Standard_Selection_Header # function  # SHORT Standard Selection Header 
-		echo "###################################{ FIT }"
-		echo "title   { SDA }- " " \_"
-		echo "  find --set-root --ignore-floppies --ignore-cd /MARK-SDA1"
-		echo "  configfile /menu.lst"
-		echo "###################################{ FIT }"
-		echo "title   { KLM1 Metal }- " " \_"
-		echo "  find --set-root --ignore-floppies --ignore-cd /MARK-KLM1"
-		echo "  configfile /menu.lst"
-		echo "###################################{ FIT }"
-		echo "title   { FIT64}- " " \_"
-		echo "find --set-root --ignore-floppies --ignore-cd /MARK-FIT64"
-		echo "  configfile /menu.lst"
-		echo "###################################{ FIT }"
-		echo "title   { FIT16A }- " " \_"
-		echo "  find --set-root --ignore-floppies --ignore-cd /MARK-FIT16A"
-		echo "  configfile /menu.lst"
-		echo "###################################{ FIT }"
-		echo "title   { FIT16B }- " " \_"
-		echo "  find --set-root --ignore-floppies --ignore-cd /MARK-FIT16B"
-		echo "  configfile /menu.lst"
-		echo "###################################{ FIT }"
-		echo "title    " " \_"
-		echo "root (hd0,0)"
-		echo "title    " " \_"
-		echo "root (hd0,0)"
-		echo "title    " " \_"
-		echo "root (hd0,0)"
-		echo "title    " " \_"
-		echo "root (hd0,0)"
-		echo "title    " " \_"
-		echo "root (hd0,0)"
-		echo "# #######################################################"
-		echo "title    " " \_"
-		echo "root (hd0,0)"
-		echo "#######################################################"
-		echo "title === G4D => Boot KNOPPIX  #3 partition (hd3,0) ---> ? "
-		echo "  root (hd3,0)"
-		echo "  chainloader +1 || chainloader /grldr "
-		echo "# #######################################################"
-		echo "title     " " \_"
-		echo "root (hd0,0)"
-		echo "# #######################################################"
-		echo "title ==={ P-M }  Any Parted-Magic }---"
-		echo "	lock"
-		echo "	find --set-root --ignore-floppies --ignore-cd  /pmagic/bzImage"
-		echo "	kernel  /pmagic/bzImage  noapic  load_ramdisk=1  prompt_ramdisk=0  pmedia=ataflash rw  vga=791  sleep=3  loglevel=0  keymap=us"
-		echo "	initrd  /pmagic/initramfs"
-		echo "# #######################################################"
-		echo "title >>> SDA >>> menu-Boot-NamedDrive.lst ==="
-		echo "    find --set-root --ignore-floppies --ignore-cd /MARK-SDA"
-		echo "	configfile /menu-Boot-NamedDrive.lst"
-		echo " "
-		echo "title >>> SDA >>> menu-Boot-ChainLoader.lst ==="
-		echo "    find --set-root --ignore-floppies --ignore-cd /MARK-SDA"
-		echo "	configfile /menu-Boot-ChainLoader.lst"
-		echo " "
-		echo "title >>> SDA >>> Advanced menu ==="
-		echo "	  find --set-root  --ignore-floppies --ignore-cd  /MARK-SDA  "
-		echo "	  configfile /menu-advanced.lst"
-		echo "	  commandline"
-		echo "# #######################################################"
-		echo " "
-		echo "title    *** Help *** " "\_"
-		echo "  help"
-		echo " "
-		echo "title    *** Grub4Dos commandline *** " "\_"
-		echo "  commandline"
-		echo " "
-		echo "title    *** Halt computer ***  \_ ( for experts only )"
-		echo "  halt"
-		echo " "
-		echo "title    *** Re-BOOT command *** "  "\_"
-		echo "  reboot"
-		echo "# ##############################################################{ Menu with Wait }"
-		echo "title  0 find ANY menu.lst ---> {SDA} {KLM1} {KLM2} {FIT64} {FIT16A} {FIT16B} -------"
-		echo " errorcheck off"
-		echo "      find --set-root --ignore-floppies --ignore-cd /MARK-SDA && configfile /menu.lst"
-		echo "      find --set-root --ignore-floppies --ignore-cd /MARK-KLM1 && configfile /menu.lst"
-		echo "      find --set-root --ignore-floppies --ignore-cd /MARK-FIT64 && configfile /menu.lst"
-		echo "      find --set-root --ignore-floppies --ignore-cd /MARK-FIT16A && configfile /menu.lst"
-		echo "      find --set-root --ignore-floppies --ignore-cd /MARK-FIT16B && configfile /menu.lst"
-		echo " errorcheck on"
-		echo " root (hd0,0)"
-        echo "# ****************************************************************************"
-        Sbr_Menu_Standard_End # function  
+    #! ===Build_Menu.lst_===  Standare Menu.lst 'Header" =========================================
+        (
+        echo "#!/bin/bash"
+        echo "#=========================================="
+        echo "# OS=${lcOsSubId} : Menu System SHORT "
+        echo "# DTS=${gcSysDts} : date generated"
+        echo "# DTS=${gcMgrSysDob} : date generated"
+        echo "#=========================================="
+        echo "#  compare to MGR ft(EXIT=ARB_00) in MGR fx(Sbr_ARB_00)"
+        echo "#  Menu" 
+        echo "#  ${gcMgrSysDob}"
+        echo "#=========================================="
+        echo "# Default colors , bg is black  , letters yellow on red "
+        echo "# color NORMAL            HIGHLIGHT     HELPTEXT      HEADING"
+        echo "#       f/b               f/b           f/b           f/b"
+        echo "# color green/black     yellow/red     cyan/black    light-blue/black"
+        echo "# color cyan/black      yellow/red     cyan/black    light-blue/black"
+        echo "# color light-gray/black yellow/red cyan/black light-blue/black"
+        echo "color cyan/black yellow/red cyan/black light-blue/black"
+        echo "graphicsmode  -1 800 600"
+        echo "timeout ${lcOsSubTout}"
+        echo "default ${lcOsSubDef}"
+    echo "###################################{ Jump Menu }"
+    echo "title  0 { from SDA } --- Long Menu --- /MARK-KLM   === on { KLM } -------"
+    echo "  find --set-root --ignore-floppies --ignore-cd /MARK-KLM"
+    echo "  configfile /menu.lst"
+        Sbr_Menu_Standard_Selection_Header   
         echo "# #######################################################"
-		) > /mnt/home/menu.lst   #   "title  0{ 'C3M' '00'  Short Menu }---SDA"
+        echo "title   " " \ "
+        echo "root (hd0,0)"
+        echo "#######################################################"
+        echo "title === KNOPPIX ==="
+        echo "  root (hd3,0)"
+        echo "title === G4D => Boot KNOPPIX   #3 partition  (hd3,0) --->  "
+        echo "  root (hd3,0)"
+        echo "  chainloader +1 || chainloader /grldr "
+        echo "title === KNOPPIX ==="
+        echo "  root (hd3,0)"
+        echo "# #######################################################"
+        echo "title     " " \ "
+        echo "root (hd0,0)"
+        #~ echo "# #######################################################"
+        #~ echo "title ==={ pmagic-6.6 }  Any Parted-Magic }---"
+        #~ echo "  find --set-root --ignore-floppies --ignore-cd  /pmagic-6.6/bzImage"
+        #~ echo "  kernel  /pmagic-6.6/bzImage  noapic  load_ramdisk=1  prompt_ramdisk=0  pmedia=ataflash rw  vga=791  sleep=3  loglevel=0  keymap=us"
+        #~ echo "  initrd  /pmagic-6.6/initramfs"
+        #~ echo "# #######################################################"
+        #~ echo "title ==={ pmagic-6.7 }  Any Parted-Magic }---"
+        #~ echo "  find --set-root --ignore-floppies --ignore-cd  /pmagic-6.7/bzImage"
+        #~ echo "  kernel  /pmagic-6.7/bzImage  noapic  load_ramdisk=1  prompt_ramdisk=0  pmedia=ataflash rw  vga=791  sleep=3  loglevel=0  keymap=us"
+        #~ echo "  initrd  /pmagic-6.7/initramfs"
+        echo "# #######################################################"
+        echo "title >>> SDA >>> menu-Boot-NamedDrive.lst ==="
+        echo "    find --set-root --ignore-floppies --ignore-cd /MARK-SDA"
+        echo "  configfile /menu-Boot-NamedDrive.lst"
+        echo " "
+        echo "title >>> SDA >>> menu-Boot-ChainLoader.lst ==="
+        echo "    find --set-root --ignore-floppies --ignore-cd /MARK-SDA"
+        echo "  configfile /menu-Boot-ChainLoader.lst"
+        echo " "
+        echo "title >>> SDA >>> Advanced menu ==="
+        echo "    find --set-root  --ignore-floppies --ignore-cd  /MARK-SDA  "
+        echo "    configfile /menu-advanced.lst"
+        echo "    commandline"
+        echo "# #######################################################"
+        echo "title    "
+        echo "root (hd0,0)"
+        echo "title    *** Help *** " "\_"
+        echo "  help"
+        echo " "
+        echo "title    *** Grub4Dos commandline *** " "\_"
+        echo "  commandline"
+        echo " "
+        echo "title    *** Re-BOOT command *** "  "\_"
+        echo "  reboot"
+        echo " "
+        echo "title    *** Power-Off command *** "  "\_"
+        echo "  shutdown"
+        echo " "
+        echo "title    *** Halt computer ***  \_ ( for experts only )"
+        echo "  halt"
+        echo " "
+        echo "# ##############################################################{ Menu with Wait }"
+        echo "title  0 find ANY menu.lst ---> {SDA} {KLM1} {KLM2} {FIT64} {FIT16A} {FIT16B} -------"
+        echo " errorcheck off"
+        echo "      find --set-root --ignore-floppies --ignore-cd /MARK-SDA && configfile /menu.lst"
+        echo "      find --set-root --ignore-floppies --ignore-cd /MARK-KLM && configfile /menu.lst"
+        echo "      find --set-root --ignore-floppies --ignore-cd /MARK-FIT64 && configfile /menu.lst"
+        echo "      find --set-root --ignore-floppies --ignore-cd /MARK-FIT16A && configfile /menu.lst"
+        echo "      find --set-root --ignore-floppies --ignore-cd /MARK-FIT16B && configfile /menu.lst"
+        echo " errorcheck on"
+        echo " root (hd0,0)"
+        echo "# ****************************************************************************"
+        Sbr_Menu_Standard_End # function  # proverb ending 
+        echo "# #######################################################"
+        ) > /mnt/home/menu.lst   #   "title  0{ 'C3M' '00'  Short Menu }---SDA"
         #!
-		sleep 3
-		kill ${GtkPid_Mnu_Box_Splash}
-		chmod +x "/mnt/home/menu.lst"
-		#!
-		export gcE3Rcontrol=${EXIT}	# maintain this value
-		#!
-        #         
-        # working E3R+P+CTB+U+Quit
-        # working E3R+CTB+Boot
-        #!
+        sleep 1 #! flush buffers.
+        #! Permit Execute menu.lst
+        chmod +x "/mnt/home/menu.lst"
         n=0
-        Sbr_Cbx_ReStart "1" 
         #!
+        Sbr_Splash_It "Menu Build - > S2F3_MI" "yellow" "red"  "3"
+        #!
+        Sbr_S2F1_MI   #! Save2File 
+        #!
+        kill ${GtkPid_Mnu_Box_Splash}    2> /dev/null #! here,  kill "Build-Menu-Splash" background
+        #!
+        if [ ! "$EXIT" = "ARB_ORG" ] ; then    # Standard, Not New Menu, so ReBoot the "ORG" menu.
+                Sbr_Cbx_ReBoot "1"  #! Standard ReBoot so to load New System and the "new menu.lst"
+        else
+                echo "#! else if EXIT:ARB_ORG then ReStart ========="  >/dev/console
+                Sbr_Cbx_ReStart "1"  #! Standard ReStart for ARB_ORGinal style menu.lst. 
+        fi
 } #
 export -f Sbr_Menu_ShortList
 #!
@@ -1616,21 +2234,21 @@ export -f Sbr_Menu_ShortList
 #! #######################################################
 #!
 #(: ====================================================
-#(: fx(Sbr_CDW_Embedded_Dialog_Colors)	#: Active Marker
-#(: called by: 4764
-#(: purpose: 
+#(: fx Sbr_CDW_Embedded_Dialog_Colors   #: Active Marker
+#(: called by: main () 
+#(: purpose: install in environment ;  setup color constants during main ()
 #(: receives param:
 #(: returns:
 #(: note:
 #(:
-#! #########################################################################
-function Sbr_CDW_Embedded_Dialog_Colors() { # ACTIVE # setup color constants during main ( )
+#! ###############################################################################################
+function Sbr_CDW_Embedded_Dialog_Colors() { # ACTIVE 
     n=0
-    lcDialogColorOrig="  -fg yellow -bg darkred  "	# original
+    lcDialogColorOrig="  -fg yellow -bg darkred  "  # original
     lcDialogFgDrkRed=" -fg darkred "
     lcDialogFgYel=" -fg yellow "
     lcDialogFgBlk=" -fg black "
-    lcDialogBgDrkRed=" -fg darkred "
+    lcDialogFgDrkRed=" -fg darkred "
     lcDialogBgBlu=" -bg blue "
     lcDialogBgGrn=" -bg green "
     lcDialogBgYel=" -bg yellow "
@@ -1640,690 +2258,933 @@ export -f Sbr_CDW_Embedded_Dialog_Colors
 #!
 #!
 #! ======================================================
-#! end: Sbr_CDW_EGI_Long     Sbr_CDW_Embedded_Graphic_Images
-#! ======================================================
-#(: fx(Sbr_CDW_EGI_Long)	#: Active
-#(: called by: Check-If
+#(: fx Sbr_CDW_EGI_Long #: Active
+#(: called by: Check-If      
 #(: purpose: (MGR) CDW EGI Long FORM
+#(: method:  write /tmp/embedded images only on first "bootup" and "startup". 
+    #!  for ReStart, retain this embedded images flag-file, so quicker restart. 
+    #!  Do Not !!! rm -f ${gcEmGaImgFnTrgTxtMaster}   #! image files master flag-file 
 #(: receives param:
 #(: returns:
-#(: note:
+#(: note:  === initiated during "Long" vs "Short" Image development. 
+#(: # Title "gcEmGaImgFnTrgTxtMaster" declared/assigned in Header. 
 #(:
 #! #########################################################
-function Sbr_CDW_EGI_Long() { # ACTIVE #  CDW EGI Long Images 
-#!
-#! # Title "gcEmGaImgFnTrgTxtMaster" declared/assigned in Header. 
+function Sbr_CDW_EGI_Long() {   # ACTIVE  
 lcEmGrImg="=== ${gcEmGaImgFnTrgTxtMaster} ==="   # Title for each Gui section.
-touch ${gcEmGaImgFnTrgTxtMaster}   
-echo "### EmGrImg Master File ### $lcEmGrImg" > ${gcEmGaImgFnTrgTxtMaster}
+touch ${gcEmGaImgFnTrgTxtMaster}   #! MUST touch initz and redate file .
+echo "### EmGrImg Master File ### $lcEmGrImg" > ${gcEmGaImgFnTrgTxtMaster}  #! load the key .
 #!
 n=0
 #!
-				#! ###########################################################
-				#! begin:   HASH   
-				#! ###########################################################
-				#!
-				#! 1 "EmGr"### HASH GRN ########################################################
-				echo "################################## " >> ${gcEmGaImgFnTrgTxtMaster}   # title for "Dump" to screen
-				lcEmGrImgSrc="/tmp/EmGr-img-hash-grn.xpm" ### fake green-PURPLE # major upper-left Image
-                echo "hash-grn.xpm" >> ${gcEmGaImgFnTrgTxtMaster}   # name of image
-				echo "${lcEmGrImg}" >> ${gcEmGaImgFnTrgTxtMaster}   # title for "Dump" to screen
-				echo '
-				/* XPM */
-				static char *hash_xpm[] = {
-				"32 32 5 1",
-				" 	c none",
-				"1	c #00FF00",
-				"2	c #FFFFFF",
-				"3	c #2222FF",
-				"4	c #907072",
-				"                                ",
-				"                                ",
-				"       111        111           ",
-				"       12133      12133         ",
-				"       121334     121334        ",
-				"       121334     121334        ",
-				"       121334     121334        ",
-				"       121334     121334        ",
-				"       121334     121334        ",
-				"       121334     121334        ",
-				" 11111112111111111121111111     ",
-				" 1222222222222222222222222133   ",
-				" 11111112111111111121111111334  ",
-				"   333312133333333121333333334  ",
-				"   333312133333333121333333334  ",
-				"    44412133444444121334444444  ",
-				"       12133      121334        ",
-				"       12133      121334        ",
-				" 11111112111111111121111111     ",
-				" 1222222222222222222222222133   ",
-				" 11111112111111111121111111334  ",
-				"   333312133333333121333333334  ",
-				"   333312133333333121333333334  ",
-				"    44412133444444121334444444  ",
-				"       121334     121334        ",
-				"       121334     121334        ",
-				"       121334     121334        ",
-				"       121334     121334        ",
-				"       111334     111334        ",
-				"        33334      33334        ",
-				"        33334      33334        ",
-				"                                "
-				};
-				' > ${lcEmGrImgSrc}   # /tmp to be inserted into <button>
-                cat ${lcEmGrImgSrc} >> ${gcEmGaImgFnTrgTxtMaster} 	# for Trg for "Dump" to screen
-				#!
-				#!
-				#! 2 "EmGr"### HASH-RED ########################################################
-				echo "################################## " >> ${gcEmGaImgFnTrgTxtMaster}   # title for "Dump" to screen
-				lcEmGrImgSrc="/tmp/EmGr-img-hash-red.xpm" ### fake green-RED # major upper-left Image
-                echo "hash-red.xpm" >> ${gcEmGaImgFnTrgTxtMaster}   # name of image
-				echo "${lcEmGrImg}" >> ${gcEmGaImgFnTrgTxtMaster}   # title for "Dump" to screen
-				echo '
-				/* XPM */
-				static char *hash_xpm[] = {
-				"32 32 5 1",
-				" 	c none",
-				"1	c #FF0000",
-				"2	c #FFFFFF",
-				"3	c #2222FF",
-				"4	c #907072",
-				"                                ",
-				"                                ",
-				"       111        111           ",
-				"       12133      12133         ",
-				"       121334     121334        ",
-				"       121334     121334        ",
-				"       121334     121334        ",
-				"       121334     121334        ",
-				"       121334     121334        ",
-				"       121334     121334        ",
-				" 11111112111111111121111111     ",
-				" 1222222222222222222222222133   ",
-				" 11111112111111111121111111334  ",
-				"   333312133333333121333333334  ",
-				"   333312133333333121333333334  ",
-				"    44412133444444121334444444  ",
-				"       12133      121334        ",
-				"       12133      121334        ",
-				" 11111112111111111121111111     ",
-				" 1222222222222222222222222133   ",
-				" 11111112111111111121111111334  ",
-				"   333312133333333121333333334  ",
-				"   333312133333333121333333334  ",
-				"    44412133444444121334444444  ",
-				"       121334     121334        ",
-				"       121334     121334        ",
-				"       121334     121334        ",
-				"       121334     121334        ",
-				"       111334     111334        ",
-				"        33334      33334        ",
-				"        33334      33334        ",
-				"                                "
-				};
-				' > ${lcEmGrImgSrc}   # /tmp to be inserted into <button>
-                cat ${lcEmGrImgSrc} >> ${gcEmGaImgFnTrgTxtMaster} 	# for Trg for "Dump" to screen
-				#!
-				#!
-
-				#!
-				#! ############################################################
-				#! begin:    APPLE
-				#! ############################################################
-				#!
-				#! 3 "EmGr"############################################################
-				lcEmGrImgSrc="/tmp/EmGr-img-apple-redred.svg"
-				echo "################################## " >> ${gcEmGaImgFnTrgTxtMaster}   # title for "Dump" to screen
-                echo "apple-redred.svg" >> ${gcEmGaImgFnTrgTxtMaster}   # name of image
-				echo "${lcEmGrImg}" >> ${gcEmGaImgFnTrgTxtMaster}   # title for "Dump" to screen
-				echo '<?xml version="1.0" encoding="UTF-8"?>
-				<svg xmlns="http://www.w3.org/2000/svg" version="1.1" height="100" width="100">
-				  <g
-				style="fill:none; fill:#BB2222; stroke:#AE3333; stroke-width:12px; stroke-linecap:round; stroke-linejoin:round;">
-					<path d="m 50,10 0,35"/>
-					<path d="M 26,20 C -3,48 16,90 51,90 79,90 89,67 89,52 89,37 81,26 74,20"/>
-				  </g>
-				</svg>
-				' > ${lcEmGrImgSrc}
-				cat ${lcEmGrImgSrc} >> ${gcEmGaImgFnTrgTxtMaster}   # for "Dump" to screen
-				#!
-				#! 4 "EmGr" ############################################################
-				lcEmGrImgSrc="/tmp/EmGr-img-apple-redblu.svg"
-				echo "################################## " >> ${gcEmGaImgFnTrgTxtMaster}   # title for "Dump" to screen
-                echo "apple-redblu.svg" >> ${gcEmGaImgFnTrgTxtMaster}   # name of image
-				echo "${lcEmGrImg}" >> ${gcEmGaImgFnTrgTxtMaster}   # title for "Dump" to screen
-				echo '<?xml version="1.0" encoding="UTF-8"?>
-				<svg xmlns="http://www.w3.org/2000/svg" version="1.1" height="100" width="100">
-				  <g
-				style="fill:none; fill:#1111FF; stroke:#AE3333; stroke-width:12px; stroke-linecap:round; stroke-linejoin:round;">
-					<path d="m 50,10 0,35"/>
-					<path d="M 26,20 C -3,48 16,90 51,90 79,90 89,67 89,52 89,37 81,26 74,20"/>
-				  </g>
-				</svg>
-				' > ${lcEmGrImgSrc}
-				cat ${lcEmGrImgSrc} >> ${gcEmGaImgFnTrgTxtMaster}   # for "Dump" to screen
-				#!
-				#! 5 "EmGr" ###########################################################
-				lcEmGrImgSrc="/tmp/EmGr-img-apple-redyel.svg"
-				echo "################################## " >> ${gcEmGaImgFnTrgTxtMaster}   # title for "Dump" to screen
-                echo "apple-redyel.svg" >> ${gcEmGaImgFnTrgTxtMaster}   # name of image
-				echo "${lcEmGrImg}" >> ${gcEmGaImgFnTrgTxtMaster}   # title for "Dump" to screen
-				echo '<?xml version="1.0" encoding="UTF-8"?>
-				<svg xmlns="http://www.w3.org/2000/svg" version="1.1" height="100" width="100">
-				  <g
-				style="fill:none; fill:#F8F800; stroke:#AE3333; stroke-width:12px; stroke-linecap:round; stroke-linejoin:round;">
-					<path d="m 50,10 0,35"/>
-					<path d="M 26,20 C -3,48 16,90 51,90 79,90 89,67 89,52 89,37 81,26 74,20"/>
-				  </g>
-				</svg>
-				' > ${lcEmGrImgSrc}
-				cat ${lcEmGrImgSrc} >> ${gcEmGaImgFnTrgTxtMaster}   # for "Dump" to screen
-				#!
-				#! 6 "EmGr" ###########################################################
-				lcEmGrImgSrc="/tmp/EmGr-img-apple-redgrn.svg"
-				echo "################################## " >> ${gcEmGaImgFnTrgTxtMaster}   # title for "Dump" to screen
-                echo "apple-redgrn.svg" >> ${gcEmGaImgFnTrgTxtMaster}   # name of image
-				echo "${lcEmGrImg}" >> ${gcEmGaImgFnTrgTxtMaster}   # title for "Dump" to screen
-				echo '<?xml version="1.0" encoding="UTF-8"?>
-				<svg xmlns="http://www.w3.org/2000/svg" version="1.1" height="100" width="100">
-				  <g
-				style="fill:none; fill:#33DD33; stroke:#BE3333; stroke-width:12px; stroke-linecap:round; stroke-linejoin:round;">
-					<path d="m 50,10 0,35"/>
-					<path d="M 26,20 C -3,48 16,90 51,90 79,90 89,67 89,52 89,37 81,26 74,20"/>
-				  </g>
-				</svg>
-				' > ${lcEmGrImgSrc}
-				cat ${lcEmGrImgSrc} >> ${gcEmGaImgFnTrgTxtMaster}   # for "Dump" to screen
-				#! #############################################################
-				#!
-				#!
-				#! #############################################################
-				#! begin:    QUIT
-				#! #############################################################
-				#!
-				#! 7 "EmGr"#############################################################
-				lcEmGrImgSrc="/tmp/EmGr-img-quit-rednnn.svg"
-				echo "################################## " >> ${gcEmGaImgFnTrgTxtMaster}   # title for "Dump" to screen
-                echo "quit-rednnn.svg" >> ${gcEmGaImgFnTrgTxtMaster}   # name of image
-				echo "${lcEmGrImg}" >> ${gcEmGaImgFnTrgTxtMaster}   # title for "Dump" to screen
-				echo '<?xml version="1.0" encoding="UTF-8"?>
-				<svg xmlns="http://www.w3.org/2000/svg" version="1.1" height="100" width="100">
-				  <g style="fill:none;stroke:#FF1111;stroke-width:12px;stroke-linecap:round;stroke-linejoin:round;">
-					<path d="m 50,10 0,35"/>
-					<path d="M 26,20 C -3,48 16,90 51,90 79,90 89,67 89,52 89,37 81,26 74,20"/>
-				  </g>
-				</svg>
-				' > ${lcEmGrImgSrc}
-				cat ${lcEmGrImgSrc} >> ${gcEmGaImgFnTrgTxtMaster}   # for "Dump" to screen
-				#!
-				#! 8 "EmGr" ###########################################################
-				lcEmGrImgSrc="/tmp/EmGr-img-quit-grnnnn.svg"
-				echo "################################## " >> ${gcEmGaImgFnTrgTxtMaster}   # title for "Dump" to screen
-                echo "quit-grnnnn.svg" >> ${gcEmGaImgFnTrgTxtMaster}   # name of image
-				echo "${lcEmGrImg}" >> ${gcEmGaImgFnTrgTxtMaster}   # title for "Dump" to screen
-				echo '<?xml version="1.0" encoding="UTF-8"?>
-				<svg xmlns="http://www.w3.org/2000/svg" version="1.1" height="100" width="100">
-				  <g style="fill:none;stroke:#33FF33;stroke-width:12px;stroke-linecap:round;stroke-linejoin:round;">
-					<path d="m 50,10 0,35"/>
-					<path d="M 26,20 C -3,48 16,90 51,90 79,90 89,67 89,52 89,37 81,26 74,20"/>
-				  </g>
-				</svg>
-				' > ${lcEmGrImgSrc}
-				cat ${lcEmGrImgSrc} >> ${gcEmGaImgFnTrgTxtMaster}   # for "Dump" to screen
-				#!
-				#! 9 "EmGr" ###########################################################
-				lcEmGrImgSrc="/tmp/EmGr-img-quit-yelnnn.svg"
-				echo "################################## " >> ${gcEmGaImgFnTrgTxtMaster}   # title for "Dump" to screen
-                echo "quit-yelnnn.svg" >> ${gcEmGaImgFnTrgTxtMaster}   # name of image
-				echo "${lcEmGrImg}" >> ${gcEmGaImgFnTrgTxtMaster}   # title for "Dump" to screen
-				echo '<?xml version="1.0" encoding="UTF-8"?>
-				<svg xmlns="http://www.w3.org/2000/svg" version="1.1" height="100" width="100">
-				  <g style="fill:none;stroke:#FFFF00;stroke-width:12px;stroke-linecap:round;stroke-linejoin:round;">
-					<path d="m 50,10 0,35"/>
-					<path d="M 26,20 C -3,48 16,90 51,90 79,90 89,67 89,52 89,37 81,26 74,20"/>
-				  </g>
-				</svg>
-				' > ${lcEmGrImgSrc}
-				cat ${lcEmGrImgSrc} >> ${gcEmGaImgFnTrgTxtMaster}   # for "Dump" to screen
-				#! ############################################################
-				#!
-				#!
-				#! ###########################################################
-				#! begin:   JUG
-				#! ###########################################################
-				#!
-				#! 10 "EmGr" ############################################################
-				lcEmGrImgSrc="/tmp/EmGr-img-jug-bluxyel.svg"
-				echo "################################## " >> ${gcEmGaImgFnTrgTxtMaster}   # title for "Dump" to screen
-                echo "jug-bluxyel.svg" >> ${gcEmGaImgFnTrgTxtMaster}   # name of image
-				echo "${lcEmGrImg}" >> ${gcEmGaImgFnTrgTxtMaster}   # title for "Dump" to screen
-				echo '<?xml version="1.0" encoding="UTF-8"?>
-				<svg xmlns="http://www.w3.org/2000/svg" version="1.1" height="100" width="100">
-				 <g style="fill:yellow;stroke:blue;stroke-width:15px;stroke-linecap:round;stroke-linejoin:round;">
-				 <path d="m 35,35,35,35"/>
-				 <path d="M 26,20 C -3,48 16,90 51,90 79,90 89,67 89,52 89,37 81,26 74,20"/>
-				 </g>
-				</svg>
-				' > ${lcEmGrImgSrc}
-				cat ${lcEmGrImgSrc} >> ${gcEmGaImgFnTrgTxtMaster}   # for "Dump" to screen
-				#!
-                #! 11 "EmGr" ############################################################
-				lcEmGrImgSrc="/tmp/EmGr-img-jug-blu0yel.svg"
-				echo "################################## " >> ${gcEmGaImgFnTrgTxtMaster}   # title for "Dump" to screen
-                echo "jug-blu0yel.svg" >> ${gcEmGaImgFnTrgTxtMaster}   # name of image
-				echo "${lcEmGrImg}" >> ${gcEmGaImgFnTrgTxtMaster}   # title for "Dump" to screen
-				echo '<?xml version="1.0" encoding="UTF-8"?>
-				<svg xmlns="http://www.w3.org/2000/svg" version="1.1" height="100" width="100">
-				  <g style="fill:yellow;stroke:blue;stroke-width:15px;stroke-linecap:round;stroke-linejoin:round;">
-					<path d="M 16,20 C -3,48 16,90 51,90 79,90 89,67 90,52 91,37 85,26 83,20"/>
-				  </g>
-				</svg>
-				' > ${lcEmGrImgSrc}
-				cat ${lcEmGrImgSrc} >> ${gcEmGaImgFnTrgTxtMaster}   # for "Dump" to screen
-				#!
-				#! 12 "EmGr" ############################################################
-				lcEmGrImgSrc="/tmp/EmGr-img-jug-grnxorange.svg"
-				echo "################################## " >> ${gcEmGaImgFnTrgTxtMaster}   # title for "Dump" to screen
-                echo "jug-grnxorange.svg" >> ${gcEmGaImgFnTrgTxtMaster}   # name of image
-				echo "${lcEmGrImg}" >> ${gcEmGaImgFnTrgTxtMaster}   # title for "Dump" to screen
-				echo '<?xml version="1.0" encoding="UTF-8"?>
-				<svg xmlns="http://www.w3.org/2000/svg" version="1.1" height="100" width="100">
-				  <g style="fill:orange;stroke:green;stroke-width:21px;stroke-linecap:round;stroke-linejoin:round;">
-					<path d="m 31,31,31,31"/>
-					<path d="M 26,20 C -3,48 16,90 51,90 79,90 89,67 89,52 89,37 81,26 74,20"/>
-				  </g>
-				</svg>
-				' > ${lcEmGrImgSrc}
-				cat ${lcEmGrImgSrc} >> ${gcEmGaImgFnTrgTxtMaster}   # for "Dump" to screen
-				#!
-				#! 13 "EmGr" ###########################################################
-				lcEmGrImgSrc="/tmp/EmGr-img-jug-redxyel.svg"
-				echo "################################## " >> ${gcEmGaImgFnTrgTxtMaster}   # title for "Dump" to screen
-                echo "jug-redxyel.svg" >> ${gcEmGaImgFnTrgTxtMaster}   # name of image
-				echo "${lcEmGrImg}" >> ${gcEmGaImgFnTrgTxtMaster}   # title for "Dump" to screen
-				echo '<?xml version="1.0" encoding="UTF-8"?>
-				<svg xmlns="http://www.w3.org/2000/svg" version="1.1" height="100" width="100">
-				  <g
-				style="fill:yellow; stroke:red; stroke-width:12px; stroke-linecap:round; stroke-linejoin:round;">
-					<path d="m 0"/>
-					<path d="M 26,20 C -3,48 16,90 51,90 79,90 89,67 89,52 89,37 81,26 74,20"/>
-				  </g>
-				</svg>
-				' > ${lcEmGrImgSrc}
-				cat ${lcEmGrImgSrc} >> ${gcEmGaImgFnTrgTxtMaster}   # for "Dump" to screen
-				#!
-				#! 14 "EmGr" ###########################################################
-				lcEmGrImgSrc="/tmp/EmGr-img-jug-red0yel.svg"
-				echo "################################## " >> ${gcEmGaImgFnTrgTxtMaster}   # title for "Dump" to screen
-                echo "jug-red0yel.svg" >> ${gcEmGaImgFnTrgTxtMaster}   # name of image
-				echo "${lcEmGrImg}" >> ${gcEmGaImgFnTrgTxtMaster}   # title for "Dump" to screen
-				echo '<?xml version="1.0" encoding="UTF-8"?>
-				<svg xmlns="http://www.w3.org/2000/svg" version="1.1" height="100" width="100">
-				  <g
-				style="fill:yellow; stroke:red; stroke-width:14px; stroke-linecap:round; stroke-linejoin:round;">
-					<path d="m 0"/>
-					<path d="M 50,5 C -3,48 16,90 51,90 79,90 89,67 89,52 89,37 81,26 55,5"/>
-				  </g>
-				</svg>
-				' > ${lcEmGrImgSrc}
-				cat ${lcEmGrImgSrc} >> ${gcEmGaImgFnTrgTxtMaster}   # for "Dump" to screen
-
-				#!
-				#! 15 "EmGr" ###########################################################
-				lcEmGrImgSrc="/tmp/EmGr-img-jug-redxgrn.svg"
-				echo "################################## " >> ${gcEmGaImgFnTrgTxtMaster}   # title for "Dump" to screen
-                echo "jug-redxgrn.svg" >> ${gcEmGaImgFnTrgTxtMaster}   # name of image
-				echo "${lcEmGrImg}" >> ${gcEmGaImgFnTrgTxtMaster}   # title for "Dump" to screen
-				echo '<?xml version="1.0" encoding="UTF-8"?>
-				<svg xmlns="http://www.w3.org/2000/svg" version="1.1" height="100" width="100">
-				  <g
-				style="fill:green; stroke:red; stroke-width:12px; stroke-linecap:round; stroke-linejoin:round;">
-					<path d="m 0"/>
-					<path d="M 26,20 C -3,48 16,90 51,90 79,90 89,67 89,52 89,37 81,26 74,20"/>
-				  </g>
-				</svg>
-				' > ${lcEmGrImgSrc}
-				cat ${lcEmGrImgSrc} >> ${gcEmGaImgFnTrgTxtMaster}   # for "Dump" to screen
-				#!
-				#! 16 "EmGr" ###########################################################
-				lcEmGrImgSrc="/tmp/EmGr-img-jug-grnxred.svg"
-				echo "################################## " >> ${gcEmGaImgFnTrgTxtMaster}   # title for "Dump" to screen
-                echo "jug-grnxred.svg" >> ${gcEmGaImgFnTrgTxtMaster}   # name of image
-				echo "${lcEmGrImg}" >> ${gcEmGaImgFnTrgTxtMaster}   # title for "Dump" to screen
-				echo '<?xml version="1.0" encoding="UTF-8"?>
-				<svg xmlns="http://www.w3.org/2000/svg" version="1.1" height="100" width="100">
-				  <g
-				style="fill:red; stroke:green; stroke-width:12px; stroke-linecap:round; stroke-linejoin:round;">
-					<path d="m 0"/>
-					<path d="M 26,20 C -3,48 16,90 51,90 79,90 89,67 89,52 89,37 81,26 74,20"/>
-				  </g>
-				</svg>
-				' > ${lcEmGrImgSrc}
-				cat ${lcEmGrImgSrc} >> ${gcEmGaImgFnTrgTxtMaster}   # for "Dump" to screen
-				#!
-				#! 17 "EmGr" ###########################################################
-				lcEmGrImgSrc="/tmp/EmGr-img-jug-redxyel.svg"
-				echo "################################## " >> ${gcEmGaImgFnTrgTxtMaster}   # title for "Dump" to screen
-                echo "jug-redxyel.svg" >> ${gcEmGaImgFnTrgTxtMaster}   # name of image
-				echo "${lcEmGrImg}" >> ${gcEmGaImgFnTrgTxtMaster}   # title for "Dump" to screen
-				echo '<?xml version="1.0" encoding="UTF-8"?>
-				<svg xmlns="http://www.w3.org/2000/svg" version="1.1" height="100" width="100">
-				  <g
-				style="fill:yellow; stroke:red; stroke-width:12px; stroke-linecap:round; stroke-linejoin:round;">
-					<path d="m 0"/>
-					<path d="M 26,20 C -3,48 16,90 51,90 79,90 89,67 89,52 89,37 81,26 74,20"/>
-				  </g>
-				</svg>
-				' > ${lcEmGrImgSrc}
-				cat ${lcEmGrImgSrc} >> ${gcEmGaImgFnTrgTxtMaster}   # for "Dump" to screen
-				#!
-				#! 18 "EmGr" ###########################################################
-				lcEmGrImgSrc="/tmp/EmGr-img-jug-redxblu.svg"
-				echo "################################## " >> ${gcEmGaImgFnTrgTxtMaster}   # title for "Dump" to screen
-                echo "jug-redxblu.svg" >> ${gcEmGaImgFnTrgTxtMaster}   # name of image
-				echo "${lcEmGrImg}" >> ${gcEmGaImgFnTrgTxtMaster}   # title for "Dump" to screen
-				echo '<?xml version="1.0" encoding="UTF-8"?>
-				<svg xmlns="http://www.w3.org/2000/svg" version="1.1" height="100" width="100">
-				  <g
-				style="fill:blue; stroke:red; stroke-width:12px; stroke-linecap:round; stroke-linejoin:round;">
-					<path d="m 0"/>
-					<path d="M 26,20 C -3,48 16,90 51,90 79,90 89,67 89,52 89,37 81,26 74,20"/>
-				  </g>
-				</svg>
-				' > ${lcEmGrImgSrc}
-				cat ${lcEmGrImgSrc} >> ${gcEmGaImgFnTrgTxtMaster}   # for "Dump" to screen
-				#! ############################################################
-				#!
-				#!
-				#! ############################################################
-				#! begin: CHECK  
-				#! ############################################################
-				#!
-				#! 19 "EmGr" ###########################################################
-				lcEmGrImgSrc="/tmp/EmGr-img-Check-redXgrn.svg"
-				echo "################################## " >> ${gcEmGaImgFnTrgTxtMaster}   # title for "Dump" to screen
-                echo "Check-redXgrn.svg" >> ${gcEmGaImgFnTrgTxtMaster}   # name of image
-				echo "${lcEmGrImg}" >> ${gcEmGaImgFnTrgTxtMaster}   # title for "Dump" to screen
-				echo '<?xml version="1.0" encoding="UTF-8"?>
-				<svg xmlns="http://www.w3.org/2000/svg" version="1.1" height="150" width="150">
-				  <path style="fill:red;fill-opacity:0.8;stroke:green;stroke-width:3"
-				d="M 38,49 C 49,38 56,48 64,54 68,57   47,23 55,18 42,16 13,01      57,69 42,86 35,98 74,63 87,63 95,58 82,56 53,41"/>
-				</svg>
-				' > ${lcEmGrImgSrc}
-				cat ${lcEmGrImgSrc} >> ${gcEmGaImgFnTrgTxtMaster}   # for "Dump" to screen
-				#!
-				#! 20 "EmGr" ###########################################################
-				lcEmGrImgSrc="/tmp/EmGr-img-Check-grnXred.svg"
-				echo "################################## " >> ${gcEmGaImgFnTrgTxtMaster}   # title for "Dump" to screen
-                echo "Check-redXgrn.svg" >> ${gcEmGaImgFnTrgTxtMaster}   # name of image
-				echo "${lcEmGrImg}" >> ${gcEmGaImgFnTrgTxtMaster}   # title for "Dump" to screen
-				echo '<?xml version="1.0" encoding="UTF-8"?>
-				<svg xmlns="http://www.w3.org/2000/svg" version="1.1" height="150" width="150">
-				  <path style="fill:green;fill-opacity:0.8;stroke:red;stroke-width:3"
-				d="M 38,49 C 49,38 56,48 64,54 68,57 57,69 42,86 35,98 74,63 87,63 95,58 82,56 53,41"/>
-				</svg>
-				' > ${lcEmGrImgSrc}
-				cat ${lcEmGrImgSrc} >> ${gcEmGaImgFnTrgTxtMaster}   # for "Dump" to screen
-				#!
-
-				#! 22 "EmGr" ###########################################################
-				lcEmGrImgSrc="/tmp/EmGr-img-Check-yelXred.svg"
-				echo "################################## " >> ${gcEmGaImgFnTrgTxtMaster}   # title for "Dump" to screen
-                echo "Check-yelXred.svg" >> ${gcEmGaImgFnTrgTxtMaster}   # name of image
-				echo "${lcEmGrImg}" >> ${gcEmGaImgFnTrgTxtMaster}   # title for "Dump" to screen
-				echo '<?xml version="1.0" encoding="UTF-8"?>
-				<svg xmlns="http://www.w3.org/2000/svg" version="1.1" height="150" width="150">
-				  <path style="fill:yellow;fill-opacity:0.8;stroke:red;stroke-width:3"
-				d="M 38,49 C 49,38 56,48 64,54 68,57 57,69 42,86 35,98 74,63 87,63 95,58 82,56 53,41"/>
-				</svg>
-				' > ${lcEmGrImgSrc}
-				cat ${lcEmGrImgSrc} >> ${gcEmGaImgFnTrgTxtMaster}   # for "Dump" to screen
-				#!
-				#! 23 "EmGr" ###########################################################
-				lcEmGrImgSrc="/tmp/EmGr-img-Check-redXyel.svg"
-				echo "################################## " >> ${gcEmGaImgFnTrgTxtMaster}   # title for "Dump" to screen
-                echo "Check-redXyel.svg" >> ${gcEmGaImgFnTrgTxtMaster}   # name of image
-				echo "${lcEmGrImg}" >> ${gcEmGaImgFnTrgTxtMaster}   # title for "Dump" to screen
-				echo '<?xml version="1.0" encoding="UTF-8"?>
-				<svg xmlns="http://www.w3.org/2000/svg" version="1.1" height="150" width="150">
-				  <path style="fill:red;fill-opacity:0.8;stroke:yellow;stroke-width:3"
-				d="M 38,49 C 49,38 56,48 64,54 68,57 57,69 42,86 35,98 74,63 87,63 95,58 82,56 53,41"/>
-				</svg>
-				' > ${lcEmGrImgSrc}
-				cat ${lcEmGrImgSrc} >> ${gcEmGaImgFnTrgTxtMaster}   # for "Dump" to screen
-				#!
-
-				#! 24 "EmGr" ###########################################################
-				lcEmGrImgSrc="/tmp/EmGr-img-Check-yelXblu.svg"
-				echo "################################## " >> ${gcEmGaImgFnTrgTxtMaster}   # title for "Dump" to screen
+    #! ###########################################################
+    #! begin:   HASH   red green blue
+    #! ###########################################################
+            #!
+            #! 2 "EmGr"### HASH GRN ### Red Wht Grn ########################################################
+            echo "################################## " >> ${gcEmGaImgFnTrgTxtMaster}   # title for "Dump" to screen
+            lcEmGrImgSrc="/tmp/EmGr-img-hash-grn.xpm" ### fake green-PURPLE # major upper-left Image
+            echo "hash-grn.xpm" >> ${gcEmGaImgFnTrgTxtMaster}   # name of image
+            echo "${lcEmGrImg}" >> ${gcEmGaImgFnTrgTxtMaster}   # title for "Dump" to screen
+            echo '
+            /* XPM */
+            static char *hash_xpm[] = {
+            "32 32 5 1",
+            "   c none",
+            "1  c #11FF11",
+            "2  c #FFFFFF",
+            "3  c #2222FF",
+            "4  c #818181",
+            "                                ",
+            "                                ",
+            "       111        111           ",
+            "       12133      12133         ",
+            "       121334     121334        ",
+            "       121334     121334        ",
+            "       121334     121334        ",
+            "       121334     121334        ",
+            "       121334     121334        ",
+            "       121334     121334        ",
+            " 11111112111111111121111111     ",
+            " 1222222222222222222222222133   ",
+            " 11111112111111111121111111334  ",
+            "   333312133333333121333333334  ",
+            "   333312133333333121333333334  ",
+            "    44412133444444121334444444  ",
+            "       12133      121334        ",
+            "       12133      121334        ",
+            " 11111112111111111121111111     ",
+            " 1222222222222222222222222133   ",
+            " 11111112111111111121111111334  ",
+            "   333312133333333121333333334  ",
+            "   333312133333333121333333334  ",
+            "    44412133444444121334444444  ",
+            "       121334     121334        ",
+            "       121334     121334        ",
+            "       121334     121334        ",
+            "       121334     121334        ",
+            "       111334     111334        ",
+            "        33334      33334        ",
+            "        33334      33334        ",
+            "                                "
+            };
+            ' > ${lcEmGrImgSrc}   # /tmp to be inserted into <button>
+            cat ${lcEmGrImgSrc} >> ${gcEmGaImgFnTrgTxtMaster}   # for Trg for "Dump" to screen
+            #!
+            #!
+            #!
+            #!
+            #! 1 "EmGr"### HASH-RED ########################################################
+            echo "################################## " >> ${gcEmGaImgFnTrgTxtMaster}   # title for "Dump" to screen
+            lcEmGrImgSrc="/tmp/EmGr-img-hash-red.xpm" ### fake green-RED # major upper-left Image
+            echo "hash-red.xpm" >> ${gcEmGaImgFnTrgTxtMaster}   # name of image
+            echo "${lcEmGrImg}" >> ${gcEmGaImgFnTrgTxtMaster}   # title for "Dump" to screen
+            echo '
+            /* XPM */
+            static char *hash_xpm[] = {
+            "32 32 5 1",
+            "   c none",
+            "1  c #FF0F0F",
+            "2  c #0F0F0F0",
+            "3  c #0FF00F",
+            "4  c #0FF00F",
+            "                                ",
+            "                                ",
+            "       111        111           ",
+            "       12133      12133         ",
+            "       121334     121334        ",
+            "       121334     121334        ",
+            "       121334     121334        ",
+            "       121334     121334        ",
+            "       121334     121334        ",
+            "       121334     121334        ",
+            " 11111112111111111121111111     ",
+            " 1222222222222222222222222133   ",
+            " 11111112111111111121111111334  ",
+            "   333312133333333121333333334  ",
+            "   333312133333333121333333334  ",
+            "    44412133444444121334444444  ",
+            "       12133      121334        ",
+            "       12133      121334        ",
+            " 11111112111111111121111111     ",
+            " 1222222222222222222222222133   ",
+            " 11111112111111111121111111334  ",
+            "   333312133333333121333333334  ",
+            "   333312133333333121333333334  ",
+            "    44412133444444121334444444  ",
+            "       121334     121334        ",
+            "       121334     121334        ",
+            "       121334     121334        ",
+            "       121334     121334        ",
+            "       111334     111334        ",
+            "        33334      33334        ",
+            "        33334      33334        ",
+            "                                "
+            };
+            ' > ${lcEmGrImgSrc}   # /tmp to be inserted into <button>
+            cat ${lcEmGrImgSrc} >> ${gcEmGaImgFnTrgTxtMaster}   # for Trg for "Dump" to screen
+            #!
+            #!
+            #! 1 "EmGr"### HASH-Blu ########################################################
+            echo "################################## " >> ${gcEmGaImgFnTrgTxtMaster}   # title for "Dump" to screen
+            lcEmGrImgSrc="/tmp/EmGr-img-hash-blu.xpm" ### 
+            echo "hash-red.xpm" >> ${gcEmGaImgFnTrgTxtMaster}   # name of image
+            echo "${lcEmGrImg}" >> ${gcEmGaImgFnTrgTxtMaster}   # title for "Dump" to screen
+            echo '
+            /* XPM */
+            static char *hash_xpm[] = {
+            "32 32 5 1",
+            "   c none",
+            "1  c #FF0FF0",
+            "2  c #0F0FF0",
+            "3  c #0FF00F",
+            "4  c #0FF00F",
+            "                                ",
+            "                                ",
+            "       111        111           ",
+            "       12133      12133         ",
+            "       121334     121334        ",
+            "       121334     121334        ",
+            "       121334     121334        ",
+            "       121334     121334        ",
+            "       121334     121334        ",
+            "       121334     121334        ",
+            " 11111112111111111121111111     ",
+            " 1222222222222222222222222133   ",
+            " 11111112111111111121111111334  ",
+            "   333312133333333121333333334  ",
+            "   333312133333333121333333334  ",
+            "    44412133444444121334444444  ",
+            "       12133      121334        ",
+            "       12133      121334        ",
+            " 11111112111111111121111111     ",
+            " 1222222222222222222222222133   ",
+            " 11111112111111111121111111334  ",
+            "   333312133333333121333333334  ",
+            "   333312133333333121333333334  ",
+            "    44412133444444121334444444  ",
+            "       121334     121334        ",
+            "       121334     121334        ",
+            "       121334     121334        ",
+            "       121334     121334        ",
+            "       111334     111334        ",
+            "        33334      33334        ",
+            "        33334      33334        ",
+            "                                "
+            };
+            ' > ${lcEmGrImgSrc}   # /tmp to be inserted into <button>
+            cat ${lcEmGrImgSrc} >> ${gcEmGaImgFnTrgTxtMaster}   # for Trg for "Dump" to screen
+            #!
+            #!
+    #! ###########################################################
+    #! end:   HASH   
+    #! ###########################################################
+    #!
+    #!
+    #! ############################################################
+    #! begin:   LightBulb_svg_Text   
+    #! ############################################################
+    #!
+    #!
+        lcEmGrImgSrc="/tmp/EmGr-img-lightbulb.svg" 
+        echo "################################## " >> ${gcEmGaImgFnTrgTxtMaster}   # title for "Dump" to screen
+        echo "EmGr-img-lightbulb.svg" >> ${gcEmGaImgFnTrgTxtMaster}   # name of image
+        echo "${lcEmGrImg}" >> ${gcEmGaImgFnTrgTxtMaster}   # title for "Dump" to screen
+        echo '<?xml version="1.0" encoding="UTF-8"?>
+      <svg xmlns="http://www.w3.org/2000/svg" version="1.1" height="64px" width="64px" viewBox="0 0 100 100">
+      <defs>
+      <radialGradient id="RG1" cx="50%" cy="50%" fx="50%" fy="50%" r="60%">
+      <stop style="stop-color:rgb(255,255,255);stop-opacity:0.75;" offset="0%"/>
+      <stop style="stop-color:rgb(252,255,166);stop-opacity:1;" offset="100%"/>
+      </radialGradient>
+      <linearGradient id="LG1" x1="20%" y1="80%" x2="20%" y2="0%">
+      <stop style="stop-color:#999;stop-opacity:1" offset="0%" />
+      <stop style="stop-color:#DDD;stop-opacity:1" offset="100%" />
+      </linearGradient>
+      <linearGradient id="LG2" x1="20%" y1="80%" x2="20%" y2="0%">
+      <stop style="stop-color:#AAA;stop-opacity:1" offset="0%" />
+      <stop style="stop-color:#EEE;stop-opacity:1" offset="100%" />
+      </linearGradient>
+      </defs>
+      <path style="fill:url(#RG1);fill-opacity:1;fill-rule:nonzero;stroke-width:1;stroke:#666;" d="M 40,70 Q 40,65 30,55 A 28 28 1 1 1 70 55 Q 60,65 60,70"/>
+      <path style="stroke-width:0.5;stroke:#333;fill:none" d="M 45,70 41,40 C 42,42 43,38 44,40 C 45,42 46,38 47,40 C 48,42 49,38 50,40 C 51,42 52,38 53,40 C 54,42 55,38 56,40 C 57,42 58,38 59,40 L 55,70"/>
+      <path style="fill:url(#LG1);stroke:none" d="M 39,70 61,70 61,88 39,88 z" />
+      <path style="fill:url(#LG2);stroke:none" d="M 39,73 61,77 Q 62.25,78.6 61,80 L 39,76 Q 37.75,74.4 39,73 z M 39,79 61,83 Q 62.25,84.6 61,86 L 39,82 Q 37.75,80.4 39,79 z" />
+      <path style="fill:#333" d="M 45,88 Q 50,92 55,88 z"/>
+      </svg>
+      ' > ${lcEmGrImgSrc}
+      cat ${lcEmGrImgSrc} >> ${gcEmGaImgFnTrgTxtMaster}   # for "Dump" to screen
+    #!
+    #!
+    #! ############################################################
+    #! begin:   Button_svg_Text   
+    #!          Rect Box with Message Fill
+    #!          Manager   System   Menu   BackUp   Dox   Util 
+    #! ############################################################
+        #!
+        #!
+        lcEmGrImgSrc="/tmp/EmGr-img-button-system.svg"
+        echo "################################## " >> ${gcEmGaImgFnTrgTxtMaster}   # title for "Dump" to screen
+        echo "EmGr-img-button-text.svg" >> ${gcEmGaImgFnTrgTxtMaster}   # name of image
+        echo "${lcEmGrImg}" >> ${gcEmGaImgFnTrgTxtMaster}   # title for "Dump" to screen
+        echo '<?xml version="1.0" encoding="UTF-8"?>
+        <svg version="1.1"> 
+              <rect
+              style="fill:yellow;fill-opacity:22;stroke-width:5;stroke:red;stroke-opacity:33;"
+             width="275" height="36" rx="10" ry="10" x="1" y="1"/>
+                   <text style="font-family:DejaVu;font-size:22;fill-opacity:1"
+              x="25"  y="27" >
+        ooo---- System ---ooo
+             </text>
+        </svg>
+        ' > ${lcEmGrImgSrc}
+        cat ${lcEmGrImgSrc} >> ${gcEmGaImgFnTrgTxtMaster}   # for "Dump" to screen
+        #!
+        ##############################################################################
+        #! Button svg "Menu" "EmGr"
+        ##############################################################################
+        lcEmGrImgSrc="/tmp/EmGr-img-button-menu.svg"
+        echo "################################## " >> ${gcEmGaImgFnTrgTxtMaster}   # title for "Dump" to screen
+        echo "EmGr-img-button-text.svg" >> ${gcEmGaImgFnTrgTxtMaster}   # name of image
+        echo "${lcEmGrImg}" >> ${gcEmGaImgFnTrgTxtMaster}   # title for "Dump" to screen
+        echo '<?xml version="1.0" encoding="UTF-8"?>
+        <svg version="1.1"> 
+              <rect
+              style="fill:yellow;fill-opacity:22;stroke-width:5;stroke:blue;stroke-opacity:33;"
+             width="245" height="36" rx="10" ry="10" x="1" y="1"/>
+                   <text style="font-family:DejaVu;font-size:22;fill-opacity:1"
+              x="25"  y="27" >
+        ooo--- Menu ---ooo
+             </text>
+        </svg>
+        ' > ${lcEmGrImgSrc}
+        cat ${lcEmGrImgSrc} >> ${gcEmGaImgFnTrgTxtMaster}   # for "Dump" to screen
+        #!
+        ##############################################################################
+        #! Button svg "Back" "EmGr"
+        ##############################################################################
+        lcEmGrImgSrc="/tmp/EmGr-img-button-back.svg"
+        echo "################################## " >> ${gcEmGaImgFnTrgTxtMaster}   # title for "Dump" to screen
+        echo "EmGr-img-button-back.svg" >> ${gcEmGaImgFnTrgTxtMaster}   # name of image
+        echo "${lcEmGrImg}" >> ${gcEmGaImgFnTrgTxtMaster}   # title for "Dump" to screen
+        echo '<?xml version="1.0" encoding="UTF-8"?>
+        <svg version="1.1"> 
+              <rect
+              style="fill:yellow;fill-opacity:22;stroke-width:5;stroke:blue;stroke-opacity:33;"
+             width="265" height="36" rx="10" ry="10" x="1" y="1"/>
+                   <text style="font-family:DejaVu;font-size:22;fill-opacity:1"
+              x="25"  y="27" >
+        ooo--- BackUp ---ooo
+             </text>
+        </svg>
+        ' > ${lcEmGrImgSrc}
+        cat ${lcEmGrImgSrc} >> ${gcEmGaImgFnTrgTxtMaster}   # for "Dump" to screen
+        #!
+        ##############################################################################
+        #! Button svg "Dox" "EmGr"
+        ##############################################################################
+        lcEmGrImgSrc="/tmp/EmGr-img-button-dox.svg"
+        echo "################################## " >> ${gcEmGaImgFnTrgTxtMaster}   # title for "Dump" to screen
+        echo "EmGr-img-button-dox.svg" >> ${gcEmGaImgFnTrgTxtMaster}   # name of image
+        echo "${lcEmGrImg}" >> ${gcEmGaImgFnTrgTxtMaster}   # title for "Dump" to screen
+        echo '<?xml version="1.0" encoding="UTF-8"?>
+        <svg version="1.1"> 
+              <rect
+              style="fill:yellow;fill-opacity:22;stroke-width:5;stroke:blue;stroke-opacity:33;"
+             width="340" height="36" rx="10" ry="10" x="1" y="1"/>
+                   <text style="font-family:DejaVu;font-size:22;fill-opacity:1"
+              x="25"  y="27" >
+        ooo--- Dox-Help-Info ---ooo
+             </text>
+        </svg>
+        ' > ${lcEmGrImgSrc}
+        cat ${lcEmGrImgSrc} >> ${gcEmGaImgFnTrgTxtMaster}   # for "Dump" to screen
+        #!
+        ##############################################################################
+        #! Button svg "Util" "EmGr"
+        ##############################################################################
+        lcEmGrImgSrc="/tmp/EmGr-img-button-util.svg"
+        echo "################################## " >> ${gcEmGaImgFnTrgTxtMaster}   # title for "Dump" to screen
+        echo "EmGr-img-button-util.svg" >> ${gcEmGaImgFnTrgTxtMaster}   # name of image
+        echo "${lcEmGrImg}" >> ${gcEmGaImgFnTrgTxtMaster}   # title for "Dump" to screen
+        echo '<?xml version="1.0" encoding="UTF-8"?>
+        <svg version="1.1"> 
+              <rect
+              style="fill:yellow;fill-opacity:22;stroke-width:5;stroke:blue;stroke-opacity:33;"
+             width="345" height="36" rx="10" ry="10" x="1" y="1"/>
+                   <text style="font-family:DejaVu;font-size:22;fill-opacity:1"
+              x="25"  y="27" >
+        ooo---- Utility-Image ---ooo
+             </text>
+        </svg>
+        ' > ${lcEmGrImgSrc}
+        cat ${lcEmGrImgSrc} >> ${gcEmGaImgFnTrgTxtMaster}   # for "Dump" to screen
+        #!
+    #!
+    #! ############################################################
+    #! begin:    APPLE
+    #! ############################################################
+    #!
+            #! 3 "EmGr"############################################################
+            lcEmGrImgSrc="/tmp/EmGr-img-apple-redred.svg"
+            echo "################################## " >> ${gcEmGaImgFnTrgTxtMaster}   # title for "Dump" to screen
+            echo "apple-redred.svg" >> ${gcEmGaImgFnTrgTxtMaster}   # name of image
+            echo "${lcEmGrImg}" >> ${gcEmGaImgFnTrgTxtMaster}   # title for "Dump" to screen
+            echo '<?xml version="1.0" encoding="UTF-8"?>
+            <svg xmlns="http://www.w3.org/2000/svg" version="1.1" height="100" width="100">
+              <g
+            style="fill:none; fill:#BB2222; stroke:#AE3333; stroke-width:12px; stroke-linecap:round; stroke-linejoin:round;">
+                <path d="m 50,10 0,35"/>
+                <path d="M 26,20 C -3,48 16,90 51,90 79,90 89,67 89,52 89,37 81,26 74,20"/>
+              </g>
+            </svg>
+            ' > ${lcEmGrImgSrc}
+            cat ${lcEmGrImgSrc} >> ${gcEmGaImgFnTrgTxtMaster}   # for "Dump" to screen
+            #!
+            #! 4 "EmGr" ############################################################
+            lcEmGrImgSrc="/tmp/EmGr-img-apple-redblu.svg"
+            echo "################################## " >> ${gcEmGaImgFnTrgTxtMaster}   # title for "Dump" to screen
+            echo "apple-redblu.svg" >> ${gcEmGaImgFnTrgTxtMaster}   # name of image
+            echo "${lcEmGrImg}" >> ${gcEmGaImgFnTrgTxtMaster}   # title for "Dump" to screen
+            echo '<?xml version="1.0" encoding="UTF-8"?>
+            <svg xmlns="http://www.w3.org/2000/svg" version="1.1" height="100" width="100">
+              <g
+            style="fill:none; fill:#1111FF; stroke:#AE3333; stroke-width:12px; stroke-linecap:round; stroke-linejoin:round;">
+                <path d="m 50,10 0,35"/>
+                <path d="M 26,20 C -3,48 16,90 51,90 79,90 89,67 89,52 89,37 81,26 74,20"/>
+              </g>
+            </svg>
+            ' > ${lcEmGrImgSrc}
+            cat ${lcEmGrImgSrc} >> ${gcEmGaImgFnTrgTxtMaster}   # for "Dump" to screen
+            #!
+            #! 5 "EmGr" ###########################################################
+            lcEmGrImgSrc="/tmp/EmGr-img-apple-redyel.svg"
+            echo "################################## " >> ${gcEmGaImgFnTrgTxtMaster}   # title for "Dump" to screen
+            echo "apple-redyel.svg" >> ${gcEmGaImgFnTrgTxtMaster}   # name of image
+            echo "${lcEmGrImg}" >> ${gcEmGaImgFnTrgTxtMaster}   # title for "Dump" to screen
+            echo '<?xml version="1.0" encoding="UTF-8"?>
+            <svg xmlns="http://www.w3.org/2000/svg" version="1.1" height="100" width="100">
+              <g
+            style="fill:none; fill:#F8F800; stroke:#AE3333; stroke-width:12px; stroke-linecap:round; stroke-linejoin:round;">
+                <path d="m 50,10 0,35"/>
+                <path d="M 26,20 C -3,48 16,90 51,90 79,90 89,67 89,52 89,37 81,26 74,20"/>
+              </g>
+            </svg>
+            ' > ${lcEmGrImgSrc}
+            cat ${lcEmGrImgSrc} >> ${gcEmGaImgFnTrgTxtMaster}   # for "Dump" to screen
+            #!
+            #! 6 "EmGr" ###########################################################
+            lcEmGrImgSrc="/tmp/EmGr-img-apple-redgrn.svg"
+            echo "################################## " >> ${gcEmGaImgFnTrgTxtMaster}   # title for "Dump" to screen
+            echo "apple-redgrn.svg" >> ${gcEmGaImgFnTrgTxtMaster}   # name of image
+            echo "${lcEmGrImg}" >> ${gcEmGaImgFnTrgTxtMaster}   # title for "Dump" to screen
+            echo '<?xml version="1.0" encoding="UTF-8"?>
+            <svg xmlns="http://www.w3.org/2000/svg" version="1.1" height="100" width="100">
+              <g
+            style="fill:none; fill:#33DD33; stroke:#BE3333; stroke-width:12px; stroke-linecap:round; stroke-linejoin:round;">
+                <path d="m 50,10 0,35"/>
+                <path d="M 26,20 C -3,48 16,90 51,90 79,90 89,67 89,52 89,37 81,26 74,20"/>
+              </g>
+            </svg>
+            ' > ${lcEmGrImgSrc}
+            cat ${lcEmGrImgSrc} >> ${gcEmGaImgFnTrgTxtMaster}   # for "Dump" to screen
+            #! #############################################################
+            #!
+            #!
+    #! #############################################################
+    #! begin:    QUIT
+    #! #############################################################
+    #!
+            #! 7 "EmGr"#############################################################
+            lcEmGrImgSrc="/tmp/EmGr-img-quit-rednnn.svg"
+            echo "################################## " >> ${gcEmGaImgFnTrgTxtMaster}   # title for "Dump" to screen
+            echo "quit-rednnn.svg" >> ${gcEmGaImgFnTrgTxtMaster}   # name of image
+            echo "${lcEmGrImg}" >> ${gcEmGaImgFnTrgTxtMaster}   # title for "Dump" to screen
+            echo '<?xml version="1.0" encoding="UTF-8"?>
+            <svg xmlns="http://www.w3.org/2000/svg" version="1.1" height="100" width="100">
+              <g style="fill:none;stroke:#FF1111;stroke-width:12px;stroke-linecap:round;stroke-linejoin:round;">
+                <path d="m 50,10 0,35"/>
+                <path d="M 26,20 C -3,48 16,90 51,90 79,90 89,67 89,52 89,37 81,26 74,20"/>
+              </g>
+            </svg>
+            ' > ${lcEmGrImgSrc}
+            cat ${lcEmGrImgSrc} >> ${gcEmGaImgFnTrgTxtMaster}   # for "Dump" to screen
+            #!
+            #! 8 "EmGr" ###########################################################
+            lcEmGrImgSrc="/tmp/EmGr-img-quit-grnnnn.svg"
+            echo "################################## " >> ${gcEmGaImgFnTrgTxtMaster}   # title for "Dump" to screen
+            echo "quit-grnnnn.svg" >> ${gcEmGaImgFnTrgTxtMaster}   # name of image
+            echo "${lcEmGrImg}" >> ${gcEmGaImgFnTrgTxtMaster}   # title for "Dump" to screen
+            echo '<?xml version="1.0" encoding="UTF-8"?>
+            <svg xmlns="http://www.w3.org/2000/svg" version="1.1" height="100" width="100">
+              <g style="fill:none;stroke:#33FF33;stroke-width:17px;stroke-linecap:round;stroke-linejoin:round;">
+                <path d="m 70,2 0,35"/>
+                <path d="M 26,20 C -3,48 16,90 51,90 79,90 89,67 89,52 89,37 81,26 74,20"/>
+              </g>
+            </svg>
+            ' > ${lcEmGrImgSrc}
+            cat ${lcEmGrImgSrc} >> ${gcEmGaImgFnTrgTxtMaster}   # for "Dump" to screen
+            #!
+            #! 9 "EmGr" ###########################################################
+            lcEmGrImgSrc="/tmp/EmGr-img-quit-yelnnn.svg"
+            echo "################################## " >> ${gcEmGaImgFnTrgTxtMaster}   # title for "Dump" to screen
+            echo "quit-yelnnn.svg" >> ${gcEmGaImgFnTrgTxtMaster}   # name of image
+            echo "${lcEmGrImg}" >> ${gcEmGaImgFnTrgTxtMaster}   # title for "Dump" to screen
+            echo '<?xml version="1.0" encoding="UTF-8"?>
+            <svg xmlns="http://www.w3.org/2000/svg" version="1.1" height="100" width="100">
+              <g style="fill:none;stroke:#FFFF00;stroke-width:12px;stroke-linecap:round;stroke-linejoin:round;">
+                <path d="m 50,10 0,35"/>
+                <path d="M 26,20 C -3,48 16,90 51,90 79,90 89,67 89,52 89,37 81,26 74,20"/>
+              </g>
+            </svg>
+            ' > ${lcEmGrImgSrc}
+            cat ${lcEmGrImgSrc} >> ${gcEmGaImgFnTrgTxtMaster}   # for "Dump" to screen
+            #! ############################################################
+    #!
+    #! ###########################################################
+    #! begin:   JUG
+    #! ###########################################################
+    #!
+            #! 10 "EmGr" ############################################################
+            lcEmGrImgSrc="/tmp/EmGr-img-jug-bluxyel.svg"
+            echo "################################## " >> ${gcEmGaImgFnTrgTxtMaster}   # title for "Dump" to screen
+            echo "jug-bluxyel.svg" >> ${gcEmGaImgFnTrgTxtMaster}   # name of image
+            echo "${lcEmGrImg}" >> ${gcEmGaImgFnTrgTxtMaster}   # title for "Dump" to screen
+            echo '<?xml version="1.0" encoding="UTF-8"?>
+            <svg xmlns="http://www.w3.org/2000/svg" version="1.1" height="100" width="100">
+             <g style="fill:yellow;stroke:blue;stroke-width:15px;stroke-linecap:round;stroke-linejoin:round;">
+             <path d="m 35,35,35,35"/>
+             <path d="M 26,20 C -3,48 16,90 51,90 79,90 89,67 89,52 89,37 81,26 74,20"/>
+             </g>
+            </svg>
+            ' > ${lcEmGrImgSrc}
+            cat ${lcEmGrImgSrc} >> ${gcEmGaImgFnTrgTxtMaster}   # for "Dump" to screen
+            #!
+            #! 11 "EmGr" ############################################################
+            lcEmGrImgSrc="/tmp/EmGr-img-jug-blu0yel.svg"
+            echo "################################## " >> ${gcEmGaImgFnTrgTxtMaster}   # title for "Dump" to screen
+            echo "jug-blu0yel.svg" >> ${gcEmGaImgFnTrgTxtMaster}   # name of image
+            echo "${lcEmGrImg}" >> ${gcEmGaImgFnTrgTxtMaster}   # title for "Dump" to screen
+            echo '<?xml version="1.0" encoding="UTF-8"?>
+            <svg xmlns="http://www.w3.org/2000/svg" version="1.1" height="100" width="100">
+              <g style="fill:yellow;stroke:blue;stroke-width:15px;stroke-linecap:round;stroke-linejoin:round;">
+                <path d="M 16,20 C -3,48 16,90 51,90 79,90 89,67 90,52 91,37 85,26 83,20"/>
+              </g>
+            </svg>
+            ' > ${lcEmGrImgSrc}
+            cat ${lcEmGrImgSrc} >> ${gcEmGaImgFnTrgTxtMaster}   # for "Dump" to screen
+            #!
+            #! 12 "EmGr" ############################################################
+            lcEmGrImgSrc="/tmp/EmGr-img-jug-grnxorange.svg"
+            echo "################################## " >> ${gcEmGaImgFnTrgTxtMaster}   # title for "Dump" to screen
+            echo "jug-grnxorange.svg" >> ${gcEmGaImgFnTrgTxtMaster}   # name of image
+            echo "${lcEmGrImg}" >> ${gcEmGaImgFnTrgTxtMaster}   # title for "Dump" to screen
+            echo '<?xml version="1.0" encoding="UTF-8"?>
+            <svg xmlns="http://www.w3.org/2000/svg" version="1.1" height="100" width="100">
+              <g style="fill:orange;stroke:green;stroke-width:21px;stroke-linecap:round;stroke-linejoin:round;">
+                <path d="m 31,31,31,31"/>
+                <path d="M 26,20 C -3,48 16,90 51,90 79,90 89,67 89,52 89,37 81,26 74,20"/>
+              </g>
+            </svg>
+            ' > ${lcEmGrImgSrc}
+            cat ${lcEmGrImgSrc} >> ${gcEmGaImgFnTrgTxtMaster}   # for "Dump" to screen
+            #!
+            #! 13 "EmGr" ###########################################################
+            lcEmGrImgSrc="/tmp/EmGr-img-jug-redxyel.svg"
+            echo "################################## " >> ${gcEmGaImgFnTrgTxtMaster}   # title for "Dump" to screen
+            echo "jug-redxyel.svg" >> ${gcEmGaImgFnTrgTxtMaster}   # name of image
+            echo "${lcEmGrImg}" >> ${gcEmGaImgFnTrgTxtMaster}   # title for "Dump" to screen
+            echo '<?xml version="1.0" encoding="UTF-8"?>
+            <svg xmlns="http://www.w3.org/2000/svg" version="1.1" height="100" width="100">
+              <g
+            style="fill:'yellow'; stroke:'red'; stroke-width:12px; stroke-linecap:round; stroke-linejoin:round;">
+                <path d="m 0"/>
+                <path d="M 26,20 C -3,48 16,90 51,90 79,90 89,67 89,52 89,37 81,26 74,20"/>
+              </g>
+            </svg>
+            ' > ${lcEmGrImgSrc}
+            cat ${lcEmGrImgSrc} >> ${gcEmGaImgFnTrgTxtMaster}   # for "Dump" to screen
+            #!
+            #! 13 "EmGr" ###########################################################
+            lcEmGrImgSrc="/tmp/EmGr-img-jug-grnxyel.svg"
+            echo "################################## " >> ${gcEmGaImgFnTrgTxtMaster}   # title for "Dump" to screen
+            echo "jug-grnxyel.svg" >> ${gcEmGaImgFnTrgTxtMaster}   # name of image
+            echo "${lcEmGrImg}" >> ${gcEmGaImgFnTrgTxtMaster}   # title for "Dump" to screen
+            echo '<?xml version="1.0" encoding="UTF-8"?>
+            <svg xmlns="http://www.w3.org/2000/svg" version="1.1" height="100" width="100">
+              <g
+            style="fill:'lightgreen'; stroke:'red'; stroke-width:12px; stroke-linecap:round; stroke-linejoin:round;">
+                <path d="m 0"/>
+                <path d="M 26,20 C -3,48 16,90 51,90 79,90 89,67 89,52 89,37 81,26 74,20"/>
+              </g>
+            </svg>
+            ' > ${lcEmGrImgSrc}
+            cat ${lcEmGrImgSrc} >> ${gcEmGaImgFnTrgTxtMaster}   # for "Dump" to screen
+            #!
+            #! 14 "EmGr" ###########################################################
+            lcEmGrImgSrc="/tmp/EmGr-img-jug-red0yel.svg"
+            echo "################################## " >> ${gcEmGaImgFnTrgTxtMaster}   # title for "Dump" to screen
+            echo "jug-red0yel.svg" >> ${gcEmGaImgFnTrgTxtMaster}   # name of image
+            echo "${lcEmGrImg}" >> ${gcEmGaImgFnTrgTxtMaster}   # title for "Dump" to screen
+            echo '<?xml version="1.0" encoding="UTF-8"?>
+            <svg xmlns="http://www.w3.org/2000/svg" version="1.1" height="100" width="100">
+              <g
+            style="fill:'yellow'; stroke:'red'; stroke-width:14px; stroke-linecap:round; stroke-linejoin:round;">
+                <path d="m 0"/>
+                <path d="M 50,5 C -3,48 16,90 51,90 79,90 89,67 89,52 89,37 81,26 55,5"/>
+              </g>
+            </svg>
+            ' > ${lcEmGrImgSrc}
+            cat ${lcEmGrImgSrc} >> ${gcEmGaImgFnTrgTxtMaster}   # for "Dump" to screen
+            #!
+            #! 15 "EmGr" ###########################################################
+            lcEmGrImgSrc="/tmp/EmGr-img-jug-redxgrn.svg"
+            echo "################################## " >> ${gcEmGaImgFnTrgTxtMaster}   # title for "Dump" to screen
+            echo "jug-redxgrn.svg" >> ${gcEmGaImgFnTrgTxtMaster}   # name of image
+            echo "${lcEmGrImg}" >> ${gcEmGaImgFnTrgTxtMaster}   # title for "Dump" to screen
+            echo '<?xml version="1.0" encoding="UTF-8"?>
+            <svg xmlns="http://www.w3.org/2000/svg" version="1.1" height="100" width="100">
+              <g
+            style="fill:'green'; stroke:'red'; stroke-width:12px; stroke-linecap:round; stroke-linejoin:round;">
+                <path d="m 0"/>
+                <path d="M 26,20 C -3,48 16,90 51,90 79,90 89,67 89,52 89,37 81,26 74,20"/>
+              </g>
+            </svg>
+            ' > ${lcEmGrImgSrc}
+            cat ${lcEmGrImgSrc} >> ${gcEmGaImgFnTrgTxtMaster}   # for "Dump" to screen
+            #!
+            #! 16 "EmGr" ###########################################################
+            lcEmGrImgSrc="/tmp/EmGr-img-jug-grnxred.svg"
+            echo "################################## " >> ${gcEmGaImgFnTrgTxtMaster}   # title for "Dump" to screen
+            echo "jug-grnxred.svg" >> ${gcEmGaImgFnTrgTxtMaster}   # name of image
+            echo "${lcEmGrImg}" >> ${gcEmGaImgFnTrgTxtMaster}   # title for "Dump" to screen
+            echo '<?xml version="1.0" encoding="UTF-8"?>
+            <svg xmlns="http://www.w3.org/2000/svg" version="1.1" height="100" width="100">
+              <g
+            style="fill:'red'; stroke:'green'; stroke-width:12px; stroke-linecap:round; stroke-linejoin:round;">
+                <path d="m 0"/>
+                <path d="M 26,20 C -3,48 16,90 51,90 79,90 89,67 89,52 89,37 81,26 74,20"/>
+              </g>
+            </svg>
+            ' > ${lcEmGrImgSrc}
+            cat ${lcEmGrImgSrc} >> ${gcEmGaImgFnTrgTxtMaster}   # for "Dump" to screen
+            #!
+            #! 17 "EmGr" ###########################################################
+            lcEmGrImgSrc="/tmp/EmGr-img-jug-redxyel.svg"
+            echo "################################## " >> ${gcEmGaImgFnTrgTxtMaster}   # title for "Dump" to screen
+            echo "jug-redxyel.svg" >> ${gcEmGaImgFnTrgTxtMaster}   # name of image
+            echo "${lcEmGrImg}" >> ${gcEmGaImgFnTrgTxtMaster}   # title for "Dump" to screen
+            echo '<?xml version="1.0" encoding="UTF-8"?>
+            <svg xmlns="http://www.w3.org/2000/svg" version="1.1" height="100" width="100">
+              <g
+            style="fill:'yellow'; stroke:'red'; stroke-width:12px; stroke-linecap:round; stroke-linejoin:round;">
+                <path d="m 0"/>
+                <path d="M 26,20 C -3,48 16,90 51,90 79,90 89,67 89,52 89,37 81,26 74,20"/>
+              </g>
+            </svg>
+            ' > ${lcEmGrImgSrc}
+            cat ${lcEmGrImgSrc} >> ${gcEmGaImgFnTrgTxtMaster}   # for "Dump" to screen
+            #!
+            #! 18 "EmGr" ###########################################################
+            lcEmGrImgSrc="/tmp/EmGr-img-jug-redxblu.svg"
+            echo "################################## " >> ${gcEmGaImgFnTrgTxtMaster}   # title for "Dump" to screen
+            echo "jug-redxblu.svg" >> ${gcEmGaImgFnTrgTxtMaster}   # name of image
+            echo "${lcEmGrImg}" >> ${gcEmGaImgFnTrgTxtMaster}   # title for "Dump" to screen
+            echo '<?xml version="1.0" encoding="UTF-8"?>
+            <svg xmlns="http://www.w3.org/2000/svg" version="1.1" height="100" width="100">
+              <g
+            style="fill:'blue'; stroke:'red'; stroke-width:12px; stroke-linecap:round; stroke-linejoin:round;">
+                <path d="m 0"/>
+                <path d="M 26,20 C -3,48 16,90 51,90 79,90 89,67 89,52 89,37 81,26 74,20"/>
+              </g>
+            </svg>
+            ' > ${lcEmGrImgSrc}
+            cat ${lcEmGrImgSrc} >> ${gcEmGaImgFnTrgTxtMaster}   # for "Dump" to screen
+            #! ############################################################
+        #!
+        #! #################################################################
+        #! begin: Check-Mark  "colorXcolor" 
+        #! #################################################################
+                #!
+                #! 90X
+                #! 19 "EmGr" ###########################################################
+                lcEmGrImgSrc="/tmp/EmGr-img-Check-90-redXblu.svg"
+                echo "################################## " >> ${gcEmGaImgFnTrgTxtMaster}   # title for "Dump" to screen
+                echo "Check-redXblured.svg" >> ${gcEmGaImgFnTrgTxtMaster}   # name of image
+                echo "${lcEmGrImg}" >> ${gcEmGaImgFnTrgTxtMaster}   # title for "Dump" to screen
+                echo '<?xml version="1.0" encoding="UTF-8"?>
+                <svg xmlns="http://www.w3.org/2000/svg" version="1.1" height="90" width="90">
+                  <path style="fill:#1111FF;fill-opacity:0.8;stroke:#FF1111;stroke-width:3"
+                d="M 38,49 C 49,38 56,48 64,54 68,57 47,23 55,18 42,16 13,01 57,69 42,86 35,98 74,63 87,63 95,58 82,56 53,41"/>
+                </svg>
+                ' > ${lcEmGrImgSrc}
+                cat ${lcEmGrImgSrc} >> ${gcEmGaImgFnTrgTxtMaster}   # for "Dump" to screen
+                #!
+                #! 90X
+                #! 20 "EmGr" ###########################################################
+                lcEmGrImgSrc="/tmp/EmGr-img-Check-90-redXgrn.svg"
+                echo "################################## " >> ${gcEmGaImgFnTrgTxtMaster}   # title for "Dump" to screen
+                echo "Check-90-redXgrn.svg" >> ${gcEmGaImgFnTrgTxtMaster}   # name of image
+                echo "${lcEmGrImg}" >> ${gcEmGaImgFnTrgTxtMaster}   # title for "Dump" to screen
+                echo '<?xml version="1.0" encoding="UTF-8"?>
+                <svg xmlns="http://www.w3.org/2000/svg" version="1.1" height="80" width="80">
+                  <path style="fill:#11FF11;fill-opacity:0.8;stroke:#FF1111;stroke-width:3"
+                d="M 38,49 C 49,38 56,48 64,54 68,57 47,23 55,18 42,16 13,01 57,69 42,86 35,98 74,63 87,63 95,58 82,56 53,41"/>
+                </svg>
+                ' > ${lcEmGrImgSrc}
+                cat ${lcEmGrImgSrc} >> ${gcEmGaImgFnTrgTxtMaster}   # for "Dump" to screen
+                #!
+                #! #! 90X
+                #! #! 20 "EmGr" ###########################################################
+                #! lcEmGrImgSrc="/tmp/EmGr-img-Check-90-redXgrn.svg"
+                #! echo "################################## " >> ${gcEmGaImgFnTrgTxtMaster}   # title for "Dump" to screen
+                #! echo "Check-90-redXgrn.svg" >> ${gcEmGaImgFnTrgTxtMaster}   # name of image
+                #! echo "${lcEmGrImg}" >> ${gcEmGaImgFnTrgTxtMaster}   # title for "Dump" to screen
+                #! echo '<?xml version="1.0" encoding="UTF-8"?>
+                #! <svg xmlns="http://www.w3.org/2000/svg" version="1.1" height="80" width="80">
+                  #! <path style="fill:'lightblue';fill-opacity:0.8;stroke:'red';stroke-width:3"
+                #! d="M 38,49 C 49,38 56,48 64,54 68,57 47,23 55,18 42,16 13,01 57,69 42,86 35,98 74,63 87,63 95,58 82,56 53,41"/>
+                #! </svg>
+                #! ' > ${lcEmGrImgSrc}
+                #! cat ${lcEmGrImgSrc} >> ${gcEmGaImgFnTrgTxtMaster}   # for "Dump" to screen
+                #! #!
+                #! 90X
+                #! 22 "EmGr" ###########################################################
+                lcEmGrImgSrc="/tmp/EmGr-img-Check-90-redXyel.svg"
+                echo "################################## " >> ${gcEmGaImgFnTrgTxtMaster}   # title for "Dump" to screen
+                echo "Check-90-redXyel.svg" >> ${gcEmGaImgFnTrgTxtMaster}   # name of image
+                echo "${lcEmGrImg}" >> ${gcEmGaImgFnTrgTxtMaster}   # title for "Dump" to screen
+                echo '<?xml version="1.0" encoding="UTF-8"?>
+                <svg xmlns="http://www.w3.org/2000/svg" version="1.1" height="90" width="90">
+                  <path style="fill:#FFFF11;fill-opacity:0.8;stroke:#FF1111;stroke-width:3"
+                d="M 38,49 C 49,38 56,48 64,54 68,57 47,23 55,18 42,16 13,01 57,69 42,86 35,98 74,63 87,63 95,58 82,56 53,41"/>
+                </svg>
+                ' > ${lcEmGrImgSrc}
+                cat ${lcEmGrImgSrc} >> ${gcEmGaImgFnTrgTxtMaster}   # for "Dump" to screen
+                #!
+                #! 111X
+                #! 111X "EmGr" ###########################################################
+                lcEmGrImgSrc="/tmp/EmGr-img-Check-111-yelXred.svg"
+                echo "################################## " >> ${gcEmGaImgFnTrgTxtMaster}   # title for "Dump" to screen
+                echo "Check-111-yelXred.svg" >> ${gcEmGaImgFnTrgTxtMaster}   # name of image
+                echo "${lcEmGrImg}" >> ${gcEmGaImgFnTrgTxtMaster}   # title for "Dump" to screen
+                echo '<?xml version="1.0" encoding="UTF-8"?>
+                <svg xmlns="http://www.w3.org/2000/svg" version="1.1" height="111" width="111">
+                  <path style="fill:'yellow';fill-opacity:0.8;stroke:'red';stroke-width:3"
+                d="M 38,49 C 49,38 56,48 64,54 68,57 57,69 42,86 35,98 74,63 87,63 95,58 82,56 53,41"/>
+                </svg>
+                ' > ${lcEmGrImgSrc}
+                cat ${lcEmGrImgSrc} >> ${gcEmGaImgFnTrgTxtMaster}   # for "Dump" to screen
+                #!
+                #! d="M 38,49 C 49,38 56,48 64,54 68,57 47,23 55,18 42,16 13,01 57,69 42,86 35,98 74,63 87,63 95,58 82,56 53,41"/>
+                #! 111X
+                #! 111X "EmGr" ###########################################################
+                lcEmGrImgSrc="/tmp/EmGr-img-Check-111-bluXred.svg"
+                echo "################################## " >> ${gcEmGaImgFnTrgTxtMaster}   # title for "Dump" to screen
+                echo "Check-111-bluXred.svg" >> ${gcEmGaImgFnTrgTxtMaster}   # name of image
+                echo "${lcEmGrImg}" >> ${gcEmGaImgFnTrgTxtMaster}   # title for "Dump" to screen
+                echo '<?xml version="1.0" encoding="UTF-8"?>
+                <svg xmlns="http://www.w3.org/2000/svg" version="1.1" height="111" width="111">
+                  <path style="fill:'red';fill-opacity:0.8;stroke:'blue';stroke-width:3"
+                d="M 38,49 C 49,38 56,48 64,54 68,57 57,69 42,86 35,98 74,63 87,63 95,58 82,56 53,41"/>
+                </svg>
+                ' > ${lcEmGrImgSrc}
+                cat ${lcEmGrImgSrc} >> ${gcEmGaImgFnTrgTxtMaster}   # for "Dump" to screen
+                #! 111X
+                #! 111X "EmGr" ###########################################################
+                lcEmGrImgSrc="/tmp/EmGr-img-Check-111-grnXred.svg"
+                echo "################################## " >> ${gcEmGaImgFnTrgTxtMaster}   # title for "Dump" to screen
+                echo "Check-111-grnXred.svg" >> ${gcEmGaImgFnTrgTxtMaster}   # name of image
+                echo "${lcEmGrImg}" >> ${gcEmGaImgFnTrgTxtMaster}   # title for "Dump" to screen
+                echo '<?xml version="1.0" encoding="UTF-8"?>
+                <svg xmlns="http://www.w3.org/2000/svg" version="1.1" height="111" width="111">
+                  <path style="fill:'red';fill-opacity:0.8;stroke:'green';stroke-width:3"
+                d="M 38,49 C 49,38 56,48 64,54 68,57 57,69 42,86 35,98 74,63 87,63 95,58 82,56 53,41"/>
+                </svg>
+                ' > ${lcEmGrImgSrc}
+                cat ${lcEmGrImgSrc} >> ${gcEmGaImgFnTrgTxtMaster}   # for "Dump" to screen
+                #!
+                #! X
+                #! 24 "EmGr" ###########################################################
+                #! 
+                #! X
+                #! 25 "EmGr" ###########################################################
+                lcEmGrImgSrc="/tmp/EmGr-img-Check-yelXblu.svg"
+                echo "################################## " >> ${gcEmGaImgFnTrgTxtMaster}   # title for "Dump" to screen
                 echo "Check-yelXblu.svg" >> ${gcEmGaImgFnTrgTxtMaster}   # name of image
-				echo "${lcEmGrImg}" >> ${gcEmGaImgFnTrgTxtMaster}   # title for "Dump" to screen
-				echo '<?xml version="1.0" encoding="UTF-8"?>
-				<svg xmlns="http://www.w3.org/2000/svg" version="1.1" height="150" width="150">
-				  <path style="fill:yellow;fill-opacity:0.8;stroke:blue;stroke-width:3"
-				d="M 38,49 C 49,38 56,48 64,54 68,57 57,69 42,86 35,98 74,63 87,63 95,58 82,56 53,41"/>
-				</svg>
-				' > ${lcEmGrImgSrc}
-				cat ${lcEmGrImgSrc} >> ${gcEmGaImgFnTrgTxtMaster}   # for "Dump" to screen
-				#!
-				#! 25 "EmGr" ###########################################################
-				lcEmGrImgSrc="/tmp/EmGr-img-Check-bluXyel.svg"
-				echo "################################## " >> ${gcEmGaImgFnTrgTxtMaster}   # title for "Dump" to screen
-                echo "Check-bluXyel.svg" >> ${gcEmGaImgFnTrgTxtMaster}   # name of image
-				echo "${lcEmGrImg}" >> ${gcEmGaImgFnTrgTxtMaster}   # title for "Dump" to screen
-				echo '<?xml version="1.0" encoding="UTF-8"?>
-				<svg xmlns="http://www.w3.org/2000/svg" version="1.1" height="150" width="150">
-				  <path style="fill:blue;fill-opacity:0.8;stroke:yellow;stroke-width:3"
-				d="M 38,49 C 49,38 56,48 64,54 68,57 57,69 42,86 35,98 74,63 87,63 95,58 82,56 53,41"/>
-				</svg>
-				' > ${lcEmGrImgSrc}
-				cat ${lcEmGrImgSrc} >> ${gcEmGaImgFnTrgTxtMaster}   # for "Dump" to screen
-				#!
-				#! 26 "EmGr" ###########################################################
-				lcEmGrImgSrc="/tmp/EmGr-img-Check-bluXred.svg"
-				echo "################################## " >> ${gcEmGaImgFnTrgTxtMaster}   # title for "Dump" to screen
-                echo "Check-bluXred.svg" >> ${gcEmGaImgFnTrgTxtMaster}   # name of image
-				echo "${lcEmGrImg}" >> ${gcEmGaImgFnTrgTxtMaster}   # title for "Dump" to screen
-				echo '<?xml version="1.0" encoding="UTF-8"?>
-				<svg xmlns="http://www.w3.org/2000/svg" version="1.1" height="150" width="150">
-				  <path style="fill:blue;fill-opacity:0.8;stroke:red;stroke-width:3"
-				d="M 38,49 C 49,38 56,48 64,54 68,57 57,69 42,86 35,98 74,63 87,63 95,58 82,56 53,41"/>
-				</svg>
-				' > ${lcEmGrImgSrc}
-				cat ${lcEmGrImgSrc} >> ${gcEmGaImgFnTrgTxtMaster}   # for "Dump" to screen
-				#!
-				#! 27 "EmGr" ###########################################################
-				lcEmGrImgSrc="/tmp/EmGr-img-Check-redXblu.svg"
-				echo "################################## " >> ${gcEmGaImgFnTrgTxtMaster}   # title for "Dump" to screen
+                echo "${lcEmGrImg}" >> ${gcEmGaImgFnTrgTxtMaster}   # title for "Dump" to screen
+                echo '<?xml version="1.0" encoding="UTF-8"?>
+                <svg xmlns="http://www.w3.org/2000/svg" version="1.1" height="150" width="150">
+                  <path style="fill:'blue';fill-opacity:0.8;stroke:'yellow';stroke-width:3"
+                d="M 38,49 C 49,38 56,48 64,54 68,57 57,69 42,86 35,98 74,63 87,63 95,58 82,56 53,41"/>
+                </svg>
+                ' > ${lcEmGrImgSrc}
+                cat ${lcEmGrImgSrc} >> ${gcEmGaImgFnTrgTxtMaster}   # for "Dump" to screen
+                #!
+                #! X
+                #! 26 "EmGr" ###########################################################
+                lcEmGrImgSrc="/tmp/EmGr-img-Check-redXblu.svg"
+                echo "################################## " >> ${gcEmGaImgFnTrgTxtMaster}   # title for "Dump" to screen
                 echo "Check-redXblu.svg" >> ${gcEmGaImgFnTrgTxtMaster}   # name of image
-				echo "${lcEmGrImg}" >> ${gcEmGaImgFnTrgTxtMaster}   # title for "Dump" to screen
-				echo '<?xml version="1.0" encoding="UTF-8"?>
-				<svg xmlns="http://www.w3.org/2000/svg" version="1.1" height="150" width="150">
-				  <path style="fill:red;fill-opacity:0.8;stroke:blu;stroke-width:3"
-				d="M 38,49 C 49,38 56,48 64,54 68,57 57,69 42,86 35,98 74,63 87,63 95,58 82,56 53,41"/>
-				</svg>
-				' > ${lcEmGrImgSrc}
-				cat ${lcEmGrImgSrc} >> ${gcEmGaImgFnTrgTxtMaster}   # for "Dump" to screen
-				#!
-				#! 28 "EmGr" ###########################################################
-				lcEmGrImgSrc="/tmp/EmGr-img-Check-bluXgrn.svg"
-				echo "################################## " >> ${gcEmGaImgFnTrgTxtMaster}   # title for "Dump" to screen
-                echo "Check-bluXgrn.svg" >> ${gcEmGaImgFnTrgTxtMaster}   # name of image
-				echo "${lcEmGrImg}" >> ${gcEmGaImgFnTrgTxtMaster}   # title for "Dump" to screen
-				echo '<?xml version="1.0" encoding="UTF-8"?>
-				<svg xmlns="http://www.w3.org/2000/svg" version="1.1" height="150" width="150">
-				  <path style="fill:blue;fill-opacity:0.8;stroke:green;stroke-width:3"
-				d="M 38,49 C 49,38 56,48 64,54 68,57 57,69 42,86 35,98 74,63 87,63 95,58 82,56 53,41"/>
-				</svg>
-				' > ${lcEmGrImgSrc}
-				cat ${lcEmGrImgSrc} >> ${gcEmGaImgFnTrgTxtMaster}   # for "Dump" to screen
-				#!
-				#! 29 "EmGr" ###########################################################
-				lcEmGrImgSrc="/tmp/EmGr-img-Check-grnXblu.svg"
-				echo "################################## " >> ${gcEmGaImgFnTrgTxtMaster}   # title for "Dump" to screen
+                echo "${lcEmGrImg}" >> ${gcEmGaImgFnTrgTxtMaster}   # title for "Dump" to screen
+                echo '<?xml version="1.0" encoding="UTF-8"?>
+                <svg xmlns="http://www.w3.org/2000/svg" version="1.1" height="150" width="150">
+                  <path style="fill:'blue';fill-opacity:0.8;stroke:'red';stroke-width:3"
+                d="M 38,49 C 49,38 56,48 64,54 68,57 57,69 42,86 35,98 74,63 87,63 95,58 82,56 53,41"/>
+                </svg>
+                ' > ${lcEmGrImgSrc}
+                cat ${lcEmGrImgSrc} >> ${gcEmGaImgFnTrgTxtMaster}   # for "Dump" to screen
+                #!
+                #! X
+                #! 27 "EmGr" ###########################################################
+                lcEmGrImgSrc="/tmp/EmGr-img-Check-bluXred.svg"
+                echo "################################## " >> ${gcEmGaImgFnTrgTxtMaster}   # title for "Dump" to screen
+                echo "Check-bluXred.svg" >> ${gcEmGaImgFnTrgTxtMaster}   # name of image
+                echo "${lcEmGrImg}" >> ${gcEmGaImgFnTrgTxtMaster}   # title for "Dump" to screen
+                echo '<?xml version="1.0" encoding="UTF-8"?>
+                <svg xmlns="http://www.w3.org/2000/svg" version="1.1" height="150" width="150">
+                  <path style="fill:'red';fill-opacity:0.8;stroke:'blu';stroke-width:3"
+                d="M 38,49 C 49,38 56,48 64,54 68,57 57,69 42,86 35,98 74,63 87,63 95,58 82,56 53,41"/>
+                </svg>
+                ' > ${lcEmGrImgSrc}
+                cat ${lcEmGrImgSrc} >> ${gcEmGaImgFnTrgTxtMaster}   # for "Dump" to screen
+                #!
+                #! X
+                #! 28 "EmGr" ###########################################################
+                lcEmGrImgSrc="/tmp/EmGr-img-Check-grnXblu.svg"
+                echo "################################## " >> ${gcEmGaImgFnTrgTxtMaster}   # title for "Dump" to screen
                 echo "Check-grnXblu.svg" >> ${gcEmGaImgFnTrgTxtMaster}   # name of image
-				echo "${lcEmGrImg}" >> ${gcEmGaImgFnTrgTxtMaster}   # title for "Dump" to screen
-				echo '<?xml version="1.0" encoding="UTF-8"?>
-				<svg xmlns="http://www.w3.org/2000/svg" version="1.1" height="150" width="150">
-				  <path style="fill:green;fill-opacity:0.8;stroke:blue;stroke-width:3"
-				d="M 38,49 C 49,38 56,48 64,54 68,57 57,69 42,86 35,98 74,63 87,63 95,58 82,56 53,41"/>
-				</svg>
-				' > ${lcEmGrImgSrc}
-				cat ${lcEmGrImgSrc} >> ${gcEmGaImgFnTrgTxtMaster}   # for "Dump" to screen
-				#!
-				#! 30 "EmGr" ###########################################################
-				lcEmGrImgSrc="/tmp/EmGr-img-Check-grnXred.svg"
-				echo "################################## " >> ${gcEmGaImgFnTrgTxtMaster}   # title for "Dump" to screen
-                echo "Check-grnXred.svg" >> ${gcEmGaImgFnTrgTxtMaster}   # name of image
-				echo "${lcEmGrImg}" >> ${gcEmGaImgFnTrgTxtMaster}   # title for "Dump" to screen
-				echo '<?xml version="1.0" encoding="UTF-8"?>
-				<svg xmlns="http://www.w3.org/2000/svg" version="1.1" height="150" width="150">
-				  <path style="fill:green;fill-opacity:0.8;stroke:red;stroke-width:3"
-				d="M 38,49 C 49,38 56,48 64,54 68,57 57,69 42,86 35,98 74,63 87,63 95,58 82,56 53,41"/>
-				</svg>
-				' > ${lcEmGrImgSrc}
-				cat ${lcEmGrImgSrc} >> ${gcEmGaImgFnTrgTxtMaster}   # for "Dump" to screen
-				#!
-				#! 31 "EmGr" ###########################################################
-				lcEmGrImgSrc="/tmp/EmGr-img-Check-redXgrn.svg"
-				echo "################################## " >> ${gcEmGaImgFnTrgTxtMaster}   # title for "Dump" to screen
+                echo "${lcEmGrImg}" >> ${gcEmGaImgFnTrgTxtMaster}   # title for "Dump" to screen
+                echo '<?xml version="1.0" encoding="UTF-8"?>
+                <svg xmlns="http://www.w3.org/2000/svg" version="1.1" height="150" width="150">
+                  <path style="fill:'blue';fill-opacity:0.8;stroke:'green';stroke-width:3"
+                d="M 38,49 C 49,38 56,48 64,54 68,57 57,69 42,86 35,98 74,63 87,63 95,58 82,56 53,41"/>
+                </svg>
+                ' > ${lcEmGrImgSrc}
+                cat ${lcEmGrImgSrc} >> ${gcEmGaImgFnTrgTxtMaster}   # for "Dump" to screen
+                #!
+                #! X
+                #! 29 "EmGr" ###########################################################
+                lcEmGrImgSrc="/tmp/EmGr-img-Check-bluXgrn.svg"
+                echo "################################## " >> ${gcEmGaImgFnTrgTxtMaster}   # title for "Dump" to screen
+                echo "Check-bluXgrn.svg" >> ${gcEmGaImgFnTrgTxtMaster}   # name of image
+                echo "${lcEmGrImg}" >> ${gcEmGaImgFnTrgTxtMaster}   # title for "Dump" to screen
+                echo '<?xml version="1.0" encoding="UTF-8"?>
+                <svg xmlns="http://www.w3.org/2000/svg" version="1.1" height="150" width="150">
+                  <path style="fill:'green';fill-opacity:0.8;stroke:'blue';stroke-width:3"
+                d="M 38,49 C 49,38 56,48 64,54 68,57 57,69 42,86 35,98 74,63 87,63 95,58 82,56 53,41"/>
+                </svg>
+                ' > ${lcEmGrImgSrc}
+                cat ${lcEmGrImgSrc} >> ${gcEmGaImgFnTrgTxtMaster}   # for "Dump" to screen
+                #!
+                #! 30 "EmGr" ###########################################################
+                #!
+                #!
+        #! #################################################################
+        #! begin: Check-Mark  "colorcolor" 
+        #! #################################################################
+                #!
+                #! 31 "EmGr" ###########################################################
+                lcEmGrImgSrc="/tmp/EmGr-img-Check-redXgrn.svg"
+                echo "################################## " >> ${gcEmGaImgFnTrgTxtMaster}   # title for "Dump" to screen
                 echo "Check-redXgrn.svg" >> ${gcEmGaImgFnTrgTxtMaster}   # name of image
-				echo "${lcEmGrImg}" >> ${gcEmGaImgFnTrgTxtMaster}   # title for "Dump" to screen
-				echo '<?xml version="1.0" encoding="UTF-8"?>
-				<svg xmlns="http://www.w3.org/2000/svg" version="1.1" height="150" width="150">
-				  <path style="fill:red;fill-opacity:0.8;stroke:green;stroke-width:3"
-				d="M 38,49 C 49,38 56,48 64,54 68,57 57,69 42,86 35,98 74,63 87,63 95,58 82,56 53,41"/>
-				</svg>
-				' > ${lcEmGrImgSrc}
-				cat ${lcEmGrImgSrc} >> ${gcEmGaImgFnTrgTxtMaster}   # for "Dump" to screen
-				#!
-				#! 32 "EmGr" ###########################################################
-				lcEmGrImgSrc="/tmp/EmGr-img-Check-redXred.svg"
-				echo "################################## " >> ${gcEmGaImgFnTrgTxtMaster}   # title for "Dump" to screen
+                echo "${lcEmGrImg}" >> ${gcEmGaImgFnTrgTxtMaster}   # title for "Dump" to screen
+                echo '<?xml version="1.0" encoding="UTF-8"?>
+                <svg xmlns="http://www.w3.org/2000/svg" version="1.1" height="150" width="150">
+                  <path style="fill:'red';fill-opacity:0.8;stroke:'green';stroke-width:3"
+                d="M 38,49 C 49,38 56,48 64,54 68,57 57,69 42,86 35,98 74,63 87,63 95,58 82,56 53,41"/>
+                </svg>
+                ' > ${lcEmGrImgSrc}
+                cat ${lcEmGrImgSrc} >> ${gcEmGaImgFnTrgTxtMaster}   # for "Dump" to screen
+                #!
+                #! 32 "EmGr" ###########################################################
+                lcEmGrImgSrc="/tmp/EmGr-img-Check-redXred.svg"
+                echo "################################## " >> ${gcEmGaImgFnTrgTxtMaster}   # title for "Dump" to screen
                 echo "Check-redXred.svg" >> ${gcEmGaImgFnTrgTxtMaster}   # name of image
-				echo "${lcEmGrImg}" >> ${gcEmGaImgFnTrgTxtMaster}   # title for "Dump" to screen
-				echo '<?xml version="1.0" encoding="UTF-8"?>
-				<svg xmlns="http://www.w3.org/2000/svg" version="1.1" height="150" width="150">
-				  <path style="fill:red;fill-opacity:0.8;stroke:red;stroke-width:3"
-				d="M 38,49 C 49,38 56,48 64,54 68,57 57,69 42,86 35,98 74,63 87,63 95,58 82,56 53,41"/>
-				</svg>
-				' > ${lcEmGrImgSrc}
-				cat ${lcEmGrImgSrc} >> ${gcEmGaImgFnTrgTxtMaster}   # for "Dump" to screen
-				#!
-				#! 33 "EmGr" ###########################################################
-				lcEmGrImgSrc="/tmp/EmGr-img-Check-grnXgrn.svg"
-				echo "################################## " >> ${gcEmGaImgFnTrgTxtMaster}   # title for "Dump" to screen
+                echo "${lcEmGrImg}" >> ${gcEmGaImgFnTrgTxtMaster}   # title for "Dump" to screen
+                echo '<?xml version="1.0" encoding="UTF-8"?>
+                <svg xmlns="http://www.w3.org/2000/svg" version="1.1" height="150" width="150">
+                  <path style="fill:'red';fill-opacity:0.8;stroke:'red';stroke-width:3"
+                d="M 38,49 C 49,38 56,48 64,54 68,57 57,69 42,86 35,98 74,63 87,63 95,58 82,56 53,41"/>
+                </svg>
+                ' > ${lcEmGrImgSrc}
+                cat ${lcEmGrImgSrc} >> ${gcEmGaImgFnTrgTxtMaster}   # for "Dump" to screen
+                #!
+                #! 33 "EmGr" ###########################################################
+                lcEmGrImgSrc="/tmp/EmGr-img-Check-grnXgrn.svg"
+                echo "################################## " >> ${gcEmGaImgFnTrgTxtMaster}   # title for "Dump" to screen
                 echo "Check-grnXgrn.svg" >> ${gcEmGaImgFnTrgTxtMaster}   # name of image
-				echo "${lcEmGrImg}" >> ${gcEmGaImgFnTrgTxtMaster}   # title for "Dump" to screen
-				echo '<?xml version="1.0" encoding="UTF-8"?>
-				<svg xmlns="http://www.w3.org/2000/svg" version="1.1" height="150" width="150">
-				  <path style="fill:#00FF00;fill-opacity:1.3;stroke:green;stroke-width:3"
-				d="M 38,49 C 49,38 56,48 64,54 68,57 57,69 42,86 35,98 74,63 87,63 95,58 82,56 53,41"/>
-				</svg>
-				' > ${lcEmGrImgSrc}
-				cat ${lcEmGrImgSrc} >> ${gcEmGaImgFnTrgTxtMaster}   # for "Dump" to screen
-				#!
-				#! 35 "EmGr" ###########################################################
-				lcEmGrImgSrc="/tmp/EmGr-img-Check-yelXyel.svg"
-				echo "################################## " >> ${gcEmGaImgFnTrgTxtMaster}   # title for "Dump" to screen
+                echo "${lcEmGrImg}" >> ${gcEmGaImgFnTrgTxtMaster}   # title for "Dump" to screen
+                echo '<?xml version="1.0" encoding="UTF-8"?>
+                <svg xmlns="http://www.w3.org/2000/svg" version="1.1" height="150" width="150">
+                  <path style="fill:'#00FF00';fill-opacity:1.3;stroke:'green';stroke-width:3"
+                d="M 38,49 C 49,38 56,48 64,54 68,57 57,69 42,86 35,98 74,63 87,63 95,58 82,56 53,41"/>
+                </svg>
+                ' > ${lcEmGrImgSrc}
+                cat ${lcEmGrImgSrc} >> ${gcEmGaImgFnTrgTxtMaster}   # for "Dump" to screen
+                #!
+                #! 35 "EmGr" ###########################################################
+                lcEmGrImgSrc="/tmp/EmGr-img-Check-yelXyel.svg"
+                echo "################################## " >> ${gcEmGaImgFnTrgTxtMaster}   # title for "Dump" to screen
                 echo "Check-yelXyel.svg" >> ${gcEmGaImgFnTrgTxtMaster}   # name of image
-				echo "${lcEmGrImg}" >> ${gcEmGaImgFnTrgTxtMaster}   # title for "Dump" to screen
-				echo '<?xml version="1.0" encoding="UTF-8"?>
-				<svg xmlns="http://www.w3.org/2000/svg" version="1.1" height="150" width="150">
-				  <path style="fill:yellow;fill-opacity:0.8;stroke:#888800;stroke-width:3"
-				d="M 38,49 C 49,38 56,48 64,54 68,57 57,69 42,86 35,98 74,63 87,63 95,58 82,56 53,41"/>
-				</svg>
-				' > ${lcEmGrImgSrc}
-				cat ${lcEmGrImgSrc} >> ${gcEmGaImgFnTrgTxtMaster}   # for "Dump" to screen
-				#!
-				#! 36 "EmGr" ###########################################################
-				lcEmGrImgSrc="/tmp/EmGr-img-Check-bluXblu.svg"
-				echo "################################## " >> ${gcEmGaImgFnTrgTxtMaster}   # title for "Dump" to screen
+                echo "${lcEmGrImg}" >> ${gcEmGaImgFnTrgTxtMaster}   # title for "Dump" to screen
+                echo '<?xml version="1.0" encoding="UTF-8"?>
+                <svg xmlns="http://www.w3.org/2000/svg" version="1.1" height="150" width="150">
+                  <path style="fill:'yellow';fill-opacity:0.8;stroke:'#888800';stroke-width:3"
+                d="M 38,49 C 49,38 56,48 64,54 68,57 57,69 42,86 35,98 74,63 87,63 95,58 82,56 53,41"/>
+                </svg>
+                ' > ${lcEmGrImgSrc}
+                cat ${lcEmGrImgSrc} >> ${gcEmGaImgFnTrgTxtMaster}   # for "Dump" to screen
+                #!
+                #! 36 "EmGr" ###########################################################
+                lcEmGrImgSrc="/tmp/EmGr-img-Check-bluXblu.svg"
+                echo "################################## " >> ${gcEmGaImgFnTrgTxtMaster}   # title for "Dump" to screen
                 echo "Check-bluXblu.svg" >> ${gcEmGaImgFnTrgTxtMaster}   # name of image
-				echo "${lcEmGrImg}" >> ${gcEmGaImgFnTrgTxtMaster}   # title for "Dump" to screen
-				echo '<?xml version="1.0" encoding="UTF-8"?>
-				<svg xmlns="http://www.w3.org/2000/svg" version="1.1" height="150" width="150">
-				  <path style="fill:#0000FF;fill-opacity:0.8;stroke:blue;stroke-width:3"
-				d="M 38,49 C 49,38 56,48 64,54 68,57 57,69 42,86 35,98 74,63 87,63 95,58 82,56 53,41"/>
-				</svg>
-				' > ${lcEmGrImgSrc}
-				cat ${lcEmGrImgSrc} >> ${gcEmGaImgFnTrgTxtMaster}   # for "Dump" to screen
-				#! ############################################################
-				#!
-				#!
-				#! #################################################################
-				#! begin: Check-Mark  "colorcolor" is larger
-				#! #################################################################
-				#!
-				#! 37 "EmGr" ###########################################################
-				lcEmGrImgSrc="/tmp/EmGr-img-Check-redred.svg"
-				echo "################################## " >> ${gcEmGaImgFnTrgTxtMaster}   # title for "Dump" to screen
+                echo "${lcEmGrImg}" >> ${gcEmGaImgFnTrgTxtMaster}   # title for "Dump" to screen
+                echo '<?xml version="1.0" encoding="UTF-8"?>
+                <svg xmlns="http://www.w3.org/2000/svg" version="1.1" height="150" width="150">
+                  <path style="fill:#0000FF;fill-opacity:0.8;stroke:blue;stroke-width:3"
+                d="M 38,49 C 49,38 56,48 64,54 68,57 57,69 42,86 35,98 74,63 87,63 95,58 82,56 53,41"/>
+                </svg>
+                ' > ${lcEmGrImgSrc}
+                cat ${lcEmGrImgSrc} >> ${gcEmGaImgFnTrgTxtMaster}   # for "Dump" to screen
+                #! ############################################################
+                #!
+                #! 37 "EmGr" ###########################################################
+                lcEmGrImgSrc="/tmp/EmGr-img-Check-redred.svg"
+                echo "################################## " >> ${gcEmGaImgFnTrgTxtMaster}   # title for "Dump" to screen
                 echo "Check-redred.svg" >> ${gcEmGaImgFnTrgTxtMaster}   # name of image
-				echo "${lcEmGrImg}" >> ${gcEmGaImgFnTrgTxtMaster}   # title for "Dump" to screen
-				echo '<?xml version="1.0" encoding="UTF-8"?>
-				<svg xmlns="http://www.w3.org/2000/svg" version="1.1" height="150" width="150">
-				  <path style="fill:#FF1111;fill-opacity:0.8;stroke:#FF0000;stroke-width:5"
-				d="M 38,49 C 41,53 56,82 58,95 63,87 63,73 98,35 86,42 69,57 57,68 54,64 48,56 38,49"/>
-				</svg>
-				' > ${lcEmGrImgSrc}
-				cat ${lcEmGrImgSrc} >> ${gcEmGaImgFnTrgTxtMaster}   # for "Dump" to screen
-				#!
-				#! 38 "EmGr" ###########################################################
-				lcEmGrImgSrc="/tmp/EmGr-img-Check-grngrn.svg"
-				echo "################################## " >> ${gcEmGaImgFnTrgTxtMaster}   # title for "Dump" to screen
+                echo "${lcEmGrImg}" >> ${gcEmGaImgFnTrgTxtMaster}   # title for "Dump" to screen
+                echo '<?xml version="1.0" encoding="UTF-8"?>
+                <svg xmlns="http://www.w3.org/2000/svg" version="1.1" height="150" width="150">
+                  <path style="fill:#FF1111;fill-opacity:0.8;stroke:#FF0000;stroke-width:5"
+                d="M 38,49 C 41,53 56,82 58,95 63,87 63,73 98,35 86,42 69,57 57,68 54,64 48,56 38,49"/>
+                </svg>
+                ' > ${lcEmGrImgSrc}
+                cat ${lcEmGrImgSrc} >> ${gcEmGaImgFnTrgTxtMaster}   # for "Dump" to screen
+                #!
+                #! 38 "EmGr" ###########################################################
+                lcEmGrImgSrc="/tmp/EmGr-img-Check-grngrn.svg"
+                echo "################################## " >> ${gcEmGaImgFnTrgTxtMaster}   # title for "Dump" to screen
                 echo "Check-grngrn.svg" >> ${gcEmGaImgFnTrgTxtMaster}   # name of image
-				echo "${lcEmGrImg}" >> ${gcEmGaImgFnTrgTxtMaster}   # title for "Dump" to screen
-				echo '<?xml version="1.0" encoding="UTF-8"?>
-				<svg xmlns="http://www.w3.org/2000/svg" version="1.1" height="150" width="150">
-				  <path style="fill:#01FF01;fill-opacity:0.8;stroke:#00FF00;stroke-width:5"
-				d="M 38,49 C 41,53 56,82 58,95 63,87 63,73 98,35 86,42 69,57 57,68 54,64 48,56 38,49"/>
-				</svg>
-				' > ${lcEmGrImgSrc}
-				cat ${lcEmGrImgSrc} >> ${gcEmGaImgFnTrgTxtMaster}   # for "Dump" to screen
-				#!
-				#! 39 "EmGr" ###########################################################
-				lcEmGrImgSrc="/tmp/EmGr-img-Check-yelyel.svg"
-				echo "################################## " >> ${gcEmGaImgFnTrgTxtMaster}   # title for "Dump" to screen
+                echo "${lcEmGrImg}" >> ${gcEmGaImgFnTrgTxtMaster}   # title for "Dump" to screen
+                echo '<?xml version="1.0" encoding="UTF-8"?>
+                <svg xmlns="http://www.w3.org/2000/svg" version="1.1" height="150" width="150">
+                  <path style="fill:#01FF01;fill-opacity:0.8;stroke:#00FF00;stroke-width:5"
+                d="M 38,49 C 41,53 56,82 58,95 63,87 63,73 98,35 86,42 69,57 57,68 54,64 48,56 38,49"/>
+                </svg>
+                ' > ${lcEmGrImgSrc}
+                cat ${lcEmGrImgSrc} >> ${gcEmGaImgFnTrgTxtMaster}   # for "Dump" to screen
+                #!
+                #! 39 "EmGr" ###########################################################
+                lcEmGrImgSrc="/tmp/EmGr-img-Check-yelyel.svg"
+                echo "################################## " >> ${gcEmGaImgFnTrgTxtMaster}   # title for "Dump" to screen
                 echo "Check-yelyel.svg" >> ${gcEmGaImgFnTrgTxtMaster}   # name of image
-				echo "${lcEmGrImg}" >> ${gcEmGaImgFnTrgTxtMaster}   # title for "Dump" to screen
-				echo '<?xml version="1.0" encoding="UTF-8"?>
-				<svg xmlns="http://www.w3.org/2000/svg" version="1.1" height="150" width="150">
-				  <path style="fill:yellow;fill-opacity:0.8;stroke:yellow;stroke-width:5"
-				d="M 38,49 C 41,53 56,82 58,95 63,87 63,73 98,35 86,42 69,57 57,68 54,64 48,56 38,49"/>
-				</svg>
-				' > ${lcEmGrImgSrc}
-				cat ${lcEmGrImgSrc} >> ${gcEmGaImgFnTrgTxtMaster}   # for "Dump" to screen
-				#!
-				#! 40 "EmGr" ###########################################################
-				lcEmGrImgSrc="/tmp/EmGr-img-Check-blublu.svg"
-				echo "################################## " >> ${gcEmGaImgFnTrgTxtMaster}   # title for "Dump" to screen
+                echo "${lcEmGrImg}" >> ${gcEmGaImgFnTrgTxtMaster}   # title for "Dump" to screen
+                echo '<?xml version="1.0" encoding="UTF-8"?>
+                <svg xmlns="http://www.w3.org/2000/svg" version="1.1" height="150" width="150">
+                  <path style="fill:#FFFF00;fill-opacity:0.8;stroke:#FFFF00;stroke-width:5"
+                d="M 38,49 C 41,53 56,82 58,95 63,87 63,73 98,35 86,42 69,57 57,68 54,64 48,56 38,49"/>
+                </svg>
+                ' > ${lcEmGrImgSrc}
+                cat ${lcEmGrImgSrc} >> ${gcEmGaImgFnTrgTxtMaster}   # for "Dump" to screen
+                #!
+                #! 40 "EmGr" ###########################################################
+                lcEmGrImgSrc="/tmp/EmGr-img-Check-blublu.svg"
+                echo "################################## " >> ${gcEmGaImgFnTrgTxtMaster}   # title for "Dump" to screen
                 echo "Check-blublu.svg" >> ${gcEmGaImgFnTrgTxtMaster}   # name of image
-				echo "${lcEmGrImg}" >> ${gcEmGaImgFnTrgTxtMaster}   # title for "Dump" to screen
-				echo '<?xml version="1.0" encoding="UTF-8"?>
-				<svg xmlns="http://www.w3.org/2000/svg" version="1.1" height="150" width="150">
-				  <path style="fill:#0101FF;fill-opacity:0.8;stroke:#0101FF;stroke-width:5"
-				d="M 38,49 C 41,53 56,82 58,95 63,87 63,73 98,35 86,42 69,57 57,68 54,64 48,56 38,49"/>
-				</svg>
-				' > ${lcEmGrImgSrc}
-				cat ${lcEmGrImgSrc} >> ${gcEmGaImgFnTrgTxtMaster}   # for "Dump" to screen
-				#! ############################################################
-				#!
-				echo "### end ###" >> ${gcEmGaImgFnTrgTxtMaster}   # for "Dump" to screen
-				#!
+                echo "${lcEmGrImg}" >> ${gcEmGaImgFnTrgTxtMaster}   # title for "Dump" to screen
+                echo '<?xml version="1.0" encoding="UTF-8"?>
+                <svg xmlns="http://www.w3.org/2000/svg" version="1.1" height="150" width="150">
+                  <path style="fill:#0101FF;fill-opacity:0.8;stroke:#0101FF;stroke-width:5"
+                d="M 38,49 C 41,53 56,82 58,95 63,87 63,73 98,35 86,42 69,57 57,68 54,64 48,56 38,49"/>
+                </svg>
+                ' > ${lcEmGrImgSrc}
+                cat ${lcEmGrImgSrc} >> ${gcEmGaImgFnTrgTxtMaster}   # for "Dump" to screen
+                #! ############################################################
+    #!
+    echo "### end ###" >> ${gcEmGaImgFnTrgTxtMaster}   # for "Dump" to screen
+    #!
 } # end:
-export -f Sbr_CDW_EGI_Long			
+export -f Sbr_CDW_EGI_Long          
 #!
-#! ======================================================
+#! =========================================================
 #! end: Sbr_CDW_EGI_Long     Sbr_CDW_Embedded_Graphic_Images
-#! ======================================================
+#! =========================================================
 #!
 #!
 #!
-#!#############################################################################
+#!
 #(: ============================================================
-#(: fx(Sbr_CDW_EGI_CheckIF)	#: Active
-#(: called by: main ( ) , Check-If
-#(:  purpose: CheckIF:  if Master-IMG.txt Images are in /tmp  , then do not write again, else write files.
+#(: fx Sbr_CDW_EGI_CheckIF  #: Active  in main 
+#(: called by: main () , Check-If some status 
+#(:  purpose: CheckIF:  
+#(:     if Master-IMG.txt Images are in /tmp  , 
+#(:     then do not write again, 
+#(:     else write files.
+#(:     #! main () 
+#(:     # Install Long Image format under control of flag "gcEmGaImgFnTrgTxtMaster"
+#(:
 #(: receives param:
 #(: returns:
 #(: note:
@@ -2339,23 +3200,21 @@ export -f Sbr_CDW_EGI_Long
 #(: E3R copies /initrd/mnt/dev_save/MY_/usr-share/My_Dev_/Edit_CDW/rc.z_CDW_Embedded_Graphic_images.sh
 #(: to /applications/bin/My_Dev_/Edit_CDW/rc.z_CDW-EGI.sh
 #(: /root/my-applicaions/bin/rc.z_CDW_EGI.sh 
-#(: 
-#(: todo: 240115 process will ALWAYS call for LONG Image format. 
-#(: therefore: cull all references to SHORT Image format files.
+#(:
+#(: done: culled calls to "short" Image format. 
+#(: done: cull all references to "short" Image format files.
 #(:
 #! ##############################################################################
-function Sbr_CDW_EGI_CheckIF() {   # ACTIVE # main () # Install Long Image format.
-	n=0
+function Sbr_CDW_EGI_CheckIF() {   # ACTIVE 
+    n=0
     #!
-    #! Sbr_Splash_It " "---  Sbr_CDW_EGI_Long ---" " "orange" "purple" "1"    # -D--- Sbr_CDW_EGI_Long
-    #!
-	if [ ! -f   ${gcEmGaImgFnTrgTxtMaster} ] ; then 	# IF not ImgMaster , then build EGI files in /tmp
-				n=0   
- 				Sbr_CDW_EGI_Long   # CheckIF   will write IMAGE Long files DIRECTLY, now. 
+    if [ ! -f   ${gcEmGaImgFnTrgTxtMaster} ] ; then     # IF not ImgMaster , then build EGI files in /tmp
+                n=0   #! this should only happen on first "bootup" and "startup" of MGR .
+                Sbr_CDW_EGI_Long   # this will write IMAGE Long files DIRECTLY, now. 
     else
                 n=0
- 	fi # end: [ ! -f   ${gcEmGaImgFnTrgTxtMaster} ] ; then 	# build ALL Image files in /tmp
-	#!
+    fi # end: [ ! -f   ${gcEmGaImgFnTrgTxtMaster} ] ; then  # build ALL Image files in /tmp
+    #!
 } # end:
 export -f Sbr_CDW_EGI_CheckIF
 #!
@@ -2371,1178 +3230,1471 @@ export -f Sbr_CDW_EGI_CheckIF
 #!
 #!
 #!
-#! #######################################################
+#! ### BASH PAGE ####################################################
 #! BEGIN:     Msg_Windows :  Independent  Floating  Pages 
 #! BEGIN:     Msg_Windows :  Independent  Floating  Pages 
 #! BEGIN:     Msg_Windows :  Independent  Floating  Pages 
-#! #######################################################
+#! ### BASH PAGE ####################################################
 #!
+#!
+#! =====================================================================
+#! === page === pageS === pageSystem ===================================
+#! =====================================================================
+#! =====================================================================
+#! === page === pageM === pageMenu =====================================
+#! =====================================================================
+#! =====================================================================
+#! === page === pageB === pageBackUp ===================================
+#! =====================================================================
+#! =====================================================================
+#! === page === pageD === pageDox =====================================
+#! =====================================================================
+#! =====================================================================
+#! === page === pageU === pageUtil =====================================
+#! =====================================================================
 #!
 #! ##########################################################
-#~ function Sbr_CDW_Msg_Windows_code() { # NOT ACTIVE   # MARKER
-	#~ n="marker"
-#~ } #
-#~ export -f Sbr_CDW_Msg_Windows_code
+function Sbr_Msg_Windows_code() { # ACTIVE  #! MARKER 
+    n=0
+} #
+export -f Sbr_Msg_Windows_code
+#!
+#!
+#!
 #!
 #! ############################################################
-#! BACK-UP Copy of Working Messaage Window
-#! window DC_NoShow /tmp/EmGr-img-jug-red0yel.svg  # ACTIVE
-#! msg_DC_Quick_window='
-#! <window  	
-#!     window-position="1"
-#!     visible="1">
-#! 	<frame>
-#! 		<hbox>
-#! 			<button> <label>""  </label>
-#! 				<input file>"/tmp/EmGr-img-jug-red0yel.svg"</input><height>46></height> <width>46</width>
-#! 				<action function="closewindow">msg_DC_Quick_window</action>
-#! 			</button>
-#! 		</hbox>
-#! 	</frame>
-#! 	<variable>msg_DC_Quick_window</variable>
-#! </window>'
+        #! function Sbr_Msg_DC_Windows_ : documentation sample
+        #! BACK-UP Copy of Working Message Window
+        #! window Msg_DC_NoShow /tmp/EmGr-img-jug-red0yel.svg  # ACTIVE
+        #! msg_DC_Quick_window='
+        #! <window      
+        #!     window-position="nearmouse"
+        #!     visible="1">
+        #!  <frame>
+        #!      <hbox>
+        #!          <button> <label>""  </label>
+        #!              <input file>"/tmp/EmGr-img-Check-90-redXgrn.svg"</input><height>46></height> <width>46</width>
+        #!              <action function="closewindow">msg_DC_Quick_window</action>
+        #!          </button>
+        #!      </hbox>
+        #!  </frame>
+        #!  <variable>msg_DC_Quick_window</variable>
+        #! </window>'
+        #! export msg_DC_Quick_window # Small, preferred button msg window 
+        #!
+#! ############################################################
+#! ############################################################
+#! function msg_DC_Quick_Hash_BigRed_window     # ACTIVE
+export      msg_DC_Quick_Hash_BigRed_window='
+<window     
+    title="--------msg_dc_quick_Hash_BigRed_window"
+    window-position="1"  
+    visible="1">
+    <frame>
+        <hbox>
+            <button  tooltip-text="Click_here_to_Cancel" >   <label>""</label>
+                <input file>"/tmp/EmGr-img-hash-red.xpm"</input><height>86></height> <width>86</width>
+                <action function="closewindow">msg_DC_Quick_Hash_BigRed_window</action>
+            </button>
+        </hbox>
+    </frame>
+    <variable>msg_DC_Quick_Hash_BigRed_window</variable>
+</window>'
+#! ############################################################
+#! ############################################################
+#! function msg_DC_Quick_Hash_BigGrn_window     # ACTIVE
+export      msg_DC_Quick_Hash_BigGrn_window='
+<window     
+    title="--------msg_dc_quick_Hash_BigGrn_window"
+    window-position="1"  
+    visible="1">
+    <frame>
+        <hbox>
+            <button  tooltip-text="Click_here_to_Cancel" >   <label>""</label>
+                <input file>"/tmp/EmGr-img-hash-grn.xpm"</input><height>86></height> <width>86</width>
+                <action function="closewindow">msg_DC_Quick_Hash_BigGrn_window</action>
+            </button>
+        </hbox>
+    </frame>
+    <variable>msg_DC_Quick_Hash_BigGrn_window</variable>
+</window>'
+#! ############################################################
+#! ############################################################
+#! function msg_DC_Quick_Hash_BigBlu_window     # ACTIVE
+export  msg_DC_Quick_Hash_BigBlu_window='
+<window     
+    title="--------msg_dc_quick_Hash_BigBlu_window"
+    window-position="1"  
+    visible="1">
+    <frame>
+        <hbox>
+            <button  tooltip-text="Click_here_to_Cancel" >   <label>""</label>
+                <input file>"/tmp/EmGr-img-hash-blu.xpm"</input><height>86></height> <width>86</width>
+                <action function="closewindow">msg_DC_Quick_Hash_BigBlu_window</action>
+            </button>
+        </hbox>
+    </frame>
+    <variable>msg_DC_Quick_Hash_BigBlu_window</variable>
+</window>'
+#! ############################################################
+#! ############################################################
+#! function Sbr_Msg_DC_Windows_
+export gcBig90yel="/tmp/EmGr-img-Check-90-redXyel.svg"
+export  msg_DC_Check_90_Big_redXyel_window='
+<window     
+    window-position="1"
+    visible="1">
+    <frame>
+        <hbox>
+            <button> <label>""  </label>
+                <input file>'${gcBig90yel}'</input><height>99></height> <width>99</width>
+                <action function="closewindow">msg_DC_Check_90_Big_redXyel_window</action>
+            </button>
+        </hbox>
+    </frame>
+    <variable>msg_DC_Check_90_Big_redXyel_window</variable>
+</window>'
+#!
+#! ############################################################
+#! ############################################################
+#! function Sbr_Msg_DC_Windows_
+export gcBig90blu="/tmp/EmGr-img-Check-90-redXblu.svg"
+export  msg_DC_Check_90_Big_redXblu_window='
+<window     
+    window-position="1"
+    visible="1">
+    <frame>
+        <hbox>
+            <button> <label>""  </label>
+                <input file>'${gcBig90blu}'</input><height>99></height> <width>99</width>
+                <action function="closewindow">msg_DC_Check_90_Big_redXblu_window</action>
+            </button>
+        </hbox>
+    </frame>
+    <variable>msg_DC_Check_90_Big_redXblu_window</variable>
+</window>'
 #! export msg_DC_Quick_window # Small, preferred button msg window 
 #!
 #! ############################################################
-#! window DC_NoShow /tmp/EmGr-img-jug-red0yel.svg  # ACTIVE
-msg_DC_Quick_window='
-<window  	
-    title="msg_DC_Quick_window"
+#! function Sbr_Msg_DC_Windows
+export gcBig90grn="/tmp/EmGr-img-Check-90-redXgrn.svg"
+export  msg_DC_Check_90_Big_redXgrn_window='
+<window     
     window-position="1"
     visible="1">
-	<frame>
-		<hbox>
-			<button> <label>""  </label>
-				<input file>"/tmp/EmGr-img-jug-red0yel.svg"</input><height>46></height> <width>46</width>
-				<action function="closewindow">msg_DC_Quick_window</action>
-			</button>
-		</hbox>
-	</frame>
-	<variable>msg_DC_Quick_window</variable>
+    <frame>
+        <hbox>
+            <button> <label>""  </label>
+                <input file>'${gcBig90grn}'</input><height>99></height> <width>99</width>
+                <action function="closewindow">msg_DC_Check_90_Big_redXgrn_window</action>
+            </button>
+        </hbox>
+    </frame>
+    <variable>msg_DC_Check_90_Big_redXgrn_window</variable>
 </window>'
-export msg_DC_Quick_window # Small, preferred button msg window 
+#! export msg_DC_Quick_window # Small, preferred button msg window 
+#!
+#! ############################################################
+#! ############################################################
+#! ############################################################
+#! ############################################################
+#! function Sbr_Msg_DC_Windows_ #! only for TESTING
+#! export gcBig90yel="/tmp/EmGr-img-Check-90-redXyel.svg"  #! declared/assigned above
+export  msg_DC_Check_Big_90_window='
+<window     
+    window-position="1"
+    visible="1">
+    <frame>
+        <hbox>
+            <button> <label>""  </label>
+                <input file>'${gcBig90yel}'</input><height>111></height> <width>111</width>
+                <action function="closewindow">msg_DC_Check_Big_90_window</action>
+            </button>
+        </hbox>
+    </frame>
+    <variable>msg_DC_Check_Big_90_window</variable>
+</window>'
+#!
+#
+#! ############################################################
+#! function msg_DC_Quick_windowS    jug-red0yel   # ACTIVE
+msg_DC_Quick_windowS='
+<window     
+    title="--------16-msg_dc_quick_window_S---jug-red0yel"
+    window-position="1"
+    visible="1">
+    <frame>
+        <hbox>
+            <button  tooltip-text="Click_here_to_Cancel" >   <label>""</label>
+                <input file>"/tmp/EmGr-img-jug-red0yel.svg"</input><height>16></height> <width>16</width>
+                <action function="closewindow">msg_DC_Quick_windowS</action>
+            </button>
+        </hbox>
+    </frame>
+    <variable>msg_DC_Quick_windowS</variable>
+</window>'
+export msg_DC_Quick_windowS # Small, preferred button msg window 
+#!
+#!
+#! #####################################################################
+#! function msg_DC_Quick_window    jug-red0yel   # ACTIVE Standard !!!
+msg_DC_Quick_window='
+<window     
+    title="--------110-msg_dc_quick_window---jug-red0yel"
+    window-position="3"
+    visible="1">
+    <frame>
+        <hbox>
+            <button  tooltip-text="Click_here_to_Cancel" >   <label>""</label>
+                <input file>"/tmp/EmGr-img-jug-red0yel.svg"</input><height>46></height> <width>46</width>
+                <action function="closewindow">msg_DC_Quick_window</action>
+            </button>
+        </hbox>
+    </frame>
+    <variable>msg_DC_Quick_window</variable>
+</window>'
+export msg_DC_Quick_window # Small, preferred standard button msg window 
 #!
 #!
 #! ############################################################
-#! window DC_Quick_Utl_window  # ACTIVE
+#! function msg_DC_Quick_Utl_window     # NOT ACTIVE
 msg_DC_Quick_Utl_window='
-<window  	
+<window     
     title="msg_DC_Quick_Utl_window"
     window-position="1"
     visible="1">
-	<frame>
-		<hbox>
-			<button> <label>""  </label>
-				<input file>"/tmp/EmGr-img-jug-grnxred.svg"</input><height>46></height> <width>46</width>
-				<action function="closewindow">msg_DC_Quick_Utl_window</action>
-			</button>
-		</hbox>
-	</frame>
-	<variable>msg_DC_Quick_Utl_window</variable>
+    <frame>
+        <hbox>
+            <button> <label>""  </label>
+                <input file>"/tmp/EmGr-img-jug-grnxred.svg"</input><height>26></height> <width>26</width>
+                <action function="closewindow">msg_DC_Quick_Utl_window</action>
+            </button>
+        </hbox>
+    </frame>
+    <variable>msg_DC_Quick_Utl_window</variable>
 </window>'
 export msg_DC_Quick_Utl_window # Small, preferred button msg window 
 #!
 #!
-#! ############################################################
-#! window DC_0 # hash green for CBX
-msg_DC_0_window='
-<window title="msg_DC_0_window"
-    title="msg_DC_0_window"
-    window-position="${GTK_WIN_POS_CENTER}"
-visible="true" >
-	<frame>
-		<hbox>
-			<button> <label>" "</label>
-				<input file>"/tmp/EmGr-img-hash-grn.xpm"</input><height>48></height> <width>48</width>
-				<action function="closewindow">msg_DC_0_window</action>
-			</button>
-		</hbox>
-	</frame>
-	<variable>msg_DC_0_window</variable>
-</window>'
-export msg_DC_0_window
-#!
 #!
 #! ############################################################
-#! window DC_ReStart_0 
-msg_DC_ReStart_0_window='
-<window title="msg_DC_ReStart_0_window"
-    window-position="${GTK_WIN_POS_CENTER}"
-visible="true" >
-	<frame>
-		<hbox>
-			<button> <label>"Clear the ReStart Set-Up NOW  !  "</label>
-				<input file>"/tmp/EmGr-img-hash-grn.xpm"</input><height>48></height> <width>48</width>
-				<action function="closewindow">msg_DC_ReStart_0_window</action>
-			</button>
-		</hbox>
-	</frame>
-	<variable>msg_DC_ReStart_0_window</variable>
-</window>'
-export msg_DC_ReStart_0_window
-#!
-#! ############################################################
-#! window DC_PrgQuit 
-msg_DC_PrgQuit_window='
-<window title="msg_DC_PrgQuit_window"
-    window-position="${GTK_WIN_POS_CENTER}"
-visible="true" >
-	<frame>
-		<hbox>
-			<button> <label>"Clear the Program Quit Set-Up NOW  !  "</label>
-				<input file>"/tmp/EmGr-img-quit-rednnn.svg"</input><height>36></height> <width>36</width>
-				<action function="closewindow">msg_DC_PrgQuit_window</action>
-			</button>
-		</hbox>
-	</frame>
-	<variable>msg_DC_PrgQuit_window</variable>
-</window>'
-export msg_DC_PrgQuit_window
-#!
-#!
-#!
-#! ############################################################
-#! window DC_ReMenu /tmp/EmGr-img-EmGr-hash-grn.xpm   S2F , E3R+CTB+ReStart
-export gcMsgWindowReMenu1="The ReMenu function is active now ! "
-export gcMsgWindowReMenu2="Will Build a Generic Menu.lst ! "
-export gcMsgWindowReMenu3="Click the ReMenu Button again ! "
-#!
-msg_DC_ReMenu_window='
-<window title="msg_Chk_ReMenu_window---"
+export msg_DC_MainBakOneAll_window_text="----------------------- 
+Main BackUp  ! 
+(1) Backup-One+All + CTB_ReStart 
+(2) Backup-One+All + CTB_ReBoot
+(3) Backup-One+All + CTB_PwrOff 
+(4) Backup-One+All + CTB_Scan+PwrOff
+-----------------------------------------------------------------"
+#! ######################################################################
+#! function msg_DC_MainBakOneAll_window    # BakOneAll tool-tip # ACTIVE 
+export msg_DC_MainBakOneAll_window='
+<window title="msg_DC_MainBakOneAll_window---"
 visible="true" ><frame>
-<text editable="false" use-markup="true" xalign=".5"><label> "<span color='"'red'"'> <b>'${gcMsgWindowReMenu1}'</b> </span> " </label></text>
-<text editable="false" use-markup="true" xalign=".5"><label> "<span color='"'green'"'> <b>'${gcMsgWindowReMenu2}'</b> </span> " </label></text>
-<text editable="false" use-markup="true" xalign=".5"><label> "<span color='"'blue'"'> <b>'${gcMsgWindowReMenu3}'</b> </span> " </label></text>
+<text editable="false" use-markup="true" xalign=".5"><label> "<span color='"'darkred'"'> <b>'${msg_DC_MainBakOneAll_window_text}'</b> </span> " </label></text>
 <hbox>
     <button>
-        <label>"Clear the ReMenu window "</label>
+        <label>"Clear the BakOneAll window "</label>
         <input file>"/tmp/EmGr-img-hash-grn.xpm"</input><height>48></height> <width>48</width>
-        <action function="closewindow">msg_DC_ReMenu_window</action>
+        <action function="closewindow">msg_DC_MainBakOneAll_window</action>
     </button>
 </hbox></frame>
-<variable>msg_DC_ReMenu_window</variable>
+<variable>msg_DC_MainBakOneAll_window</variable>
 </window>'
-export msg_DC_ReMenu_window
 #! ############################################################
 #!
+#!
 #! ############################################################
-export gcMsgWindowCBX="--- Combo-Box-Set -------------------- 
-CBXC3C * Clear Caches ! 
-   will clear some browser aux storage 
-   which browsers rebuild on each run. 
-   Vars float. 
-CBXS2F * Snap-Merge-Puppy !  
-   will run several loops to clear 
-   internal non-fatal error flags.
-   Vars float.    
-CBXCTU * Cold-Tar.Gz.-Backup*  
-   writes BackUp file to OS local ! 
-   runs CTU Utility version 
-   will NOT run SMP 
-   CTU has NO GUI 
-   Vars float.  
-#---------------"
+export msg_DC_C3C_window_text="----------------------- 
+Clear * CBXC3C * Clear Caches ! 
+   (1) Will clear some browser aux storage 
+        which FireFox rebuilds each run. 
+   (2) Will Save2File update into SaveDATA storage.
+   (3) Will Reboot to activate new SaveDATA into system.
+#------------------------------------------"
 #! ############################################################
-msg_DC_CBX_window='
-<window title="msg_DC_CBX_window---"
+#! function msg_DC_C3C_window    # "C3C tool-tip" # ACTIVE
+export msg_DC_C3C_window='
+<window title="msg_DC_C3C_window---"
 visible="true" ><frame>
-<text editable="false" use-markup="true" xalign=".5"><label> "<span color='"'blue'"'> <b>'${gcMsgWindowCBX}'</b> </span> " </label></text>
+<text editable="false" use-markup="true" xalign=".5"><label> "<span color='"'blue'"'> <b>'${msg_DC_C3C_window_text}'</b> </span> " </label></text>
 <hbox>
     <button>
-        <label>"Clear the CBX window "</label>
+        <label>"Clear the C3C window "</label>
         <input file>"/tmp/EmGr-img-hash-grn.xpm"</input><height>48></height> <width>48</width>
-        <action function="closewindow">msg_DC_CBX_window</action>
+        <action function="closewindow">msg_DC_C3C_window</action>
     </button>
 </hbox></frame>
-<variable>msg_DC_CBX_window</variable>
+<variable>msg_DC_C3C_window</variable>
 </window>'
-export msg_DC_CBX_window
 #! ############################################################
-#!
-#! ### covers Remenu button ###################################
-export gcMsgWindowREM="> Build Generic Menu.lst 
- > Manual _1-of-20_PuppyOS__menu.lst_ Options.   "
-#! ### Not Used ###############################################
-msg_DC_REMENU_window='
-<window title="msg_DC_REMENU_window---"
+
+#! msg_DC_M11_window
+#! ############################################################
+export msg_DC_M11_window_text="
+! MGR 10  utilizes  GTK NoteBook as the basic graphical presentation method. 
+!
+! MGR 11  utilizes TWO different main GUI code methods, 
+!      'GTK' NoteBook based main GUI code pages 
+!      'BASH' Page based main GUI code pages
+!
+!
+* ${gcMgrNameBase_All}
+     has many Double-Click-Buttons !!!
+     buttons with Double-Click will trigger 
+        a large tear-drop shaped ICON   ...
+        { Red Border : Yellow-filled }   ...
+        will pop-up in middle of screen  ...
+* ${gcMgrNameBase_All} has GTK NoteBook Pages !!!
+* ${gcMgrNameBase_All} has BASH coded Pages !!!
+*"
+#! ######################################################################
+#! function msg_DC_C3C_window    # tool-tip MGR-11 Prime Page # ACTIVE  
+export msg_DC_M11_window='
+<window title="msg_DC_M11_window---"
 visible="true" ><frame>
-<text editable="false" use-markup="true" xalign=".5"><label> "<span color='"'brown'"'> <b>'${gcMsgWindowREM}'</b> </span> " </label></text>
+<text editable="false" use-markup="true" xalign=".5"><label> "'${msg_DC_M11_window_text}'" </label></text>
 <hbox>
     <button>
-        <label>"Clear the Remenu window "</label>
+        <label>"Clear the message_window "</label>
         <input file>"/tmp/EmGr-img-hash-grn.xpm"</input><height>48></height> <width>48</width>
-        <action function="closewindow">msg_DC_REMENU_window</action>
+        <action function="closewindow">msg_DC_M11_window</action>
     </button>
 </hbox></frame>
-<variable>msg_DC_REMENU_window</variable>
+<variable>msg_DC_M11_window</variable>
 </window>'
-export msg_DC_REMENU_window
 #! ############################################################
+
 #!
 #!
+#!
 #! ############################################################
-export gcMsgWindowBakAll0="
-'===-BakAll-Double-Click-Buttons-==='
-SubRoutine #1 and #2 
-Will run 'BakOne'  or  'BakAll' 
-to do a quick Copy/BackUp of Editing Scripts
-   from---> Editing subdir 
-   '/initrd/mnt/dev_save/MY_/usr-share/My_Dev_/'
-(1)  into ---> System "Production" subdir
-   '/root/my_applications/'
-(2)  into ---> User "Hard-Drive" storage subdir
-   '/mnt/home/Bak-All-Arc-Dts_'
+#! replaced by "MainBakOneAll" 
+export gcMsgWindowBakOneAll="
+'===-BackUp-One // PXB // Backup-All-==='
+=== SubRoutine #1 ===  EXIT:guiMgrOneArcDts
+Will run 'BakOne' 
+to do a quick Copy/BackUp of Editing Scripts + DTS 
+   from---> Editing subdir  Current Source File 
+      '/initrd/mnt/dev_save/MY_/usr-share/My_Dev_/'
+   into ---> System "Edit" subdir
+     '/mnt/home/MY_/usr-share/My_Dev_/Edit_MGR/arc_Common_dts_sh_'
 Then --->
-EXIT via /'ReStart'/ or  /'ReBoot'/ 
+EXIT via /'ReStart'
 ...
-SubRoutine  #3 and#4
-Will do a 'BakAll' Copy/BackUp of all Editing Scripts
-to all 'mounted hard media' 
-... + UpMnt 
-... + CTA 'ColdTarBackup' 'Automatic'  
-... + DnMnt 
-... + ReBoot or PowerOff
-"
-#! end:   gcMsgWindowBakAll0   msg_DC_BakAll_window
+=== SubRoutine  #2 === EXIT:guiPXB_ion_RS
+PXB is the full 'PupColdBackup' internal inside MGR  
+BackUp_SaveDATA_+_ReStart_
+...
+=== SubRoutine  #3 === EXIT:guiMgrOneArcDts
+Will do a 'BakAll' Copy/BackUp of all Editing Scripts + DTS 
+to "RA" /root/my-applications/ + ReStart  
+________________________________________________"
+#! end:   gcMsgWindowBakOneAll   msg_DC_BakAll_window
 #!
 #! ############################################################
-msg_DC_BakAll_window='
-<window title="msg_DC_BakAll_window---"
+#! function msg_DC_BakOneAll_window  # Tool-Tip  #  NOT ACTIVE  
+#! replaced by "MainBakOneAll" 
+msg_DC_BakOneAll_window='
+<window title="msg_DC_BakOneAll_window---NOT ACTIVE"
 visible="true" ><frame>
-<text editable="false" use-markup="true" xalign=".5"><label> "<span color='"'brown'"'> <b>'${gcMsgWindowBakAll0}'</b> </span> " </label></text>
+<text editable="false" use-markup="true" xalign=".5"><label> "<span color='"'brown'"'> <b>'${gcMsgWindowBakOneAll}'</b> </span> " </label></text>
 <hbox>
     <button>
-        <label>"Clear the BakAll window "</label>
+        <label>"Clear the BakOneAll window "</label>
         <input file>"/tmp/EmGr-img-hash-grn.xpm"</input><height>48></height> <width>48</width>
-        <action function="closewindow">msg_DC_BakAll_window</action>
+        <action function="closewindow">msg_DC_BakOneAll_window</action>
     </button>
 </hbox></frame>
-<variable>msg_DC_BakAll_window</variable>
+<variable>msg_DC_BakOneAll_window</variable>
 </window>'
-export msg_DC_BakAll_window
+export msg_DC_BakOneAll_window
 #! ############################################################
 #!
 #!
-#! ############################################################
-#! [-0-]  Floating Msg Window ###   ### REQUIRED Msg Window ##########################
-export gcMsgWindowVert="
-===-Multi-Button Vertical Module-===
-#: note: 
-#: fx (Sbr_MB_gui_xml) Multi-Button Vertical Module
-#: called by : button Vert  
-#: purpose :  Build/Present  Multi-Button  array 
-#: - - -    of functional calls to sub-routines
-#: - - -    which are system programs. 
-#: - - -    presented in a vertical format.
-#: returns : 
-#:  Selected Button generates a Token FileName
-#:  Token FileName is sent as a string echo into config-file
-#: - - - - - - - - - - - - - - - - - - - - - - - - - - - - -  
-#:  After 'close' 'return'  Then  BASH will :
-#:  - - - load/cat/read the file.cfg 
-#:  - - - then BASH will 
-#: - - -  - - - run the local function  'Token' 
-#:  - - - - - - which will execute the 'Token' .
-#: - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
-#:  READ the CODE in the Vertical MB page section .
-#:  Sbr_MB_gui_xml  eval  will not initiate action
-#:  Sbr_MB_gui_xml writes action results into a file.cfg
-#:  BASH code  will import/cat/read the file.cfg
-#:  BASH code  will call the -action- subroutine.
-#:  READ the CODE in the Vertical MB page source.
-#:  READ the CODE  to see the specific method.
-#:  This method avoids conflict between BASH and GTK .
-#: _____________________________________________________"
-#! end:   gcMsgWindowVert   msg_DC_VERT_window
+#~ #! #################################################################
+#~ export gcmsgDcDxstroWindow="'DC_Dxstro_window'"
+#~ #!
+#~ function msg_DC_Dxstro_window() { #! Marker
+#~ n=0   
+#~ } # end
+#~ #!
+
+
+
+
+
+
+
+
+
+
+
+
+#! [-1-]  Floating Msg Window ###   #! REQUIRED Msg Window ===================
+#! ### MAIN Page 1 <button> #########################################
+#! ### MAIN Page 1 <button> #########################################
+#! ### MAIN Page 1 <button> #########################################
+function msg_DC_LxgenBack_window() { #! Marker 
+n=0   
+} # end
 #!
-#! ############################################################
-#! [-0-]  Floating Msg Window ###   ### REQUIRED Msg Window ##########################
-msg_DC_VERT_window='
-<window title="msg_DC_Vert_window---"
-visible="true" ><frame>
-<text editable="false" use-markup="true" xalign=".5"><label> "<span color='"'brown'"'> <b>'${gcMsgWindowVert}'</b> </span> " </label></text>
-<hbox>
-    <button>
-        <label>"Clear the Vert window "</label>
-        <input file>"/tmp/EmGr-img-hash-grn.xpm"</input><height>48></height> <width>48</width>
-        <action function="closewindow">msg_DC_VERT_window</action>
-    </button>
-</hbox></frame>
-<variable>msg_DC_VERT_window</variable>
-</window>'
-export msg_DC_VERT_window
-#! ############################################################
+#! =====================================================================
+#! === page === pageB === pageBASH =====================================
+#! =====================================================================
+
+#! [-1-]  Floating Msg Window ###   #! REQUIRED Msg Window ===================
+#! ### MAIN BASH Page 0 <button> #########################################
+#! ### MAIN BASH Page 0 <button> #########################################
+#! ### MAIN BASH Page 0 <button> #########################################
+function msg_DC_LxgenBASH_window() { #! Marker 
+n=0   
+} # end
 #!
-#!
-#! ############################################################
-export gcMsgWindowVertTT="#: MB_Method: 
-#: note:  Multi-Button module
-#: fx (Sbr_MB_gui_xml) 
-#: called by : Main-GUI-Dialog via EXIT:guiMB ???
-#: purpose :  Build/Present  Multi-Button  array 
-#: - - -    of functional calls to sub-routines
-#: - - -    which are system programs.
-#: returns : 
-#:  Selected Button generates a Token FileName
-#:  Token FileName is sent as a string echo into config-file
-#:  example for ROX system file manager program:
-#:  <action>echo 'Sbr_MB_rox' > /0-MGR_MB_RetVal.cfg </action>  
-#: BASH will :
-#:  - - - load/cat/read the file.cfg 
-#:  - - - then run the local function  Sbr_MB_rox() 
-#:  - - - which will execute the ROX system file manager.
-#: - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
-#:  READ the CODE in the Vertical MB page section .
-#:  Sbr_MB_gui_xml  eval  will not initiate action
-#:  Sbr_MB_gui_xml writes action results into a file.cfg
-#:  BASH code  will import/cat/read the file.cfg
-#:  BASH code  will call the <action> subroutine.
-#:  READ the CODE in the Vertical MB page source.
-#:  READ the CODE  to see the specific method.
-#:  This method avoids conflict between BASH and GTK .
-#: _____________________________________________________"
-#!
-#! ############################################################
-#! [-0-]  Floating Msg Window ###   ### REQUIRED Msg Window ##########################
-msg_DC_VERT_TT_window='
-<window title="msg_DC_Vert_TT_window---"
-visible="true" ><frame>
-<text editable="false" use-markup="true" xalign=".5"><label>'${gcMsgWindowVertTT}'</label></text>
-<hbox>
-    <button>
-        <label>"Clear the Vert window "</label>
-        <input file>"/tmp/EmGr-img-hash-grn.xpm"</input><height>48></height> <width>48</width>
-        <action function="closewindow">msg_DC_VERT_TT_window</action>
-    </button>
-</hbox></frame>
-<variable>msg_DC_VERT_TT_window</variable>
-</window>'
-export msg_DC_VERT_TT_window
-#! ############################################################
-#!
-#!
-#! ############################################################
-export gcmsgDcLxgoWindow="
-'===-Lxgo-==='
-"
-#! ############################################################
-#! [-0-]  Floating Msg Window ###   ### REQUIRED Msg Window ##########################
-msg_DC_Lxgo_window='
-<window title="msg_DC_Lxgo_window---"
-visible="true" ><frame>
-<text editable="false" use-markup="true" xalign=".5"><label> "<span color='"'red'"'> <b>'${gcmsgDcLxgoWindow}'</b> </span> " </label></text>
-<hbox>
-    <button tooltip-text="Simple_guiSimReStart">
-        <input file>"'/tmp/EmGr-img-Check-grnXgrn.svg'"</input><width> "35" </width> <height> "35" </height>
-        <label>'_ReStart__'</label>
-        <action function="'launch'">msg_DC_Quick_window</action><action function="'closewindow'">msg_DC_Quick_window</action>
-        <action>'EXIT:guiSimReStart'</action>	</button>
-    <button>
-        <label>"Clear the Lxgo window "</label>
-        <input file>"Lxgo_.jpg"</input><height>48></height> <width>48</width>
-        <action function="closewindow">msg_DC_Lxgo_window</action>    </button>
-</hbox></frame>
-<variable>msg_DC_Lxgo_window</variable>
-</window>'
-export msg_DC_Lxgo_window
-#! ############################################################
-#!
-#!
-#! ############################################################
-export gcmsgDcDxstroWindow="'DC_Dxstro_window'"
-#! [-0-]  Floating Msg Window ###   ### REQUIRED Msg Window ##########################
-    #! ### /root/my-applications/Dxstro_.jpg ###
-    #! ### /mnt/home/pup_UpupMM-SDA/Dxstro_.jpg ###
-msg_DC_Dxstro_window='
-<window title="msg_DC_Dxstro_window---"
-visible="true" >
+#! =====================================================================
+#! _BASH_=== page === pageS === pageSystem ===================================
+#! ### BASH SYSTEM ### Page 0 <button> #################################
+#! via BASH button to enable BASH PAGE     #! ACTIVE
+msg_DC_LxgenBASH_window_text="===_Page_BASH_SYSTEM_==="
+msg_DC_LxgenBASH_window_0='
+<window title="msg_DC_LxgenBASH_window_0_pageBack_!_"
+    space-expand="true" 
+    resizable="true" 
+    visible="true" >
+
 <frame>
-<text editable="false" use-markup="true" xalign=".5"><label> "<span color='"'red'"'> <b>'${gcmsgDcDxstroWindow}'</b> </span> " </label></text>
+<text  visible="0" editable="false" use-markup="true" xalign=".5">
+    <label>"'####################_Gen_BASH_SYSTEM_############################'"</label> </text> 
+
 <vbox>
- 
-   <button  tooltip-text="'closewindow'"   has-focus="false">
-                <input file>"'/root/my-applications/Lxgen_.jpg'"</input><width>150</width><height>150</height>
-                <label>"''"</label>	
-                <action function="">msg_DC_Dxstro_window</action> 
-                  </button>
- 
-   <button  tooltip-text="'closewindow'"   has-focus="false">
-        <input file>"/root/my-applications/Dxstro_.jpg"</input><height>948></height> <width>400</width>
-                <label>"''"</label>	
-                <action function="">msg_DC_Dxstro_window</action> 
-                  </button>
+        <hbox homogeneous="false">
 
-    <button>
-        <label>"Clear the Dxstro_window"</label>
-        <action function="closewindow">msg_DC_Dxstro_window</action>    </button>
+            <hseparator width-request="200"></hseparator>
 
-</vbox>
-</frame>
-<variable>msg_DC_Dxstro_window</variable>
-</window>'
-export msg_DC_Dxstro_window
-#! ############################################################
-#!
-#!
-#!
-#! ############################################################
-#! [_1_] [_2_] [_3_]  [_4_] [_5_]    <notebook> "msg-windows"  ### REQUIRED ###############
-#! ############################################################
-#!
-#!
-#! [-1-]  Floating Msg Window ###   ### REQUIRED Msg Window ##########################
-    #! msg_DC_LxgenMain_window
-    #        <vbox visible="'${gcP1_ctl}'"> 
-    #! ### /root/my-applications/Dxstro_.jpg ###
-    #! ### /mnt/home/pup_UpupMM-SDA/Dxstro_.jpg ###
-msg_DC_LxgenMain_window_text="===_Main_page_==="
-msg_DC_LxgenMain_window='
-<window title="msg_DC_LxgenMain_window---"
-visible="true" >
-<frame>
-<text editable="false" use-markup="true" xalign=".5"><label> "<span color='"'red'"'> <b>'${msg_DC_LxgenMain_window_text}'</b> </span> " </label></text>
-<vbox>
-
-            <button   visible="1" has-focus="false" height-request="30"  xalign=".5"  tooltip-text="'top---page-1-page-MAIN---${gcP1_ctl}'" >
-                <input file>"'/tmp/EmGr-img-jug-grnxred.svg'"</input><width>25</width><height>25</height>
-                <label> "'---MAIN---'" </label> <action>'lxEXIT:guiC1_X_ctl'</action> </button>
-
-            <button visible="1"   tooltip-text="width-50-space>'=============================='" <height-request="1">
-                    <label>"'!_________!________!_________!_________!_____!____'"</label>
-                    <action>'lxPAGE1:spacer'</action> </button>
-
-            <vseparator height-request="3"></vseparator>
-
-            <vseparator height-request="3"></vseparator>
-            <button   visible="1" 
-                tooltip-text="'EXIT:guiCTX'__< 'CTX'  Tar.Gz from Local to SDA1 Drive, has GUI >" 
-                has-focus="false" height-request="13"> <label> "" </label> 
-                <input file icon="gtk-select-color" ></input>   
-                <action>'lxAction:guiCTX'</action> </button>
-
-            <button visible="1"  tooltip-text="''" 
-                has-focus="true" height-request="65" >
-                <input file> "'/tmp/EmGr-img-jug-blu0yel.svg'"</input><width>33</width><height>33</height>
-                <label> " '*_COLD_TAR_BACKUP_*' " </label>
-                    <action function="'launch'">msg_DC_Quick_window</action><action function="'closewindow'">msg_DC_Quick_window</action>
-                <action>'EXIT:guiCTX'</action> </button>
-
-            <vseparator height-request="3"></vseparator>
-            <vseparator height-request="3"></vseparator>
-            <button   visible="1" tooltip-text="'EXIT:guiArcMgrDts' : Duplicate only this $0 SRC 
-                to LOCAL  Edit SubDir  with current DTS "has-focus="false" height-request="13"> <label> "" </label> 
-                <input file icon="gtk-select-color" ></input>   
-                <action>'ttAction:guiMgrOneArcDts'</action> </button>
-
-    <hbox>
+            <button visible="1" tooltip-text="''" has-focus="false" width-request="0"  height-request="0" xalign=".5"  >
+                <input file>"'/tmp/EmGr-img-hash-blu.xpm'"</input><width>35</width><height>35</height>   
+                <label>""</label><action>'0:GTK-Launch-BASH-msg_DC_LxgenMenu_window'</action> </button>
+                   
             <hseparator width-request="3"></hseparator>
 
-        <hbox homogeneous="1">
+            <button  has-focus="false" height-request="22"  xalign=".5"  
+                tooltip-text="''" >
+                <input file>"'/tmp/EmGr-img-apple-redgrn.svg'"</input><width>25</width><height>25</height>
+                <label>"'-Menu--'"</label>
+                    <action function="'closewindow'">msg_DC_LxgenMenu_window_0</action>
+                    <action function="'closewindow'">msg_DC_LxgenBack_window_0</action>
+                    <action function="'closewindow'">msg_DC_LxgenDox_window_0</action>
+                    <action function="'closewindow'">msg_DC_LxgenUtil_window_0</action>
+                    <action function="'launch'">     msg_DC_LxgenMenu_window_0</action> 
+                    <action function="'closewindow'">msg_DC_LxgenMenu_window_0</action>
+                    </button>
+            <hseparator width-request="11"></hseparator>
 
-            <hseparator width-request="62"></hseparator>
-            <button has-focus="false" height-request="22"  xalign=".5">  
-               <input file>"'/tmp/EmGr-img-Check-redXred.svg'"</input><width>"35"</width><height>"35"</height>
-               <label>"''"</label><action>'0'</action> </button>
-            <button has-focus="false" height-request="13"  xalign=".5"  tooltip-text="P4-/tmp/EmGr-img-apple-redyel.svg" >
-                <input file>"'/tmp/EmGr-img-apple-redyel.svg'"</input><width>25</width>  <height>25</height>
-                <label> "" </label><action>0</action></button>
+            <button  has-focus="false" height-request="22"  xalign=".5"  
+                tooltip-text="''" >
+                <input file>"'/tmp/EmGr-img-apple-redgrn.svg'"</input><width>25</width><height>25</height>
+                <label>"'-BACK--'"</label>
+                    <action function="'closewindow'">msg_DC_LxgenMenu_window_0</action>
+                    <action function="'closewindow'">msg_DC_LxgenBack_window_0</action>
+                    <action function="'closewindow'">msg_DC_LxgenDox_window_0</action>
+                    <action function="'closewindow'">msg_DC_LxgenUtil_window_0</action>
+                    <action function="'launch'">     msg_DC_LxgenBack_window_0</action> 
+                    <action function="'closewindow'">msg_DC_LxgenBack_window_0</action>
+                    </button>
+            <hseparator width-request="11"></hseparator>
 
-            <button  visible="1"   
-                gtk-apply="true" has-focus="false" > 
-                <label> " {{=== ONE-" </label>
-                <action>'EXIT:guiMgrOneArcDts'</action> 		</button>
+            <button  has-focus="false" height-request="22"  xalign=".5"
+                tooltip-text="''" >
+                <input file>"'/tmp/EmGr-img-apple-redgrn.svg'"</input><width>25</width><height>25</height>
+                <label>"'-DOX---'"</label>
+                    <action function="'closewindow'">msg_DC_LxgenMenu_window_0</action>
+                    <action function="'closewindow'">msg_DC_LxgenBack_window_0</action>
+                    <action function="'closewindow'">msg_DC_LxgenDox_window_0</action>
+                    <action function="'closewindow'">msg_DC_LxgenUtil_window_0</action>
+                    <action function="'launch'">     msg_DC_LxgenDox_window_0</action> 
+                    <action function="'closewindow'">msg_DC_LxgenDox_window_0</action>
+                    </button>
+            <hseparator width-request="11"></hseparator>
 
-           <button has-focus="false" height-request="22"  xalign=".5">  
-               <input file>"'/tmp/EmGr-img-apple-redyel.svg'"</input><width>"15"</width><height>"15"</height>
-                <label>"''"</label><action>'EXIT:guiMgrOneArcDts'</action> </button>
+            <button  has-focus="false" height-request="22"  xalign=".5" 
+                tooltip-text="''" >
+                <input file>"'/tmp/EmGr-img-apple-redgrn.svg'"</input><width>25</width><height>25</height>
+                <label>"'-UTIL--'"</label>
+                    <action function="'closewindow'">msg_DC_LxgenMenu_window_0</action>
+                    <action function="'closewindow'">msg_DC_LxgenBack_window_0</action>
+                    <action function="'closewindow'">msg_DC_LxgenDox_window_0</action>
+                    <action function="'closewindow'">msg_DC_LxgenUtil_window_0</action>
+                   <action function="'launch'">     msg_DC_LxgenUtil_window_0</action> 
+                    <action function="'closewindow'">msg_DC_LxgenUtil_window_0</action>
+                   </button>
+            <hseparator width-request="11"></hseparator>
 
-            <button  visible="1"   
-                gtk-apply="true" has-focus="false" > 
-                <label> "-ARC===}}  " </label>
-                <action>'EXIT:guiMgrOneArcDts'</action> 		</button>
+            <button visible="1" tooltip-text="''" has-focus="false" width-request="0"  height-request="0" xalign=".5"  >
+                <input file>"'/tmp/EmGr-img-hash-blu.xpm'"</input><width>35</width><height>35</height>   
+                <label>""</label><action>'0:GTK-Launch-BASH-msg_DC_LxgenMenu_window'</action> </button>
 
-            <button has-focus="false" height-request="13"  xalign=".5"  tooltip-text="P4-/tmp/EmGr-img-apple-redyel.svg" >
-                <input file>"/tmp/EmGr-img-apple-redyel.svg"</input><width>25</width>  <height>25</height>
-                <label> "" </label><action>0</action></button>
-
-           <button has-focus="false" height-request="22"  xalign=".5">  
-               <input file>"'/tmp/EmGr-img-Check-redXred.svg'"</input><width>"35"</width><height>"35"</height>
-                <label>"''"</label><action>'0'</action> </button>
-            <hseparator width-request="62"></hseparator>
+            <hseparator width-request="250"></hseparator>
         </hbox>
 
-        <hseparator width-request="3"></hseparator>
+        <vseparator height-request="33"></vseparator>
 
-    </hbox>
-                <vseparator height-request="23"></vseparator>
+             <button visible="1"   tooltip-text="''" >
+                <input file>"'/tmp/EmGr-img-jug-blu0yel.svg'"</input><width>30</width><height>30</height>
+                <label> "  '===!-MGR-11-Tool-Tip-!==='  " </label> 
+                <action function="'launch'">msg_DC_M11_window</action>
+                <action>'-MGR-11-Tool-Tip'</action> </button>
 
-            <vseparator height-request="3"></vseparator>
-            <button   visible="1" tooltip-text="''" has-focus="false" height-request="13"> <label> "" </label> 
-                <input file icon="gtk-select-color" ></input>   
-                <action>'ttAction:CBX-Tool-Tip'</action> </button>
+                <hseparator width-request="33"></hseparator> 
+</vbox>
+        <vseparator height-request="33"></vseparator>
+        <vseparator height-request="33"></vseparator>
+
+<vbox>
+    <text editable="false" use-markup="true" xalign=".5">
+    <label> "<span color='"'red'"'> <b>'${msg_DC_LxgenBASH_window_text}'</b> </span> " </label></text>
+
+        <vseparator height-request="33"></vseparator>
+
+    <button visible="1"   width-request="45" height-request="45"  size="medium"  weight="bold" 
+       tooltip-text="" 
+        has-focus="false"  xalign=".5" >
+        <input file>"'/tmp/EmGr-img-hash-grn.xpm'"</input><width>45</width><height>45</height>
+            <label> "'${lcGuiFrameTitle}'"  </label> 
+            <action function="'launch'">msg_DC_Quick_window</action> <action function="'closewindow'">msg_DC_Quick_window</action>
+            <action>'0-EXIT:guiSimReStart'</action>   </button>
+    <hseparator width-request="1"></hseparator>
+
+       <button  use-markup="true" has-focus="false" height-request="55" width-request="50" xalign=".5"  
+            tooltip-text="''" >
+            <input file>"'/tmp/EmGr-img-button-system.svg'"</input>
+            <label> "" </label><action>'0---button-system'</action>  </button>
+
+        <vseparator height-request="33"></vseparator>
+            <text visible="1"   editable="false" use-markup="true" xalign=".5"> 
+        <label> "<span  color='"'blue'"' font-family='"'Comic'"' weight='"'bold'"'>'"ooo-"'</span><span color='"'red'"' font-family='"'Comic'"' weight='"'bold'"' size='"'xx-large'"' ><b>'"  ${gcMgrVerTitle} "'</b></span><span color='"'blue'"' font-family='"'Comic'"' weight='"'bold'"'>'-ooo'</span>" 
+            </label> </text>
+
+        <vseparator height-request="33"></vseparator>
+        <hbox visible="1">
+          <hseparator width-request="14"></hseparator>
+        <text use-markup="true" xalign=".5">
+            <label> "<span color='"'$lcGuiColorbrn'"'> <b>':${gcMgrDistroSymbol}:'</b> </span>" </label> </text>
+        <text use-markup="true" xalign=".5">
+            <label> "<span color='"'$lcGuiColorbrn'"'> <b>'"''"'</b></span>"</label></text>
+        <text use-markup="true" xalign=".5">
+            <label> "<span color='"'$lcGuiColorred'"'> <b>'${DISTRO_NAME}'</b> </span>" </label> </text>
+        <text use-markup="true" xalign=".5">
+            <label> "<span color='"'$lcGuiColorblu'"'> <b>'${gcSysDistroVersion}'</b> </span>" </label> </text>
+        <text use-markup="true" xalign=".5">
+            <label> "<span color='"'$lcGuiColorbrn'"'> <b>'"''"'</b></span>"</label></text>
+        <text use-markup="true" xalign=".5">
+            <label> "<span color='"'$lcGuiColorgrn'"'> <b>'K:${gcMGRKernVer}'</b> </span>" </label> </text>
+        <text use-markup="true" xalign=".5">
+            <label> "<span color='"'$lcGuiColorbrn'"'> <b>'"''"'</b></span>"</label></text>
+        <text use-markup="true" xalign=".5">
+            <label> "<span color='"'$lcGuiColorbrn'"'> <b>'Data:'</b></span>"</label></text>
+        <text use-markup="true" xalign=".5">
+            <label> "<span color='"'$lcGuiColorbrn'"'> <b>'${lcPupRamObjMsg}'</b> </span>" </label></text>
+        <hseparator width-request="10"></hseparator>
+         <text  visible="0" editable="false" use-markup="true" xalign=".5">
+            <label> "After-Big-Title-Frame" </label></text>
+            <hseparator height-request="6" width-request="55"></hseparator>
+        <hbox visible="'${gcMrgAdjOut}'">
+            <hseparator height-request="3" width-request="80"></hseparator>
+        </hbox>
+
+        <vseparator height-request="33"></vseparator>
+
+        </hbox>
+           <hbox space="2" homogeneous="true">
+               <hseparator height-request="3" width-request="40"></hseparator>
+            <button has-focus="false" height-request="13"  xalign=".5"  tooltip-text="" >
+                <input file>"'/tmp/EmGr-img-apple-redgrn.svg'"</input><width>25</width>  <height>25</height>
+                <label> "" </label><action>0</action> </button>
+            <button has-focus="false" height-request="13"  xalign=".5"  tooltip-text="" >
+                <input file>"'/tmp/EmGr-img-apple-redblu.svg'"</input><width>25</width>  <height>25</height>
+                <label> "" </label><action>0</action> </button>
+            <button has-focus="false" height-request="13"  xalign=".5"  tooltip-text="" >
+                <input file>"'/tmp/EmGr-img-apple-redyel.svg'"</input><width>25</width>  <height>25</height>
+                <label> "" </label><action>0</action> </button>
+            <button has-focus="false" height-request="13"  xalign=".5"  tooltip-text="" >
+                <input file>"'/tmp/EmGr-img-apple-redgrn.svg'"</input><width>25</width>  <height>25</height>
+                <label> "" </label><action>0</action> </button>
+            <button has-focus="false" height-request="13"  xalign=".5"  tooltip-text="" >
+                <input file>"'/tmp/EmGr-img-apple-redblu.svg'"</input><width>25</width>  <height>25</height>
+                <label> "" </label><action>0</action> </button>
+            <button has-focus="false" height-request="13"  xalign=".5"  tooltip-text="" >
+                <input file>"'/tmp/EmGr-img-apple-redyel.svg'"</input><width>25</width>  <height>25</height>
+                <label> "" </label><action>0</action> </button>
+            <button has-focus="false" height-request="13"  xalign=".5"  tooltip-text="" >
+                <input file>"'/tmp/EmGr-img-apple-redgrn.svg'"</input><width>25</width>  <height>25</height>
+                <label> "" </label><action>0</action> </button>
+            <button has-focus="false" height-request="15"  xalign=".5"  tooltip-text="" >
+                <input file>"'/tmp/EmGr-img-apple-redblu.svg'"</input><width>25</width>  <height>25</height>
+                <label> "" </label><action>0</action></button>
+            <button has-focus="false" height-request="13"  xalign=".5"  tooltip-text="" >
+                <input file>"'/tmp/EmGr-img-apple-redyel.svg'"</input><width>25</width>  <height>25</height>
+                <label> "" </label><action>0</action></button>
+           <hseparator height-request="3" width-request="88"></hseparator>
+        </hbox>
+
+        <vseparator height-request="33"></vseparator>
+
+        <hbox homogeneous="true">
+        <button   visible="1"    height-request="25"> <label> "Archive+ReStart" </label> 
+                       <action>'Archive+ReStart'</action>       </button>
+        </hbox>
+        
+        <hbox homogeneous="1">
+            <hseparator width-request="22"></hseparator>
+            <button has-focus="false" height-request="22"  xalign=".5"> 
+                 <input file>"'/tmp/EmGr-img-Check-redXred.svg'"</input><width>"35"</width><height>"35"</height>
+               <label>"''"</label><action>'0'</action> </button>
+           <button has-focus="false" height-request="22"  xalign=".5">   
+               <input file>"'/tmp/EmGr-img-apple-redyel.svg'"</input><width>"15"</width><height>"15"</height>
+                    <action function="'launch'">msg_DC_Quick_windowS</action><action function="'closewindow'">msg_DC_Quick_windowS</action>
+                <label>"''"</label><action>'0'</action>   </button>
+            <button  visible="1"   tooltip-text="''"  
+                gtk-apply="true" has-focus="false" >  
+                <label> "{{=== ONE-" </label>
+                        <action function="'launch'">msg_DC_Quick_window</action>  <action function="'closewindow'">msg_DC_Quick_window</action>
+                <action>'EXIT:guiMgrOneArcDts'</action>         </button>
+            <button visible="1" has-focus="false" height-request="13"  xalign=".5"  tooltip-text="" > 
+                <input file>"'/tmp/EmGr-img-apple-redyel.svg'"</input><width>25</width>  <height>25</height>
+                        <action function="'launch'">msg_DC_Quick_window</action><action function="'closewindow'">msg_DC_Quick_window</action>
+                <label> "{{-PXB-}}" </label><action>'EXIT:guiPXB_ion_RS'</action>   </button>
+            <button  visible="1"   tooltip-text="''" 
+                gtk-apply="true" has-focus="false" >
+                <label> "-ALL-===}}" </label>
+                         <action function="'launch'">msg_DC_Quick_window</action>  <action function="'closewindow'">msg_DC_Quick_window</action>
+               <action>'EXIT:guiMgrAllArcDts'</action>   </button>
+            <button has-focus="false" height-request="22"  xalign=".5">
+               <input file>"'/tmp/EmGr-img-apple-redyel.svg'"</input><width>"15"</width><height>"15"</height>
+                    <action function="'launch'">msg_DC_Quick_windowS</action><action function="'closewindow'">msg_DC_Quick_windowS</action>
+                <label>"''"</label><action>'0'</action>   </button>
+           <button has-focus="false" height-request="22"  xalign=".5">
+               <input file>"'/tmp/EmGr-img-Check-redXred.svg'"</input><width>"35"</width><height>"35"</height>
+                <label>"''"</label><action>'0'</action>   </button>
+            <hseparator width-request="230"></hseparator>
+        </hbox>
+        <vseparator height-request="11"></vseparator>
+
+            <vbox>
+                <vseparator height-request="33"></vseparator>
+                <vseparator height-request="11"> </vseparator>
+                <hbox homogeneous="true">
+                    <button tooltip-text="''" >
+                        <input file>"'/tmp/EmGr-img-quit-grnnnn.svg'"</input><width>33</width>  <height>33</height>
+                        <label>'Clear_ALL-BASH_Window'</label> 
+                    <action function="'closewindow'">msg_DC_LxgenMenu_window_0</action>
+                    <action function="'closewindow'">msg_DC_LxgenBack_window_0</action>
+                    <action function="'closewindow'">msg_DC_LxgenDox_window_0</action>
+                    <action function="'closewindow'">msg_DC_LxgenUtil_window_0</action>
+                    <action function="'closewindow'">msg_DC_LxgenBASH_window_0</action> </button>
+                </hbox>
+            </vbox>
+
+        <vseparator height-request="33"></vseparator>
+
+    <text  visible="0"> 
+    <label>"'####################_Gen_BASH_############################'"</label> </text> 
+
+</vbox>
+</frame>
+<variable>msg_DC_LxgenBASH_window_0</variable>
+</window>'
+export msg_DC_LxgenBASH_window_0   #! REQUIRED BASH Msg Window ===================
+#! ### BASH SYSTEM Page 0 <button> #########################################
+#! 
+#!
+#!
+#! =====================================================================
+#! _BASH_=== page === pageM === pageMenu =====================================
+#! =====================================================================
+msg_DC_LxgenMenu_window_text="===_Page_BackUp_==="
+msg_DC_LxgenMenu_window_0='
+<window title="msg_DC_LxgenMenu_window_0_pageMenu_!_"
+    space-expand="true" 
+    resizable="true" 
+    visible="true" >
+<frame>
+<text editable="false" use-markup="true" xalign=".5"><label> "<span color='"'red'"'> <b>'${msg_DC_LxgenMenu_window_text}'</b> </span> " </label></text>
+    <vbox>
+            <button visible="1"   tooltip-text="width-50-space>'=============================='" <height-request="1">
+                    <label>"'!_________!________!_________!_________!_____!____'"</label>
+                    <action>'lx-Menu-Page-:spacer'</action> </button>
+            <vseparator height-request="7"></vseparator>
+
+        <vbox>
+
+            <vseparator height-request="7"></vseparator>
 
             <button visible="1"   tooltip-text="''" >
-                <input file>"'/tmp/EmGr-img-jug-blu0yel.svg'"</input><width>30</width><height>30</height>
-                <label> "  '===-CBX-Tool-Tip==='  " </label>	
-                <action function="'launch'">msg_DC_CBX_window</action><action function="'closewindow'">msg_DC_CBX_window</action>
-                <action>'ttAction:CBX-Tool-Tip'</action> 
-            </button>
+                <input file>"'/tmp/EmGr-img-jug-blu0yel.svg'"</input><width>15</width><height>15</height>
+                <label> "  '===!-_BakOne-BakAll-Tool-Tip_-!==='  " </label> 
+                <action function="'launch'">msg_DC_MainBakOneAll_window</action>
+                <action>'0-Main_BackOne-BackAll-Tool-Tip'</action> </button>
 
-            <hbox homogeneous="true">
-            <hseparator width-request="23"></hseparator>
-                <checkbox 
-                        active="'$CBXC3C'">
-                        <label>'C3C'</label>
-                        <variable>CBXC3C</variable>
-                </checkbox>
-                <checkbox  
-                        active="'$CBXS2F'">
-                        <label>'S2F'</label>
-                        <variable>CBXS2F</variable>
-                </checkbox>
-                <checkbox 
-                    active="'$CBXCTU'">
-                    <label>'CTU'   </label>
-                    <variable>CBXCTU</variable>
-                </checkbox>
-            <hseparator width-request="23"></hseparator>
-            </hbox>
 
-            <hbox homogeneous="false">
-            <hseparator width-request="13"></hseparator>
 
-                <button tooltip-text="EXIT:CBXARS:ReStart" >
-                   <input file>"'/tmp/EmGr-img-apple-redblu.svg'"</input><width>"25"</width><height>"25"</height>
-                   <label> '_CBx+ReStart'  </label>
-                    <action function="'xlaunch'">msg_DC_Quick_window</action><action function="'xclosewindow'">msg_DC_Quick_window</action>
-                   <action>'EXIT:CBXARS'</action>            </button>
-                <button tooltip-text="EXIT:CBXARB:ReBoot" >
-                   <input file>"'/tmp/EmGr-img-apple-redgrn.svg'"</input><width>"25"</width><height>"25"</height>
-                   <label> '_CBx+ReBoot'  </label>
-                    <action function="'xlaunch'">msg_DC_Quick_window</action><action function="'xclosewindow'">msg_DC_Quick_window</action>
-                   <action>'EXIT:CBXARB'</action>            </button>
-                <button tooltip-text="EXIT:CBXARQ:ReQuit" >
-                    <label> '_CBx+ReQuit'  </label>
-                    <input file>"'/tmp/EmGr-img-apple-redyel.svg'"</input><width>"25"</width><height>"25"</height>
-                    <action function="'xlaunch'">msg_DC_Quick_window</action><action function="'xclosewindow'">msg_DC_Quick_window</action>
-                    <action>'EXIT:CBXARQ'</action>            </button>
+        <vbox  visible="1" homogeneous="true">
 
-            <hseparator width-request="13"></hseparator>
-            </hbox>
-
-                <text visible="1" editable="false" use-markup="true" xalign=".5">
-                    <label> "<span color='"'$lcGuiColorblu'"'> <b>'CBXstate:${lcCBXstatus}'</b> </span> " </label> </text>
-
-                <button   visible="1" has-focus="false" height-request="12"> <label> "" </label> 
-                    <input file icon="gtk-select-color" ></input>   <action>lxAction:P123-bot</action> </button>
- 
-            <vseparator height-request="3"> </vseparator>
-
-            <button>
-                <label>"Clear Main Window"</label>
-                <action function="closewindow">msg_DC_LxgenMain_window</action>    </button>
-
-</vbox>
-</frame>
-<variable>msg_DC_LxgenMain_window</variable>
-</window>'
-export msg_DC_LxgenMain_window   ### REQUIRED Msg Window ##########################
-#! ############################################################
-#!
-#!
-#! ############################################################
-#!
-#!
-#! [-2-]  Floating Msg Window    ### REQUIRED Msg Window ##########################
-    # msg_DC_LxgenHelp_window
-    #! ### /root/my-applications/Dxstro_.jpg ###
-    #! ### /mnt/home/pup_UpupMM-SDA/Dxstro_.jpg ###
-msg_DC_LxgenHelp_window_text="===_Help_Page_!_==="
-msg_DC_LxgenHelp_window='
-<window title="msg_DC_LxgenHelp_window-!-"
-visible="true" >
-<frame>
-<text editable="false" use-markup="true" xalign=".5"><label> "<span color='"'red'"'> <b>'${msg_DC_LxgenHelp_window_text}'</b> </span> " </label></text>
-<vbox>
-
-            <button visible="1"   tooltip-text="width-50-space>'==================================================='" <height-request="1">
-                <label>"'!_________!________!_________!_________!_____!____'"</label>
-                <action>'0'</action> </button>
-
-            <button   visible="1" has-focus="false" height-request="12"> <label> "" </label> 
-                <input file icon="gtk-select-color" ></input>   
-                <action>'lxAction:Dump-top'</action> </button>
+            <vseparator visible="1" height-request="1" ></vseparator>
 
             <hbox homogeneous="true">
 
-                <button visible="1" tooltip-text="'EXIT:guiDumpHLP'  <HELP dump>"  has-focus="false">
-                    <input file>"'/tmp/EmGr-img-Check-blublu.svg'"</input><width>21</width><height>21</height>
-                    <label>"'HELP'  " </label>
-                    <action>'EXIT:guiDumpHLP'</action> </button>
+                <button visible="1" tooltip-text="'check-Big_90'" >
+                <input file>"'/tmp/EmGr-img-Check-90-redXyel.svg'"</input><width>33</width><height>33</height>
+                        <label>"''"</label> <action>'select-Big_90'</action>
+                    <action function="'launch'">     msg_DC_Check_90_Big_redXyel_window</action>
+                    <action function="'closewindow'">msg_DC_Check_90_Big_redXyel_window</action>    </button>
 
-                <button visible="1"  tooltip-text="'EXIT:guiDumpProc'  <Process_dump>"  has-focus="false">
-                    <input file>"'/tmp/EmGr-img-Check-blublu.svg'"</input><width>21</width><height>21</height>
-                    <label> "'Process'  " </label>
-                    <action>'EXIT:guiDumpProc'</action> </button>
+                <button> <label>"'_B4B_'"</label>
+                        <input file> "'/tmp/EmGr-img-jug-redxyel.svg'"</input><width>17</width><height>17</height>
+                    <action function="'launch'">msg_DC_Quick_window</action><action function="'closewindow'">msg_DC_Quick_window</action>
+                    <action>'EXIT:ARB_B4B'</action>  </button>
 
-                <button visible="1"  tooltip-text="'EXIT:guiDumpFAQ'  <FAQ dump>" has-focus="false">
-                    <input file>"'/tmp/EmGr-img-Check-blublu.svg'"</input><width>21</width><height>21</height>
-                    <label> "'Faq'  " </label>
-                    <action>'EXIT:guiDumpFAQ'</action> </button>
+                <button> <label>"'_B5B_'"</label>
+                        <input file> "'/tmp/EmGr-img-jug-redxyel.svg'"</input><width>15</width><height>15</height>
+                    <action function="'launch'">msg_DC_Quick_window</action><action function="'closewindow'">msg_DC_Quick_window</action>
+                    <action>'EXIT:ARB_B5B'</action>  </button>
+
+                <button> <label>"'_B64B_'"</label>
+                        <input file> "'/tmp/EmGr-img-jug-redxyel.svg'"</input><width>15</width><height>15</height>
+                    <action function="'launch'">msg_DC_Quick_windowS</action><action function="'closewindow'">msg_DC_Quick_windowS</action>
+                    <action>'EXIT:ARB_B64B'</action>  </button>
+
+                <button> <label>"'N8N_'" </label>
+                        <input file stock="gtk-yes"></input><width>7</width><height>7</height>   
+                    <action function="'launch'">msg_DC_Quick_windowS</action><action function="'closewindow'">msg_DC_Quick_windowS</action>
+                    <action>'EXIT:ARB_N8N'</action>  </button>
+
+                <button> <label>"'S1564'" </label>
+                        <input file stock="gtk-yes"></input><width>11</width><height>11</height>   
+                    <action function="'launch'">msg_DC_Quick_window</action><action function="'closewindow'">msg_DC_Quick_window</action>
+                    <action>'EXIT:ARB_S1564'</action>  </button>
+
+                <button> <label>"'DBW32'" </label>
+                        <input file stock="gtk-yes"></input><width>7</width><height>7</height>   
+                    <action function="'launch'">msg_DC_Quick_window</action><action function="'closewindow'">msg_DC_Quick_window</action>
+                    <action>'EXIT:ARB_DBW32'</action>  </button>
+
+                <button visible="1" tooltip-text="'check-Big_90'" >
+                <input file>"'/tmp/EmGr-img-Check-90-redXyel.svg'"</input><width>33</width><height>33</height>
+                        <label>"''"</label> <action>'select-Big_90'</action>
+                    <action function="'launch'">     msg_DC_Check_90_Big_redXyel_window</action>
+                    <action function="'closewindow'">msg_DC_Check_90_Big_redXyel_window</action>    </button>
+
             </hbox>
 
-            <vbox visible="0">
-                <button visible="1" tooltip-text="'EXIT:guiDumpSRC'  <Source Code Dump>" heihas-focus="false">
-                    <input file>"'/tmp/EmGr-img-Check-grnXgrn.svg'"</input><width>27</width><height>27</height>
-                    <label> "  'Dump:-All_Source=Code:'    " </label>
-                    <action>'EXIT:guiDumpSRC'</action> </button>
-                <button visible="1"    tooltip-text="'EXIT:guiDumpGUI'  <XML GUI Dump>"  has-focus="false">
-                    <input file>"'/tmp/EmGr-img-Check-grnXgrn.svg'"</input><width>27</width><height>27</height>
-                    <label> "  'Dump:-XML_Main_GUI=Code:'    " </label>
-                    <action>'EXIT:guiDumpGUI'</action> </button>
-                <button visible="1" tooltip-text="'EXIT:guiDumpIMG'  <XML GUI Dump>"  has-focus="false">
-                    <input file>"'/tmp/EmGr-img-Check-grnXgrn.svg'"</input><width>27</width><height>27</height>
-                    <label> "  'Dump:-svg-xpm_IMG=Code:'    " </label>
-                    <action>'EXIT:guiDumpIMG'</action> </button>
-            </vbox>
-  
 
-            <button visible="1" label="" has-focus="false" height-request="5"> <action>lxAction:0</action> </button>
 
-            <vseparator height-request="5" > </vseparator>
-            <button label="" has-focus="false" height-request="2"> <action>lxAction:spacer</action> </button>
+            <vseparator  visible="" height-request="3" > </vseparator>
 
-            <button label="" has-focus="false" height-request="2"> <action>lxAction:P2-bot-spacer</action> </button>
-          
             <hbox homogeneous="true">
-                <button visible="1" tooltip-text="'EXIT:guiDumpUPL'  < Phil PeaBee : UpPopLegal_Flg >"  has-focus="false">
-                    <input file>"'/tmp/EmGr-img-Check-grnXgrn.svg'"</input><width>27</width><height>27</height>
-                    <label> "  'Dump_UPL'    " </label>
-                    <action>'EXIT:guiDumpUPL'</action> </button>
-               <button visible="1" tooltip-text="'EXIT:guiDumpSys'  < Display Devloper Var >"   has-focus="false">
-                    <input file>"'/tmp/EmGr-img-Check-grnXgrn.svg'"</input><width>27</width><height>27</height>
-                    <label> "  'Dump_Sys'  " </label>
-                    <action>'EXIT:guiDumpSys'</action> </button>
+
+                <button visible="1" tooltip-text="'check-Big_90'" >
+                <input file>"'/tmp/EmGr-img-Check-90-redXblu.svg'"</input><width>30</width><height>30</height>
+                        <label>"''"</label> <action>'select-Big_90'</action>
+                    <action function="'launch'">     msg_DC_Check_90_Big_redXblu_window</action>
+                    <action function="'closewindow'">msg_DC_Check_90_Big_redXblu_window</action>    </button>
+
+                <button>  <label>"'_T-6_'"</label>
+                        <input file> "'/tmp/EmGr-img-jug-redxyel.svg'"</input><width>15</width><height>15</height>
+                    <action function="'launch'">msg_DC_Quick_window</action><action function="'closewindow'">msg_DC_Quick_window</action>
+                    <action>'EXIT:ARB_T-6'</action>  </button>
+
+                <button> <label>"'K-K_'"</label>
+                        <input file stock="gtk-yes"></input><width>11</width><height>11</height>   
+                    <action function="'launch'">msg_DC_Quick_windowS</action><action function="'closewindow'">msg_DC_Quick_windowS</action>
+                    <action>'EXIT:ARB_K-K'</action>  </button>
+
+                <button> <label>"'I-I_'" </label>
+                        <input file stock="gtk-yes"></input><width>11</width><height>11</height>   
+                    <action function="'launch'">msg_DC_Quick_windowS</action><action function="'closewindow'">msg_DC_Quick_windowS</action>
+                    <action>'EXIT:ARB_I-I'</action>  </button>
+
+                <button> <label>"'F-F_'"</label>
+                        <input file stock="gtk-yes"></input><width>11</width><height>11</height>   
+                    <action function="'launch'">msg_DC_Quick_window</action><action function="'closewindow'">msg_DC_Quick_window</action>
+                    <action>'EXIT:ARB_F-F'</action>  </button>
+
+                <button> <label>"'X708_'"</label>
+                        <input file stock="gtk-yes"></input><width>11</width><height>11</height>   
+                    <action function="'launch'">msg_DC_Quick_window</action><action function="'closewindow'">msg_DC_Quick_window</action>
+                    <action>'EXIT:ARB_X708'</action>  </button>
+
+                <button visible="1" tooltip-text="'check-Big_90'" ><input file>"'/tmp/EmGr-img-Check-90-redXblu.svg'"</input><width>33</width><height>33</height>
+                        <label>"''"</label> <action>'select-Big_90'</action> 
+                    <action function="'launch'">     msg_DC_Check_90_Big_redXblu_window</action>
+                    <action function="'closewindow'">msg_DC_Check_90_Big_redXblu_window</action>    </button>
+
+            </hbox>
+
+            <vseparator  visible="0" height-request="3" > </vseparator>
+
+            <hbox homogeneous="true">
+
+                <button visible="1" tooltip-text="'check-Big_90'" >
+                <input file>"'/tmp/EmGr-img-Check-90-redXgrn.svg'"</input><width>30</width><height>30</height>
+                        <label>"''"</label> <action>'select-Big_90'</action>  
+                    <action function="'launch'">     msg_DC_Check_90_Big_redXgrn_window</action>
+                    <action function="'closewindow'">msg_DC_Check_90_Big_redXgrn_window</action>    </button>
+
+                <button> <label>"'X64_'"</label>
+                        <input file stock="gtk-yes"></input><width>11</width><height>11</height>   
+                    <action function="'launch'">msg_DC_Quick_window</action><action function="'closewindow'">msg_DC_Quick_window</action>
+                    <action>'EXIT:ARB_X64'</action>  </button>
+
+                <button> <label>"'S-7_'"</label>
+                        <input file stock="gtk-yes"></input><width>11</width><height>11</height>   
+                    <action function="'launch'">msg_DC_Quick_window</action><action function="'closewindow'">msg_DC_Quick_window</action>
+                    <action>'EXIT:ARB_S-7'</action>  </button>
+
+                <button> <label>"'S64_'" </label>
+                        <input file stock="gtk-yes"></input><width>11</width><height>11</height>   
+                    <action function="'launch'">msg_DC_Quick_window</action><action function="'closewindow'">msg_DC_Quick_window</action>
+                    <action>'EXIT:ARB_S64'</action>  </button>
+
+                <button> <label>"'SLXSC_'"</label>
+                         <input file stock="gtk-yes"></input><width>11</width><height>11</height>   
+                    <action function="'launch'">msg_DC_Quick_window</action><action function="'closewindow'">msg_DC_Quick_window</action>
+                    <action>'EXIT:ARB_SLXSC'</action>  </button>
+
+                <button visible="0"> <label>"'SLK64_'" </label>
+                        <input file stock="gtk-yes"></input><width>11</width><height>11</height>
+                    <action function="'launch'">msg_DC_Quick_window</action><action function="'closewindow'">msg_DC_Quick_window</action>
+                    <action>'EXIT:ARB_SLK64'</action>  </button>
+
+                <button tooltip-text="Generic"> <label>"'genORG'" </label>
+                        <input file stock="gtk-no"></input><width>11</width><height>11</height>   
+                    <action function="'launch'">msg_DC_Quick_window</action><action function="'closewindow'">msg_DC_Quick_window</action>
+                    <action>'EXIT:ARB_ORG'</action>  </button>
+
+                <button visible="1" tooltip-text="'check-Big_90'" ><input file>"'/tmp/EmGr-img-Check-90-redXgrn.svg'"</input><width>33</width><height>33</height>
+                        <label>"''"</label> <action>'select-Big_90'</action>  
+                    <action function="'launch'">     msg_DC_Check_90_Big_redXgrn_window</action>
+                    <action function="'closewindow'">msg_DC_Check_90_Big_redXgrn_window</action>    </button>
+
+            </hbox>
+
+            <vseparator  visible="0" height-request="1" > </vseparator>
+
+            <hbox homogeneous="true">
+
+                <button visible="1" tooltip-text="'check-Big_90'" >
+                <input file>"'/tmp/EmGr-img-Check-90-redXblu.svg'"</input><width>30</width><height>30</height>
+                        <label>"''"</label> <action>'select-Big_90'</action>  
+                    <action function="'launch'">     msg_DC_Check_90_Big_redXblu_window</action>
+                    <action function="'closewindow'">msg_DC_Check_90_Big_redXblu_window</action>    </button>
+
+                <button> <label>"'Qk7_'" </label>
+                        <input file stock="gtk-yes"></input><width>9</width><height>9</height>   
+                    <action function="'launch'">msg_DC_Quick_window</action><action function="'closewindow'">msg_DC_Quick_window</action>
+                    <action>'EXIT:ARB_Qk7'</action>  </button>
+
+                <button visible="1"> <label>"'EOS_'" </label>
+                        <input file stock="gtk-yes"></input><width>9</width><height>9</height>
+                    <action function="'launch'">msg_DC_Quick_window</action><action function="'closewindow'">msg_DC_Quick_window</action>
+                    <action>'EXIT:ARB_EOS'</action>  </button>
+
+                <button> <label>"'S-7_'"</label>
+                        <input file stock="gtk-yes"></input><width>9</width><height>9</height>   
+                    <action function="'launch'">msg_DC_Quick_window</action><action function="'closewindow'">msg_DC_Quick_window</action>
+                    <action>'EXIT:ARB_S-7'</action>  </button>
+
+                <button> <label>"'S64_'" </label>
+                        <input file stock="gtk-yes"></input><width>9</width><height>9</height>   
+                    <action function="'launch'">msg_DC_Quick_window</action><action function="'closewindow'">msg_DC_Quick_window</action>
+                    <action>'EXIT:ARB_S64'</action>  </button>
+
+                <button> <label>"'SLXSC_'"</label>
+                         <input file stock="gtk-yes"></input><width>9</width><height>9</height>   
+                    <action function="'launch'">msg_DC_Quick_window</action><action function="'closewindow'">msg_DC_Quick_window</action>
+                    <action>'EXIT:ARB_SLXSC'</action>  </button>
+
+                <button visible="0"> <label>"'SLK64_'" </label>
+                        <input file stock="gtk-yes"></input><width>9</width><height>9</height>
+                    <action function="'launch'">msg_DC_Quick_window</action><action function="'closewindow'">msg_DC_Quick_window</action>
+                    <action>'EXIT:ARB_SLK64'</action>  </button>
+
+                <button visible="1" tooltip-text="'check-Big_90'" >
+                <input file>"'/tmp/EmGr-img-Check-90-redXblu.svg'"</input><width>30</width><height>30</height>
+                        <label>"''"</label> <action>'select-Big_90'</action>  
+                    <action function="'launch'">     msg_DC_Check_90_Big_redXblu_window</action>
+                    <action function="'closewindow'">msg_DC_Check_90_Big_redXblu_window</action>    </button>
+
             </hbox>
 
             <hbox homogeneous="true">
-                <button    tooltip-text="'EXIT:guiBase64__Sbr_Base64'"   has-focus="false">
-                    <input file>"'/tmp/EmGr-img-Check-bluXred.svg'"</input><width>27</width><height>27</height>
-                    <label> "'Dump_Source-to-Base64'  " </label>	
-                    <action>'EXIT:guiSrcBase64'</action> </button>
-            </hbox>    
 
+                <button visible="1" tooltip-text="'check-Big_90'" >
+                <input file>"'/tmp/EmGr-img-Check-90-redXgrn.svg'"</input><width>33</width><height>33</height>
+                        <label>"''"</label> <action>'select-Big_90'</action>  
+                    <action function="'launch'">     msg_DC_Check_90_Big_redXgrn_window</action>
+                    <action function="'closewindow'">msg_DC_Check_90_Big_redXgrn_window</action>    </button>
+
+                <button> <label>"'N8N_'" </label>
+                        <input file stock="gtk-yes"></input><width>7</width><height>7</height>   
+                    <action function="'launch'">msg_DC_Quick_windowS</action><action function="'closewindow'">msg_DC_Quick_windowS</action>
+                    <action>'EXIT:ARB_N8N'</action>  </button>
+
+                <button>  <label>"'M6M_'"</label>
+                        <input file stock="gtk-yes"></input><width>11</width><height>11</height>   
+                    <action function="'launch'">msg_DC_Quick_window</action><action function="'closewindow'">msg_DC_Quick_window</action>
+                    <action>'EXIT:ARB_M6M'</action>  </button>
+
+                <button> <label>"'DBW64_'" </label>
+                        <input file stock="gtk-yes"></input><width>7</width><height>7</height>   
+                    <action function="'launch'">msg_DC_Quick_window</action><action function="'closewindow'">msg_DC_Quick_window</action>
+                    <action>'EXIT:ARB_DBW64'</action>  </button>
+
+                <button> <label>"'DVN9_'" </label>
+                        <input file stock="gtk-yes"></input><width>7</width><height>7</height>   
+                    <action function="'launch'">msg_DC_Quick_window</action><action function="'closewindow'">msg_DC_Quick_window</action>
+                    <action>'EXIT:ARB_DVN9'</action>  </button>
+
+                <button  tooltip-text="'Build+ReStart'">
+                    <label>"'-'" </label>
+                        <input file stock="gtk-no"></input><width>7</width><height>7</height>   
+                    <action function="'launch'">msg_DC_Quick_window</action><action function="'closewindow'">msg_DC_Quick_window</action>
+                    <action>'EXIT=ARB_ORG'</action>  </button>
+
+                <button visible="1" tooltip-text="'check-Big_90'" >
+                <input file>"'/tmp/EmGr-img-Check-90-redXgrn.svg'"</input><width>33</width><height>33</height>
+                        <label>"''"</label> <action>'select-Big_90'</action>  
+                    <action function="'launch'">     msg_DC_Check_90_Big_redXgrn_window</action>
+                    <action function="'closewindow'">msg_DC_Check_90_Big_redXgrn_window</action>    </button>
+
+            </hbox>
+
+        </vbox>
+
+                <vseparator height-request="61"> </vseparator>
                 <hbox homogeneous="true">
-                  <button visible="1"    tooltip-text="'EXIT:guiMandelbrot'   "   has-focus="false">
-                        <input file>"'/tmp/EmGr-img-Check-bluXred.svg'"</input><width>22</width><height>22</height>
-                        <label>"'Mandelbrot_'"</label>	
-                        <action>'EXIT:guiMandelbrot'</action> 
-                   </button>
-                  <button visible="1" tooltip-text="'EXIT:guiAudio_for_StartUpSound+LogInDts'"   has-focus="false">
-                        <input file>"'/tmp/EmGr-img-Check-bluXred.svg'"</input><width>22</width><height>22</height>
-                        <label>"'StartSound_' "</label>	
-                        <action>'EXIT:guiAudio'</action> 
-                    </button>
+                    <button tooltip-text="''" >
+                        <input file>"'/tmp/EmGr-img-quit-grnnnn.svg'"</input><width>33</width>  <height>33</height>
+                        <label>'Clear-Bash-MENU-Window'</label> 
+                    <action function="closewindow">msg_DC_LxgenMenu_window_0</action> </button>
                 </hbox>
-                <hbox visible="true"  homogeneous="true">
-                    <button  tooltip-text="'EXIT:guiBackGround':only-launch, only PageDOX, 250"   has-focus="false">
-                            <input file>"'/root/my-applications/Lxgo_.jpg'"</input><width>250</width><height>200</height>
-<label>"'D'
-'i'
-'s'
-'t'
-'r'
-'o'
-'-'
-'-List'"</label>	
-                    <action function="'launch'">msg_DC_Dxstro_window</action> <action function="'closewindow'">msg_DC_Dxstro_window</action>
-                            <action>'xEXIT:guiBackGround'</action>                     </button>
-                </hbox>
-
-    <button visible="0" tooltip-text="Simple_guiSimReStart">
-        <input file>"'/tmp/EmGr-img-Check-grnXgrn.svg'"</input><width> "35" </width> <height> "35" </height>
-        <label>'_ReStart__'</label>
-        <action function="'launch'">msg_DC_LxgenHelp_window</action><action function="'closewindow'">msg_DC_LxgenHelp_window</action>
-        <action>'EXIT:guiSimReStart'</action>	</button>
-
-    <button><input file>"'/tmp/EmGr-img-jug-grnxred.svg'"</input><width>15</width><height>5</height><action>"0"</action> </button>
-    <button>  <label>" 'https://github.com/GlenE77is' "</label><action function="closewindow">msg_DC_LxgenHelp_window</action>    </button>
-    <button><input file>"'/tmp/EmGr-img-jug-grnxred.svg'"</input><width>15</width><height>5</height><action>"0"</action> </button>
-            <hseparator width-request="20"></hseparator>
-   <button>
-        <label>"Clear Help-Dox Window"</label>
-        <action function="closewindow">msg_DC_LxgenHelp_window</action>    </button>
-
-</vbox>
+                <vseparator height-request="41"> </vseparator>
+        </vbox>
+    </vbox>
 </frame>
-<variable>msg_DC_LxgenHelp_window</variable>
+<variable>msg_DC_LxgenMenu_window_0</variable>
 </window>'
-export msg_DC_LxgenHelp_window   ### REQUIRED Msg Window ##########################
-#! ############################################################
+export msg_DC_LxgenMenu_window_0   #! REQUIRED Msg Window ===================
 #!
 #!
-#! ############################################################
+#! =====================================================================
+#! _BASH_=== page === pageB === pageBack =====================================
+#! =====================================================================
+msg_DC_LxgenBack_window_text="===_Page_BackUp_==="
+msg_DC_LxgenBack_window_0='
+<window title="msg_DC_LxgenBack_window_0_pageBack_!_"
+    space-expand="true" 
+    resizable="true" 
+    visible="true" >
+<frame>
+<text editable="false" use-markup="true" xalign=".5"><label> "<span color='"'red'"'> <b>'${msg_DC_LxgenBack_window_text}'</b> </span> " </label></text>
+    <vbox>
+            <button visible="1"   tooltip-text="width-50-space>'=============================='" <height-request="1">
+                    <label>"'!_________!________!_________!_________!_____!____'"</label>
+                    <action>'lx-Back-Page-:spacer'</action> </button>
+            <vseparator height-request="7"></vseparator>
+
+            <vbox>
+
+            <vseparator height-request="7"></vseparator>
+
+            <button visible="1"   tooltip-text="''" >
+                <input file>"'/tmp/EmGr-img-jug-blu0yel.svg'"</input><width>15</width><height>15</height>
+                <label> "  '===!-BakOne-BakAll-Tool-Tip-!==='  " </label> 
+                <action function="'launch'">msg_DC_MainBakOneAll_window</action>
+                <action>'0-Main_BackOne-BackAll-Tool-Tip'</action> </button>
+
+            <vseparator height-request="7"></vseparator>
+            <button visible="1"  tooltip-text=""  
+                has-focus="true" width-request="35" height-request="35" >
+                <input file> "'/tmp/EmGr-img-jug-redxyel.svg'"</input><width>33</width><height>33</height>
+                <label>"'*_Master_BakOne_BakAll_CTX_ReSTART_*'"</label>
+                <action function="'launch'">msg_DC_Quick_window</action> 
+                <action function="'closewindow'">msg_DC_Quick_window</action>
+                    <action>'EXIT:guiCTB-SLX-RS'</action>   </button>
+
+            <vseparator height-request="3"></vseparator>
+            <button visible="1"  tooltip-text=""  
+                has-focus="true" width-request="55" height-request="35" >
+                <input file> "'/tmp/EmGr-img-hash-red.xpm'"</input><width>33</width><height>33</height>
+                <label>"'*_Master_BakOne_BakAll_CTX_ReBoot_*'"</label>
+                <action function="'launch'">msg_DC_Quick_window</action> 
+                <action function="'closewindow'">msg_DC_Quick_window</action>
+                    <action>'EXIT:guiCTB-SLX-RB'</action>   </button>
+            <vseparator height-request="3"></vseparator>
+            <button visible="1"  tooltip-text=""  
+                has-focus="true" width-request="55" height-request="35" >
+                <input file> "'/tmp/EmGr-img-jug-redxgrn.svg'"</input><width>33</width><height>33</height>
+                <label>"'*_Master_BakOne_BakAll_CTX_PowerOff_*'"</label>
+                <action function="'launch'">msg_DC_Quick_window</action> 
+                <action function="'closewindow'">msg_DC_Quick_window</action>
+                    <action>'EXIT:guiCTB-SLX-RQ'</action>   </button>
+
+            <vseparator height-request="3"></vseparator>
+                <hseparator width-request="15"></hseparator>
+                <button visible="1" tooltip-text=""  width-request="55" height-request="35" > 
+                    <input file>"'/tmp/EmGr-img-quit-rednnn.svg'"</input><width>33</width><height>33</height>   
+                    <label>"'{{_BackOne_BakAll_CTB-SLX_PO_PowerOff_}}'"</label>
+                    <action>echo '/root/my-applications/rc.z_CTB-SLX.sh' > /0-MGR_MB_RetVal.cfg </action>  
+                <action function="'launch'">msg_DC_Quick_window</action> 
+                <action function="'closewindow'">msg_DC_Quick_window</action>
+                        <action>'EXIT:guiCTB-SLX-PO'</action>   </button>
+
+            <vseparator height-request="3"></vseparator>
+
+            </vbox>
+            <vseparator visible="1" height-request="23"></vseparator>
+            <button   visible="1"   tooltip-text="''" has-focus="false" width-request="55"  height-request="11"> <label> "" </label> 
+                       <action>'0-top-CBX'</action>       </button>
+            <hbox visible="1" homogeneous="false">
+            <hbox homogeneous="0">
+                <hseparator width-request="90"></hseparator>
+                 <hseparator width-request="20"></hseparator>
+                    <checkbox  active="'$CbxB1'">  <label>'BakOne'</label>  <variable>CBXB1</variable>  </checkbox>
+                    <checkbox  active="'$CbxPxb'">  <label>'{PXB}'</label>  <variable>CBXS2F</variable>   </checkbox>
+                    <checkbox  active="'$CbxB2'">  <label>'BakAll'</label>  <variable>CBXB2</variable>  </checkbox>
+                    <checkbox  active="'$CbxRs'">  <label>'ReStart'</label>  <variable>CbxRs</variable>   </checkbox>
+                    <checkbox  active="'$CbxRb'">  <label>'ReBoot'</label>  <variable>CbxRb</variable>  </checkbox>  
+                    <checkbox  active="'$CbxRq'">  <label>'ReQuit'</label>  <variable>CbxRq</variable>  </checkbox>
+                <hseparator width-request="60"></hseparator>
+            </hbox>
+                <hseparator width-request="170"></hseparator>
+            </hbox>
+             <hbox homogeneous="true">
+            <button visible="1" tooltip-text="EXIT:CbxApply_ComboBoxes_Developmental_" >
+               <input file>"'/tmp/EmGr-img-apple-redblu.svg'"</input><width>"15"</width><height>"15"</height>
+               <label> '_Execute-Combo-Boxes'  </label>
+               <action>'EXIT=CbxApply'</action>
+                </button>
+              </hbox>
+                        <hbox  visible="0" homogeneous="true" visible="1" width-request="100" >
+                            <vseparator height-request="3"> </vseparator>
+                            <button    tooltip-text="''" has-focus="false" height-request="11"> <label> "" </label> 
+                                   <action>'0-top-BackUp'</action>       </button>
+                            <button label="'===_BackUp-One_/_PXB_/_BackUp-All_Tool-Tip-==='"
+                                visible="true"  has-focus="false" >
+                                <action function="'launch'">msg_DC_BakOneAll_window</action> 
+                                <action function="'closewindow'">msg_DC_BakOneAll_window</action>  </button>
+                        </hbox>
+ 
+        <hbox>
+            <hseparator width-request="44"></hseparator>
+            <hseparator width-request="23"></hseparator>
+        </hbox>
+            <vseparator height-request="11"></vseparator>
+            <button  tooltip-text="''" has-focus="false" height-request="13"> <label> "" </label> 
+                <input file icon="gtk-select-color" ></input>   
+                <action>'0-C3C-Tool-Tip'</action> </button>
+            <hbox homogeneous="true">
+            <button    tooltip-text="''" >
+                <input file>"'/tmp/EmGr-img-jug-blu0yel.svg'"</input><width>30</width><height>30</height>
+                <label> "  '===!-C3C-Tool-Tip-!==='  " </label> 
+                <action function="'launch'">msg_DC_C3C_window</action>
+                <action>'0-C3C-Tool-Tip'</action> </button>
+            </hbox>
+            <hbox homogeneous="true">
+                <button tooltip-text="EXIT:C3CS2F:ReStart" >
+                   <input file>"'/tmp/EmGr-img-quit-rednnn.svg'"</input><width>"25"</width><height>"25"</height>
+                   <label> "'_Clear_C3C+S2F+ReStart'"  </label>
+                   <action function="'launch'">msg_DC_Quick_window</action>
+                   <action function="'closewindow'">msg_DC_Quick_window</action>
+                   <action>'EXIT:C3CS2F'</action> </button>
+            </hbox>
+            <vseparator height-request="11"> </vseparator>
+            <button   visible="0" has-focus="false" height-request="3"> <label> "" </label> 
+                <input file icon="gtk-select-color" ></input>   
+                <action>0-P123-bot</action> </button>
+            <vbox>
+                <vseparator height-request="3"> </vseparator>
+                <hbox homogeneous="true">
+                    <button tooltip-text="''" >
+                        <input file>"'/tmp/EmGr-img-quit-grnnnn.svg'"</input><width>33</width>  <height>33</height>
+                        <label>'Clear-Bash-BACK-Window'</label> 
+                    <action function="closewindow">msg_DC_LxgenBack_window_0</action> </button>
+                </hbox>
+            </vbox>
+    </vbox>
+</frame>
+<variable>msg_DC_LxgenBack_window_0</variable>
+</window>'
+export msg_DC_LxgenBack_window_0   #! REQUIRED Msg Window ===================
 #!
-#!
-#! [-3-]  Floating Msg Window    ### REQUIRED Msg Window ##########################
-    # msg_DC_LxgenDox_window
-msg_DC_LxgenDox_window_text="===_Dox_Page_!_==="
-msg_DC_LxgenDox_window='
-<window title="msg_DC_LxgenDox_window-!-"
-visible="true" >
+#!    
+#! =====================================================================
+#! _BASH_=== page === pageD === pageDOX ======================================
+#! =====================================================================
+msg_DC_LxgenDox_window_text="===_Page_DOX_==="
+msg_DC_LxgenDox_window_0='
+<window title="msg_DC_LxgenDox_window_0_pageDOX_!!_"
+    space-expand="false" 
+    resizable="true" 
+    visible="true" >
 <frame>
 <text editable="false" use-markup="true" xalign=".5"><label> "<span color='"'red'"'> <b>'${msg_DC_LxgenDox_window_text}'</b> </span> " </label></text>
 <vbox>
-
             <button visible="1"   tooltip-text="width-50-space>'==================================================='" <height-request="1">
                 <label>"'!_________!________!_________!_________!_____!____'"</label>
-                <action>'0'</action> </button>
-
-            <button   visible="1" has-focus="false" height-request="12"> <label> "" </label> 
-                <input file icon="gtk-select-color" ></input>   
-                <action>'0'</action> </button>
-
+                <action>'Dox-top'</action> </button>
+            <button visible="0" ><input file>"'/tmp/EmGr-img-jug-grnxred.svg'"</input><width>12</width><height>5</height><action>"P3-spacer"</action> </button>
+            <button   visible="1" has-focus="false" > <label> "" </label> 
+                <input file icon="gtk-select-color" ></input> <action>'lxAction:Dox-top'</action> </button>
             <hbox homogeneous="true">
-
-                <button visible="1" tooltip-text="'EXIT:guiDumpHLP'  <HELP dump>"  has-focus="false">
-                    <input file>"'/tmp/EmGr-img-Check-blublu.svg'"</input><width>21</width><height>21</height>
+                <button visible="1" tooltip-text="'===-EXIT:guiDumpHLP-==='  <HELP dump>"  has-focus="false">
+                    <input file>"'/tmp/EmGr-img-Check-90-redXblu.svg'"</input><width>45</width><height>35</height>
                     <label>"'HELP'  " </label>
-                    <action>'EXIT:guiDumpHLP'</action> </button>
-
-                <button visible="1"  tooltip-text="'EXIT:guiDumpProc'  <Process_dump>"  has-focus="false">
-                    <input file>"'/tmp/EmGr-img-Check-blublu.svg'"</input><width>21</width><height>21</height>
+                    <action>'Sbr_Dump_HLP'</action> </button>
+                <button visible="1"  tooltip-text="'===-EXIT:guiDumpProc-==='  <Process_dump>"  has-focus="false">
+                    <input file>"'/tmp/EmGr-img-Check-90-redXgrn.svg'"</input><width>45</width><height>35</height>
                     <label> "'Process'  " </label>
-                    <action>'EXIT:guiDumpProc'</action> </button>
-
-                <button visible="1"  tooltip-text="'EXIT:guiDumpFAQ'  <FAQ dump>" has-focus="false">
-                    <input file>"'/tmp/EmGr-img-Check-blublu.svg'"</input><width>21</width><height>21</height>
+                    <action>'Sbr_Dump_Proc'</action> </button>
+                <button visible="1"  tooltip-text="'===-EXIT:guiDumpFAQ-==='  <FAQ dump>" has-focus="false">
+                    <input file>"'/tmp/EmGr-img-Check-90-redXyel.svg'"</input><width>45</width><height>35</height>
                     <label> "'Faq'  " </label>
-                    <action>'EXIT:guiDumpFAQ'</action> </button>
+                    <action>'Sbr_Dump_FAQ'</action> </button>
             </hbox>
-
-            <vbox visible="0">
-                <button visible="1" tooltip-text="'EXIT:guiDumpSRC'  <Source Code Dump>" heihas-focus="false">
-                    <input file>"'/tmp/EmGr-img-Check-grnXgrn.svg'"</input><width>27</width><height>27</height>
-                    <label> "  'Dump:-All_Source=Code:'    " </label>
-                    <action>'EXIT:guiDumpSRC'</action> </button>
-                <button visible="1"    tooltip-text="'EXIT:guiDumpGUI'  <XML GUI Dump>"  has-focus="false">
-                    <input file>"'/tmp/EmGr-img-Check-grnXgrn.svg'"</input><width>27</width><height>27</height>
-                    <label> "  'Dump:-XML_Main_GUI=Code:'    " </label>
-                    <action>'EXIT:guiDumpGUI'</action> </button>
-                <button visible="1" tooltip-text="'EXIT:guiDumpIMG'  <XML GUI Dump>"  has-focus="false">
-                    <input file>"'/tmp/EmGr-img-Check-grnXgrn.svg'"</input><width>27</width><height>27</height>
-                    <label> "  'Dump:-svg-xpm_IMG=Code:'    " </label>
-                    <action>'EXIT:guiDumpIMG'</action> </button>
-            </vbox>
-  
-
-            <button visible="1" label="" has-focus="false" height-request="5"> <action>lxAction:0</action> </button>
-
-            <vseparator height-request="5" > </vseparator>
-            <button label="" has-focus="false" height-request="2"> <action>lxAction:spacer</action> </button>
-
-            <button label="" has-focus="false" height-request="2"> <action>lxAction:P2-bot-spacer</action> </button>
-          
             <hbox homogeneous="true">
-                <button visible="1" tooltip-text="'EXIT:guiDumpUPL'  < Phil PeaBee : UpPopLegal_Flg >"  has-focus="false">
+               <button visible="1" tooltip-text="'EXIT:guiDumpSrc'  < Display Devloper Source >"   has-focus="false">
+                    <input file>"'/tmp/EmGr-img-Check-grnXgrn.svg'"</input><width>37</width><height>37</height>
+                    <label>"'Dump_Source_Code_' "</label>
+                    <action>'EXIT:guiDumpSrc'</action> </button>
+               <button visible="1" tooltip-text="'EXIT:guiDumpImg'  < Display Devloper Source >"   has-focus="false">
+                    <input file>"'/tmp/EmGr-img-Check-grnXgrn.svg'"</input><width>37</width><height>37</height>
+                    <label>"'Dump_Source_Image_' "</label>
+                    <action>'EXIT:guiDumpImg'</action> </button>
+            </hbox>
+            <button><input file>"'/tmp/EmGr-img-jug-grnxred.svg'"</input><width>15</width><height>5</height><action>"P3-spacer"</action> </button>
+            <vseparator height-request="15" > </vseparator>
+            <vbox>
+            <hbox homogeneous="true">
+                <button visible="1" tooltip-text="'===-EXIT:guiDumpUPL-==='  < Phil PeaBee : UpPopLegal_Flg >"  has-focus="false">
                     <input file>"'/tmp/EmGr-img-Check-grnXgrn.svg'"</input><width>27</width><height>27</height>
                     <label> "  'Dump_UPL'    " </label>
-                    <action>'EXIT:guiDumpUPL'</action> </button>
-               <button visible="1" tooltip-text="'EXIT:guiDumpSys'  < Display Devloper Var >"   has-focus="false">
+                    <action>'EXIT:guiDumpUPL'</action>   </button>
+               <button visible="1" tooltip-text="'EXIT:guiDumpSys'  < Display Devloper SysProc >"   has-focus="false">
                     <input file>"'/tmp/EmGr-img-Check-grnXgrn.svg'"</input><width>27</width><height>27</height>
                     <label> "  'Dump_Sys'  " </label>
                     <action>'EXIT:guiDumpSys'</action> </button>
             </hbox>
-
+            </vbox>
             <hbox homogeneous="true">
-                <button    tooltip-text="'EXIT:guiBase64__Sbr_Base64'"   has-focus="false">
+                <button    tooltip-text="'===-EXIT:guiBase64__Sbr_Base64-==='"   has-focus="false">
                     <input file>"'/tmp/EmGr-img-Check-bluXred.svg'"</input><width>27</width><height>27</height>
-                    <label> "'Dump_Source-to-Base64'  " </label>	
+                    <label> "'Dump_Source-to-Base64'  " </label>    
                     <action>'EXIT:guiSrcBase64'</action> </button>
             </hbox>    
+            <hbox homogeneous="true">
+              <button visible="1"    tooltip-text="'===-EXIT:guiMandelbrot-==='   "   has-focus="false">
+                    <input file>"'/tmp/EmGr-img-Check-bluXred.svg'"</input><width>22</width><height>22</height>
+                    <label>"'Mandelbrot_'"</label>  
+                    <action>'EXIT:guiMandelbrot'</action> 
+               </button>
+                <button visible="1" tooltip-text="'===-EXIT:guiDumpDeclare-==='  < Phil PeaBee : UpPopLegal_Flg >"  has-focus="false">
+                    <input file>"'/tmp/EmGr-img-Check-grnXgrn.svg'"</input><width>27</width><height>27</height>
+                    <label> "  'Dump_Declare'    " </label>
+                    <action>'EXIT:guiDumpDeclare'</action>   </button>
+              <button visible="1" tooltip-text="'=-EXIT:guiAudio_for_StartUpSound+LogInDts-='"   has-focus="false">
+                    <input file>"'/tmp/EmGr-img-Check-bluXred.svg'"</input><width>22</width><height>22</height>
+                    <label>"'Start'_'Audio'_'Sound'"</label>    
+                    <action>'EXIT:guiAudio'</action> 
+                </button>
+            </hbox>
+            <hbox homogeneous="true">
+<button  tooltip-text="'=-EXIT:_DISTRO_guiBackGround-=':only-launch, only PageDOX, 250"   has-focus="false">
+<label>"'Distro-List'"</label>	
+        <action>'EXIT:gui_Dxstro_Window'</action> </button>
+        </hbox>
 
-                <hbox homogeneous="true">
-                  <button visible="1"    tooltip-text="'EXIT:guiMandelbrot'   "   has-focus="false">
-                        <input file>"'/tmp/EmGr-img-Check-bluXred.svg'"</input><width>22</width><height>22</height>
-                        <label>"'Mandelbrot_'"</label>	
-                        <action>'EXIT:guiMandelbrot'</action> 
-                   </button>
-                  <button visible="1" tooltip-text="'EXIT:guiAudio_for_StartUpSound+LogInDts'"   has-focus="false">
-                        <input file>"'/tmp/EmGr-img-Check-bluXred.svg'"</input><width>22</width><height>22</height>
-                        <label>"'StartSound_' "</label>	
-                        <action>'EXIT:guiAudio'</action> 
-                    </button>
-                </hbox>
-                <hbox visible="true"  homogeneous="true">
-                    <button  tooltip-text="'EXIT:guiBackGround':only-launch, only PageDOX, 250"   has-focus="false">
-                            <input file>"'/root/my-applications/Lxgo_.jpg'"</input><width>250</width><height>200</height>
-<label>"'D'
-'i'
-'s'
-'t'
-'r'
-'o'
-'-'
-'-List'"</label>	
-                    <action function="'launch'">msg_DC_Dxstro_window</action> <action function="'closewindow'">msg_DC_Dxstro_window</action>
-                            <action>'0'</action>                     </button>
-                </hbox>
+        <button>  <label>" 'https://github.com' "</label>
+            <action function="closewindow">msg_DC_LxgenDox_window_0</action>    </button>
 
-    <button><input file>"'/tmp/EmGr-img-jug-grnxred.svg'"</input><width>15</width><height>5</height><action>"0"</action>    </button>
-    <button>  <label>"'https://github.com/GlenE77is'"</label><action function="closewindow">msg_DC_LxgenDox_window</action>    </button>
-    <button><input file>"'/tmp/EmGr-img-jug-grnxred.svg'"</input><width>15</width><height>5</height><action>"0"</action>    </button>
-
-    <button visible="0">
-        <label>"Clear_Dox_Window"</label>
-        <action function="closewindow">msg_DC_LxgenDox_window</action>    </button>
-
+        <vseparator height-request="33" > </vseparator>
+        <button><input file>"'/tmp/EmGr-img-jug-grnxred.svg'"</input><width>15</width><height>5</height>
+            <action>"'P3-spacer'"</action> </button>
         <hseparator width-request="20"></hseparator>
-
+            <hbox homogeneous="true">
+                <button tooltip-text="''" >
+                    <input file>"'/tmp/EmGr-img-quit-grnnnn.svg'"</input><width>33</width>  <height>33</height>
+                    <label>'Clear-Bash-DOX-Window'</label> 
+                <action function="closewindow">msg_DC_LxgenDox_window_0</action> </button>
+            </hbox>
 </vbox>
 </frame>
-<variable>msg_DC_LxgenHelp_window</variable>
+<variable>msg_DC_LxgenDox_window_0</variable>
 </window>'
-export msg_DC_LxgenHelp_window   ### REQUIRED Msg Window ##########################
-#! ############################################################
-#!
-#!
-#! ############################################################
-#!
-#!
-#! [-3-]  Floating Msg Window ### REQUIRED Msg Window ##########################
-    # msg_DC_LxgenUtil_window
-    #! ### /root/my-applications/Dxstro_.jpg ###
-    #! ### /mnt/home/pup_UpupMM-SDA/Dxstro_.jpg ###
-msg_DC_LxgenUtil_window_text="===_Util_!!!_Page_==="
-msg_DC_LxgenUtil_window='
-<window title="msg_DC_LxgenUtil_window-!!!-"
-visible="true" >
+export msg_DC_LxgenDox_window_0   
+#! 
+#! 
+#! =====================================================================
+#! _BASH_=== page === pageU === UTIL =========================================
+#! =====================================================================
+msg_DC_LxgenUtil_window_text="===_Page_Util_==="
+msg_DC_LxgenUtil_window_0='
+<window title="msg_DC_LxgenUtil_window_0_pageUTIL_!!!_"
+    space-expand="false" 
+    resizable="true" 
+    visible="true" >
 <frame>
 <text editable="false" use-markup="true" xalign=".5"><label> "<span color='"'red'"'> <b>'${msg_DC_LxgenUtil_window_text}'</b> </span> " </label></text>
 <vbox>
     <vbox>
-             <vseparator height-request="7" > </vseparator>
-              <vbox visible="1">
-
-                <hbox homogenous="true">
-                     <hseparator width-request="85" > </hseparator>
-
-                     <button    tooltip-text="EXIT:guiS2F1">
-                        <input file>"'/tmp/EmGr-img-jug-redxyel.svg'"</input><width>15</width><height>15</height>   
-                        <label>'S2F1'</label>
-                        <action function="'launch'">msg_DC_Quick_window</action><action function="'closewindow'">msg_DC_Quick_window</action>
-                            <action>'EXIT:guiS2F1'</action>  </button>
-
-                     <button    tooltip-text="EXIT:guiS2F3">
-                        <input file>"'/tmp/EmGr-img-jug-redxyel.svg'"</input><width>15</width><height>15</height>   
-                        <label>'S2F3'</label>
-                        <action function="'launch'">msg_DC_Quick_window</action><action function="'closewindow'">msg_DC_Quick_window</action>
-                            <action>'EXIT:guiS2F3'</action>  </button>
-                        <hseparator width-request="165" > </hseparator>
-                    </hbox>
-
-                    <vseparator height-request="7" > </vseparator>
-                    <button visible="1" label="" has-focus="false" height-request="7"> <action>lxAction:0</action> </button>
-                    <vseparator height-request="7" > </vseparator>
-
-                    <hbox homogeneous="true" visible="1">
-
-                       <button    tooltip-text="'EXIT:guiCTX'">
-                        <input file>"'/tmp/EmGr-img-jug-bluxyel.svg'"</input><width>15</width><height>15</height>   
-                        <label>'{_CTX_}'</label>
-                        <action function="'launch'">msg_DC_Quick_window</action><action function="'closewindow'">msg_DC_Quick_window</action>
-                            <action>'EXIT:guiCTX'</action>  </button>
-
-                       <button    tooltip-text="'EXIT:guiCTA'">
-                        <input file>"'/tmp/EmGr-img-jug-bluxyel.svg'"</input><width>15</width><height>15</height>   
-                        <label>'{_CTA_}'</label>
-                        <action function="'launch'">msg_DC_Quick_window</action><action function="'closewindow'">msg_DC_Quick_window</action>
-                            <action>'EXIT:guiCTA'</action>  </button>
-
-                       <button    tooltip-text="'EXIT:guiCTU'">
-                        <input file>"'/tmp/EmGr-img-jug-bluxyel.svg'"</input><width>15</width><height>15</height>   
-                        <label>'{_CTU_}'</label>
-                        <action function="'launch'">msg_DC_Quick_window</action><action function="'closewindow'">msg_DC_Quick_window</action>
-                            <action>'EXIT:guiCTU'</action>  </button>
-                    </hbox>
-
-                    <hbox homogeneous="1" visible="1">
-                        <button    tooltip-text="'EXIT:guiCTB'">
-                            <input file>"'/tmp/EmGr-img-jug-grnxred.svg'"</input><width>15</width><height>15</height>   
-                            <label>'={_CTB_}='</label>
-                            <action function="'launch'">msg_DC_Quick_window</action><action function="'closewindow'">msg_DC_Quick_window</action>
-                                <action>'EXIT:guiCTB'</action>  </button>
-
-                        <button    tooltip-text="'EXIT:guiCTB-SL'">
-                            <input file>"'/tmp/EmGr-img-jug-grnxred.svg'"</input><width>15</width><height>15</height>   
-                            <label>'{=_CTB-SL_=}'</label>
-                            <action function="'launch'">msg_DC_Quick_window</action><action function="'closewindow'">msg_DC_Quick_window</action>
-                                <action>'EXIT:guiCTB-SL'</action>  </button>
-                        <button   tooltip-text="Auto_CTB-SLX_UP_Scan_DN_" > 
-                                <input file>"'/tmp/EmGr-img-jug-redxblu.svg'"</input><width>22</width><height>22</height>   
-                                <label>"'{_CTB-SLX_}'"</label>
-                               <action function="'launch'">msg_DC_Quick_window</action><action function="'closewindow'">msg_DC_Quick_window</action>
-                                <action>echo '/root/my-applications/rc.z_CTB-SLX.sh' > /0-MGR_MB_RetVal.cfg </action>  
-                                    <action>'EXIT:guiCTB-SLX'</action>                          </button>
-                     </hbox>
-
-   </vbox>
-                
-    <vbox>
-                <vseparator height-request="5" > </vseparator>
-                <button   visible="1"   tooltip-text="'EXIT:guiMCI' < MCI > 
-                    Embedded Graphics Sample Project  "has-focus="false" height-request="13"> <label> "" </label> 
-                            <input file icon="gtk-select-color" ></input>   
-                     <action function="'launch'">msg_DC_Quick_window</action><action function="'closewindow'">msg_DC_Quick_window</action>
-                           <action>'EXIT:guiMCI'</action>       </button>
-         
-                <button  visible="1"   gtk-apply="true" has-focus="false" > 
-                    <input file>"'/tmp/EmGr-img-Check-bluXblu.svg'"</input><width>"35"</width><height>"35"</height>
-                    <label> " { 'MCI_Project' }  " </label>
+        <vseparator height-request="13" > </vseparator>
+        <vbox visible="1">
+            <hbox homogeneous="false" visible="1">
+                <hseparator width-request="3"></hseparator>
+                <button    tooltip-text="">
+                    <input file>"'/tmp/EmGr-img-Check-90-redXblu.svg'"</input><width>35</width><height>35</height>   
+                    <label>'{-S2F1-internal}'</label>
                     <action function="'launch'">msg_DC_Quick_window</action><action function="'closewindow'">msg_DC_Quick_window</action>
-                    <action>'EXIT:guiMCI'</action>      </button>
-
-                </vbox>
-                
-                <vseparator height-request="7" > </vseparator>
-                <button visible="1" label="" has-focus="false" height-request="7"> <action>lxAction:0</action> </button>
-                <vseparator height-request="7" > </vseparator>
-
-                <hbox>
-                    <button label="-NOTE-" visible="false" height-request="5"> <action>lxAction:spacer</action> </button>
-                    <hseparator width-request="7" > </hseparator>
-
-                    <button label="'-Apples-'" has-focus="false" height-request="5"> <action>lxAction:spacer</action> </button>
-
-                    <button     tooltip-text="'Quit-Red'" ><input file>"'/tmp/EmGr-img-quit-rednnn.svg'"</input><width>25</width><height>25</height>
-                        <label> "''" </label>
-                        <action function="'launch'">msg_DC_Quick_Utl_window</action><action function="'closewindow'">msg_DC_Quick_Utl_window</action>
-                        <action>"'n:00'"</action> </button>
-                    <button     tooltip-text="'Quit-grnnnn'" ><input file>"'/tmp/EmGr-img-quit-grnnnn.svg'"</input><width>15</width><height>15</height>
-                        <label> "''" </label><action>"'n:00'"</action> </button>
-                    <button     tooltip-text="'Quit-yelnnn'" ><input file>"'/tmp/EmGr-img-quit-yelnnn.svg'"</input><width>15</width><height>15</height>
-                        <label> "''" </label><action>"'n:00'"</action> </button>
-                    <button     tooltip-text="'apple-redred'" ><input file>"'/tmp/EmGr-img-apple-redred.svg'"</input><width>15</width><height>15</height>
-                        <label> "''" </label><action>"'n:01'"</action> </button>
-                    <button     tooltip-text="'apple-redblu'" ><input file>"'/tmp/EmGr-img-apple-redblu.svg'"</input><width>15</width><height>15</height>
-                        <label> "''" </label><action>"'n:02'"</action> </button>
-                    <button     tooltip-text="'apple-redyel'" ><input file>"'/tmp/EmGr-img-apple-redyel.svg'"</input><width>15</width><height>15</height>
-                        <label> "''" </label><action>"'n:03'"</action> </button>
-                    <button     tooltip-text="'apple-redgrn'" ><input file>"'/tmp/EmGr-img-apple-redgrn.svg'"</input><width>15</width><height>15</height>
-                        <label> "''" </label><action>"'n:04'"</action> </button>
-                    <hseparator width-request="42" > </hseparator>
-                </hbox>
-
-                <hbox>
-                    <hseparator width-request="7" > </hseparator>
-                    <button label="'-Jugs-'" has-focus="false" height-request="5"> <action>lxAction:spacer</action> </button>
-                    <button     tooltip-text="'jug-blu0yel'" ><input file>"'/tmp/EmGr-img-jug-blu0yel.svg'"</input><width>25</width><height>25</height>
-                        <label> "''" </label>
-                    <action function="'launch'">msg_DC_Quick_Utl_window</action><action function="'closewindow'">msg_DC_Quick_Utl_window</action>
-                        <action>"'n:05'"</action> </button>
-                    <button     tooltip-text="'jug-grnxorange'" ><input file>"'/tmp/EmGr-img-jug-grnxorange.svg'"</input><width>15</width><height>15</height>
-                        <label> "''" </label><action>"'n:06'"</action> </button>
-                    <button     tooltip-text="'jug-redxyel'" ><input file>"'/tmp/EmGr-img-jug-redxyel.svg'"</input><width>15</width><height>15</height>
-                        <label> "''" </label><action>"'n:07'"</action> </button>
-                    <button     tooltip-text="'jug-redxgrn'" ><input file>"'/tmp/EmGr-img-jug-redxgrn.svg'"</input><width>15</width><height>15</height>
-                        <label> "''" </label><action>"'n:08'"</action> </button>
-                    <button     tooltip-text="'jug-grnxred'" ><input file>"'/tmp/EmGr-img-jug-grnxred.svg'"</input><width>15</width><height>15</height>
-                        <label> "''" </label><action>"'n:09'"</action> </button>
-                    <button     tooltip-text="'jug-redxyel'" ><input file>"'/tmp/EmGr-img-jug-redxyel.svg'"</input><width>15</width><height>15</height>
-                        <label> "''" </label><action>"'n:10'"</action> </button>
-                    <button     tooltip-text="'jug-redxblu'" ><input file>"'/tmp/EmGr-img-jug-redxblu.svg'"</input><width>15</width><height>15</height>
-                        <label> "''" </label><action>"'n:11'"</action> </button>
-                    <hseparator width-request="50" > </hseparator>
-                </hbox>
-
-                <hbox>
-                    <hseparator width-request="7" > </hseparator>
-                    <button     tooltip-text="'hash-grn'" ><input file>"'/tmp/EmGr-img-hash-grn.xpm'"</input><width>25</width><height>25</height>
-                        <label> "''" </label>
-                    <action function="'launch'">msg_DC_Quick_Utl_window</action><action function="'closewindow'">msg_DC_Quick_Utl_window</action>
-                        <action>"'n:12'"</action> </button>
-                    <button     tooltip-text="'Check-bluXred'" ><input file>"'/tmp/EmGr-img-Check-bluXred.svg'"</input><width>33</width><height>33</height>
-                        <label> "''" </label>
-                    <action function="'launch'">msg_DC_Quick_Utl_window</action><action function="'closewindow'">msg_DC_Quick_Utl_window</action>
-                        <action>"'n:18'"</action> </button>
-                    <button     tooltip-text="'Check-redred'" ><input file>"'/tmp/EmGr-img-Check-redred.svg'"</input><width>33</width><height>33</height>
-                        <label> "''" </label><action>"'n:18'"</action> </button>
-                    <button     tooltip-text="'Check-grngrn'" ><input file>"'/tmp/EmGr-img-Check-grngrn.svg'"</input><width>33</width><height>33</height>
-                        <label> "''" </label><action>"'n:19'"</action> </button>
-                    <button     tooltip-text="'Check-yelyel'" ><input file>"'/tmp/EmGr-img-Check-yelyel.svg'"</input><width>33</width><height>33</height>
-                        <label> "''" </label><action>"'n:20'"</action> </button>
-                    <button     tooltip-text="'Check-blublu'" ><input file>"'/tmp/EmGr-img-Check-blublu.svg'"</input><width>33</width><height>33</height>
-                        <label> "''" </label><action>"'n:21'"</action> </button>
-                    <hseparator width-request="52" > </hseparator>
-                </hbox>
-                    <button visible="1" label="" has-focus="false" height-request="5"> <action>lxAction:0</action> </button>
-
+                    <action>'EXIT:guiS2F1_MI'</action>  </button>
+                <hseparator width-request="17"></hseparator>
+                <button visible="1"  has-focus="false" height-request="13"  xalign=".5"  
+                    tooltip-text="" >
+                    <input file>"'/tmp/EmGr-img-Check-90-redXyel.svg'"</input><width>35</width>  <height>35</height>
+                    <label> "'{-PXB-RS-Internal}'" </label>
+                    <action function="'launch'">msg_DC_Quick_window</action><action function="'closewindow'">msg_DC_Quick_window</action>
+                    <action>'EXIT:guiPXB_ion_RS'</action></button>
+                <hseparator width-request="17"></hseparator>
+                <button  visible="1" tooltip-text="">
+                    <input file>"'/tmp/EmGr-img-Check-90-redXgrn.svg'"</input><width>35</width><height>35</height>   
+                        <label>'{-S2F3-internal}'</label>
+                    <action function="'launch'">msg_DC_Quick_window</action><action function="'closewindow'">msg_DC_Quick_window</action>
+                    <action>'EXIT:guiS2F3_MI'</action>  </button>
+                <hseparator width-request="177"></hseparator>
+            </hbox>
+    
+            <hbox homogeneous="false" visible="1">
+                <hseparator width-request="3"></hseparator>
+                 <button    tooltip-text="">
+                        <input file>"'/tmp/EmGr-img-Check-90-redXblu.svg'"</input><width>35</width><height>35</height>   
+                        <label>'{-PnMount-}'</label>
+                    <action function="'launch'">msg_DC_Quick_window</action><action function="'closewindow'">msg_DC_Quick_window</action>
+                        <action>'Sbr_MGR_pMount_All'</action>  </button>
+                <hseparator width-request="22"></hseparator>
+                <button visible="1"  has-focus="false" height-request="13"  xalign=".5"  
+                    tooltip-text="" >
+                    <input file>"'/tmp/EmGr-img-Check-90-redXyel.svg'"</input><width>35</width>  <height>35</height>
+                    <label> "'{-TXN-}'" </label>
+                    <action function="'launch'">msg_DC_Quick_window</action><action function="'closewindow'">msg_DC_Quick_window</action>
+                    <action>'EXIT:guiTXN'</action></button>
+                <hseparator width-request="22"></hseparator>
+                <button    tooltip-text="">
+                        <input file>"'/tmp/EmGr-img-Check-90-redXgrn.svg'"</input><width>35</width><height>35</height>   
+                        <label>'{-UnMount-}'</label>
+                    <action function="'launch'">msg_DC_Quick_window</action><action function="'closewindow'">msg_DC_Quick_window</action>
+                        <action>'Sbr_Sys_uMount_All'</action>  </button>
+                <hseparator width-request="280"></hseparator>
+            </hbox>
+           <vseparator  visible="1" height-request="17" > </vseparator>
+            <button visible="1" label="" has-focus="false" height-request="11"> 
+                <action>'0-top-CTX-external'</action> </button>
+            <vbox>
+                <button visible="1" label="'{_Dependencies_/root/my-applications_}'" has-focus="false" width-request="100" height-request="35"> 
+                    <action>'0_Dependencies_'</action> </button>
+            </vbox>
+          
+           <vseparator  height-request="3" > </vseparator>
+            <hbox visible="1" homogeneous="0">
+                <hseparator width-request="15"></hseparator>
+                <button visible="1" tooltip-text="''">
+                    <input file>"'/tmp/EmGr-img-jug-grnxred.svg'"</input><width>15</width><height>15</height>   
+                    <label>'={_CTB-5.2_}='</label>
+                    <action function="'launch'">msg_DC_Quick_window</action><action function="'closewindow'">msg_DC_Quick_window</action>
+                        <action>'EXIT:guiCTB52'</action>  </button>
+ 
+                <hseparator width-request="115"></hseparator>
+ 
+                <button visible="1" tooltip-text="''"  > 
+                    <input file>"'/tmp/EmGr-img-quit-rednnn.svg'"</input> <width>22</width> <height>22</height>   
+                    <label>"'_BakAll_CTB-SLX_PO_powerOff_'"</label>
+                    <action function="'launch'">msg_DC_Quick_window</action><action function="'closewindow'">msg_DC_Quick_window</action>
+                         <action>'EXIT:guiCTB-SLX-PO'</action>   </button>
+ 
+                <hseparator width-request="105"></hseparator>
+            </hbox>
+            <vseparator height-request="3" > </vseparator>
+                     
+            <button   visible="1"   tooltip-text="'EXIT:guiMCI' < MCI > Instructional 
+                Embedded Graphics Sample Project  "has-focus="false" height-request="11"> <label> "" </label> 
+                        <input file icon="gtk-select-color" ></input>   
+                       <action>'top-guiMCI'</action>       </button>
+            <hbox homogeneous="0">
+            <hseparator width-request="44"></hseparator>
+            <button  visible="1"   gtk-apply="true" has-focus="false" > 
+                <input file>"'/tmp/EmGr-img-Check-bluXblu.svg'"</input><width>"35"</width><height>"35"</height>
+                <label> " { 'MCI_Project_Instructional-Ext' }  " </label>
+                <action>'EXIT:guiMCI'</action>      </button>
+ 
+            <hseparator width-request="122"></hseparator>
+ 
+            <button  visible="1"   gtk-apply="true" has-focus="false" > 
+                <input file>"'/tmp/EmGr-img-Check-bluXblu.svg'"</input><width>"35"</width><height>"35"</height>
+                <label> " { 'MGS-8_Project_Simple-Ext' }  " </label>
+                <action>'EXIT:guiMGS-8'</action>      </button>
+            <hseparator width-request="77"></hseparator>
+            </hbox>
+        </vbox>
+    
+            <vseparator height-request="3" > </vseparator>
+            <button visible="1" label="" has-focus="false" height-request="11"> 
+                <action>'top-image-lib'</action> </button>
+            <hbox>
+            <button label="'-Image-Library-'" visible="1" height-request="1"> <action>lxAction:spacer</action> </button>
+            <hseparator width-request="57" > </hseparator>
+            <button label="'-QuitExit-'" has-focus="false" height-request="25"> <action>lxAction:spacer</action> </button>
+            <button     tooltip-text="'Quit-Red'" >   <input file>"'/tmp/EmGr-img-quit-rednnn.svg'"</input><width>25</width><height>25</height>
+                <label> "''" </label> <action>"'apple:0'"</action> </button>
+            <button     tooltip-text="'Quit-grnnnn'" ><input file>"'/tmp/EmGr-img-quit-grnnnn.svg'"</input><width>25</width><height>25</height>
+                <label> "''" </label><action>"'apple:1'"</action> </button>
+            <button     tooltip-text="'Quit-yelnnn'" ><input file>"'/tmp/EmGr-img-quit-yelnnn.svg'"</input><width>25</width><height>25</height>
+                <label> "''" </label><action>"'apple:2'"</action> </button>
+            <hseparator width-request="27" > </hseparator>
+            <button label="'-Apples-'" has-focus="false" height-request="25"> <action>lxAction:spacer</action> </button>
+            <button     tooltip-text="'apple-redred'" ><input file>"'/tmp/EmGr-img-apple-redred.svg'"</input><width>25</width><height>25</height>
+                <label> "''" </label><action>"'apple:3'"</action> </button>
+            <button     tooltip-text="'apple-redblu'" ><input file>"'/tmp/EmGr-img-apple-redblu.svg'"</input><width>25</width><height>25</height>
+                <label> "''" </label><action>"'apple:4'"</action> </button>
+            <button     tooltip-text="'apple-redyel'" ><input file>"'/tmp/EmGr-img-apple-redyel.svg'"</input><width>25</width><height>25</height>
+                <label> "''" </label><action>"'apple:5'"</action> </button>
+            <button     tooltip-text="'apple-redgrn'" ><input file>"'/tmp/EmGr-img-apple-redgrn.svg'"</input><width>25</width><height>25</height>
+                <label> "''" </label><action>"'apple:6'"</action> </button>
+            <hseparator width-request="117" > </hseparator>
+            </hbox>
+            <hbox>
+            <hseparator width-request="7" > </hseparator>
+            <button label="'-Hash-'" has-focus="false" height-request="5"> <action>"'Hash:0'"</action> </button>
+            <button     tooltip-text="'hash-red'" ><input file>"'/tmp/EmGr-img-hash-red.xpm'"</input><width>25</width><height>25</height>
+                <label> "''" </label>
+                <action>"'Hash:1'"</action> </button>
+            <button     tooltip-text="'hash-grn'" ><input file>"'/tmp/EmGr-img-hash-grn.xpm'"</input><width>25</width><height>25</height>
+                <label> "''" </label>
+                <action>"'Hash:2'"</action> </button>
+            <button     tooltip-text="'hash-blu'" ><input file>"'/tmp/EmGr-img-hash-blu.xpm'"</input><width>25</width><height>25</height>
+                <label> "''" </label>
+                <action>"'Hash:3'"</action> </button>
+            <hseparator width-request="67" > </hseparator>
+            <button label="'-Jugs-'" has-focus="false" height-request="25"> <action>lxAction:spacer</action> </button>
+            <button     tooltip-text="'jug-blu0yel'" >   <input file>"'/tmp/EmGr-img-jug-blu0yel.svg'"</input><width>25</width><height>25</height>
+                <label> "''" </label> <action>"'jug:1'"</action> </button>
+            <button     tooltip-text="'jug-grnxorange'" ><input file>"'/tmp/EmGr-img-jug-grnxorange.svg'"</input><width>25</width><height>25</height>
+                <label> "''" </label><action>"'jug:2'"</action> </button>
+            <button     tooltip-text="'jug-redxyel'" >   <input file>"'/tmp/EmGr-img-jug-redxyel.svg'"</input><width>25</width><height>25</height>
+                <label> "''" </label><action>"'jug:3'"</action> </button>
+            <button     tooltip-text="'jug-redxgrn'" >   <input file>"'/tmp/EmGr-img-jug-redxgrn.svg'"</input><width>25</width><height>25</height>
+                <label> "''" </label><action>"'jug:4'"</action> </button>
+            <button     tooltip-text="'jug-grnxred'" >   <input file>"'/tmp/EmGr-img-jug-grnxred.svg'"</input><width>25</width><height>25</height>
+                <label> "''" </label><action>"'jug:5'"</action> </button>
+            <button     tooltip-text="'jug-redxyel'" >   <input file>"'/tmp/EmGr-img-jug-redxyel.svg'"</input><width>25</width><height>25</height>
+                <label> "''" </label><action>"'jug:6'"</action> </button>
+            <button     tooltip-text="'jug-redxblu'" >   <input file>"'/tmp/EmGr-img-jug-redxblu.svg'"</input><width>25</width><height>25</height>
+                <label> "''" </label><action>"'jug:7'"</action> </button>
+            <hseparator width-request="127" > </hseparator>
+            </hbox>
+            <hbox>
+            <hseparator width-request="7" > </hseparator>
+            <button label="'-Check-90-'" has-focus="false" height-request="15"> <action>"'Check:90:0'"</action> </button>
+            <button visible="1" tooltip-text="'check-Big_90'" ><input file>"'/tmp/EmGr-img-Check-90-redXyel.svg'"</input><width>55</width><height>55</height>
+                    <label>"''"</label> <action>'select-Big_90'</action> 
+               <action function="'launch'">     msg_DC_Check_Big_90_window</action><action function="'closewindow'">msg_DC_Check_Big_90_window</action>    </button>
+            <button visible="1" tooltip-text="'check-90-redXblu'" ><input file>"'/tmp/EmGr-img-Check-90-redXblu.svg'"</input><width>55</width><height>55</height>
+                    <label>"''"</label> <action>'select-Check-90'</action> 
+               <action function="'launch'">     msg_DC_Check_90_Big_redXblu_window</action><action function="'closewindow'">msg_DC_Check_90_Big_redXblu_window</action>    </button>
+            <button visible="1" tooltip-text="'check-90-redXgrn'" ><input file>"'/tmp/EmGr-img-Check-90-redXgrn.svg'"</input><width>55</width><height>55</height>
+                    <label>"''"</label> <action>'select-Check-90'</action> 
+               <action function="'launch'">     msg_DC_Check_90_Big_redXgrn_window</action><action function="'closewindow'">msg_DC_Check_90_Big_redXgrn_window</action>    </button>
+          <hseparator width-request="22" > </hseparator>
+            <button label="'-CheckMark-'" has-focus="false" height-request="15"> <action>'CheckMark'r</action> </button>
+            <button     tooltip-text="'Check-111-redXblu'" ><input file>"'/tmp/EmGr-img-Check-111-bluXred.svg'"</input><width>55</width><height>63</height>
+                <label> "''" </label> <action>"'Check:81'"</action> </button>
+             <button    tooltip-text="'Check-111-redXgrn'" ><input file>"'/tmp/EmGr-img-Check-111-grnXred.svg'"</input><width>55</width><height>63</height>
+                <label> "''" </label> <action>"'Check:82'"</action> </button>
+            <button     tooltip-text="'Check-111redXyel'" ><input file>"'/tmp/EmGr-img-Check-111-yelXred.svg'"</input><width>55</width><height>63</height>
+                <label> "''" </label> <action>"'Check:83'"</action> </button>
+          <hseparator width-request="13" > </hseparator>
+ 
+            <button label="'-Check-'" has-focus="false" height-request="15"> <action>'CheckMark'r</action> </button>
+             <button     tooltip-text="'Check-redred'" ><input file>"'/tmp/EmGr-img-Check-redred.svg'"</input><width>33</width><height>33</height>
+                <label> "''" </label><action>"'0-Check:13'"</action> </button>
+            <button     tooltip-text="'Check-grngrn'" ><input file>"'/tmp/EmGr-img-Check-grngrn.svg'"</input><width>33</width><height>33</height>
+                <label> "''" </label><action>"'0-Check:14'"</action> </button>
+            <button     tooltip-text="'Check-yelyel'" ><input file>"'/tmp/EmGr-img-Check-yelyel.svg'"</input><width>33</width><height>33</height>
+                <label> "''" </label><action>"'0-Check:15'"</action> </button>
+           <hseparator width-request="30" > </hseparator>
+            </hbox>
+        <button visible="0" label="" has-focus="false" height-request="5"> <action>lxAction:0</action> </button>
     </vbox>
-
-            <button visible="0" tooltip-text="Simple_guiSimReStart">
-                <input file>"'/tmp/EmGr-img-Check-grnXgrn.svg'"</input><width> "35" </width> <height> "35" </height>
-                <label>'_ReStart__'</label>
-                <action function="'launch'">msg_DC_LxgenUtil_window</action><action function="'closewindow'">msg_DC_LxgenUtil_window</action>
-                <action>'EXIT:guiSimReStart'</action>	</button>
-
-            <button>
-                <label>"Clear Util Window"</label>
-                <action function="closewindow">msg_DC_LxgenUtil_window</action>    </button>
-
+            <vseparator height-request="3"> </vseparator>
+            <hbox homogeneous="true">
+                <button tooltip-text="''" >
+                    <input file>"'/tmp/EmGr-img-quit-grnnnn.svg'"</input><width>13</width>  <height>13</height>
+                    <label>'Clear-Bash-UTIL-Window'</label> 
+                <action function="closewindow">msg_DC_LxgenUtil_window_0</action> </button>
+            </hbox>
 </vbox>
 </frame>
-<variable>msg_DC_LxgenUtil_window</variable>
+<variable>msg_DC_LxgenUtil_window_0</variable>
 </window>'
-export msg_DC_LxgenUtil_window   ### REQUIRED Msg Window ##########################
+export msg_DC_LxgenUtil_window_0   #! REQUIRED Msg Window ===================
 #! ############################################################
 #!
 #!
+#!
+#!
+#! ###_CBX_################################################
+#! BEGIN:     CBx   Combo-Boxes   #! Not Active
+#! ###_CBX_################################################
+#!
+#(: =====================================================================
+#(: fx Sbr_ClearFlagsSystem   #: Active for System
+#(: called by:
+#(: param:
+#(: purpose: clear all system flags
+#(: calls:
+#(: method:
+#(: sends:
+#(: rationale:
+#(: note : some flags are still hard-code ; ie, LockFile , BackUpStatus
+#(: preceded by call to Sbr_CBX_ReStart and $0
 #! ############################################################
+function Sbr_ClearFlagsSystem() {   # ACTIVE    # at 3560
+    #! for System
+    n=0
+    #! current in-use
+    rm -f "${MGR_LockFile}"             2>&1>/dev/null  ### this is "MGR_LockFile" ###  but not E3R  CBX
+    rm -f "${MGR_BackUpStatus}"         2>&1>/dev/null 
+    rm -f "${MGR_ReStart_flg}"          2>&1>/dev/null  ### MGR initial Re-ReStart to init GEANY   # Sbr_ClearFlagsQuit
+
+    #! tmp usage
+    rm -f "/tmp/snapmergepuppy-error"   2>&1>/dev/null  ### this is SMP flag , via SMP
+    rm -f "/tmp/flagnextpassthru"       2>&1>/dev/null  ### used by Linux , ? via SMP 
+    rm -f "/tmp/box_help"               2>&1>/dev/null  ### remove the lingering temp file.
+    rm -f "/tmp/box_source"             2>&1>/dev/null  ### remove the lingering temp file.
+
+    rm -f "/tmp/EmGa-Master-GUI.txt"          2>&1>/dev/null    ### Embedded Image Flag file
+    rm -f "/tmp/gtkdialog_splash_border.svg"  2>&1>/dev/null 
+    rm -f "/tmp/gtkdialog_splash_bg.svg"      2>&1>/dev/null 
+    rm -f "/tmp/gtkdialog_splash_bg.svg"      2>&1>/dev/null 
+    rm -f "/tmp/Mgr_Dump_Path.txt"            2>&1>/dev/null 
+    rm -f "/tmp/Mgr_Dump_Declare.txt"         2>&1>/dev/null 
+
+    gcMGRConfigArbIdd=""            ### cleared for 'next reboot' Menu Selection
+    /bin/echo " " > /dev/console
+
+} #
+export -f Sbr_ClearFlagsSystem
 #!
 #!
-#! [-4-]  Floating Msg Window ### REQUIRED Msg Window ##########################
-    # msg_DC_LxgenUtil_window       
-    # Sbr_Vmb_Config  calls  Sbr_gui_MB_Dialog
-    #! ### /root/my-applications/Dxstro_.jpg ###
-    #! ### /mnt/home/pup_UpupMM-SDA/Dxstro_.jpg ###
-msg_DC_LxgenVmb_window_text="===_Vmb_???_Page_==="         # Sbr_Vmb_Config  calls  Sbr_gui_MB_Dialog
-msg_DC_LxgenVmb_window='
-<window title="msg_DC_LxgenVmb_window-???-"
-visible="true" >
-<frame>
-<text editable="false" use-markup="true" xalign=".5"><label> "<span color='"'red'"'> <b>'${msg_DC_LxgenVmb_window_text}'</b> </span> " </label></text>
-<vbox>
-
-    <vbox>
-        <vseparator height-request="7" > </vseparator>
-        <hbox homogeneous="true">
-            <button tooltip-text="'jug-redxyel'" has-focus="false" width-request="7" xalign=".5"  >
-                <input file>"'/tmp/EmGr-img-jug-redxyel.svg'"</input><width>35</width><height>35</height>   
-                <label>"???"</label> 
-                <action>'0'</action> </button>
-            <hseparator width-request="11" ></hseparator>
-        </hbox>
-    </vbox>
-
-    <vbox homogeneous="true">
-
-                <hseparator width-request="11" ></hseparator>
-
-     <button  tooltip-text="PageVert / MB_Method: 
-#: note:  Multi-Button module in PageVert
-#: fx (Sbr_MB_gui_xml) 
-#: called by : Main-GUI-Dialog via EXIT:guiMB ???
-#: purpose :  Build/Present  Multi-Button  array 
-#: - - -    of functional calls to sub-routines
-#: - - -    which are experimental system programs.
-#: returns : 
-#:  Selected Button generates a Token FileName
-#:  Token FileName is sent as a string echo into config-file
-#:  example for ROX system file manager program:
-#: IF GTK <action>echo 'Sbr_MB_rox' > /0-MGR_MB_RetVal.cfg </action>  
-#: THEN BASH will :
-#:  - - - load/cat/read the file.cfg 
-#:  - - - then run the local function  Sbr_MB_rox() 
-#:  - - - which will execute the ROX system file manager.
-#: - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
-#:  READ the CODE in the Vertical MB page section .
-#:  Sbr_MB_gui_xml  eval  will not initiate action
-#:  Sbr_MB_gui_xml writes action results into a file.cfg
-#:  BASH code  will import/cat/read the file.cfg
-#:  BASH code  will call the <action> subroutine.
-#:  READ the CODE in the Vertical MB page source.
-#:  READ the CODE  to see the specific method.
-#:  This method avoids conflict between BASH and GTK .
-#: 
-#:  P_mnt + CTB-SL + U_mnt   
-#: will 
-#:      UpMountAll, 
-#:      CTB Scan All HardDrives, 
-#:      DownMount all. 
-#: _____________________________________________________
-"
-        has-focus="false"  xalign=".5" >
-        <input file>"'/tmp/EmGr-img-jug-redxyel.svg'"</input><width>15</width><height>15</height>   
-        <label>'Tool-Tip'</label>
-        <action>lxEXIT:ToolTip </action>
-    </button>
-
-    <button> <label>"'_Local_S2F1_'"</label>
-        <input file>"'/tmp/EmGr-img-jug-redxyel.svg'"</input><width>15</width><height>15</height>   
-        <action>echo 'Sbr_MB_s2f1' > /0-MGR_MB_RetVal.cfg </action>  
-        <action>Sbr_MB_s2f1</action>    
-        </button>
-
-    <button> <label>"'_Local_S2F3_'"</label>
-        <input file>"'/tmp/EmGr-img-jug-redxyel.svg'"</input><width>15</width><height>15</height>   
-        <action>echo 'Sbr_MB_s2f3' > /0-MGR_MB_RetVal.cfg </action>  
-        <action>Sbr_MB_s2f3</action>    </button>
-
-    <button> <label>"'_External_Sfs_Load_'"</label>
-        <input file>"'/tmp/EmGr-img-jug-redxyel.svg'"</input><width>15</width><height>15</height>   
-        <action>echo Sbr_MB_sfs_load > /0-MGR_MB_RetVal.cfg </action>  
-        <action>'0' </action>    </button>
-
-    <button> <label>"'_External_JWD_'" </label>
-        <input file>"'/tmp/EmGr-img-jug-redxyel.svg'"</input><width>15</width><height>15</height>   
-        <action>echo 'Sbr_MB_jwd' > /0-MGR_MB_RetVal.cfg </action>  
-        <action>'0' </action>    </button>
-
-    <button> <label>"'_External_{-ROX-}'"</label> 
-        <input file>"'/tmp/EmGr-img-jug-redxyel.svg'"</input><width>15</width><height>15</height>   
-        <action>echo 'Sbr_MB_rox' > /0-MGR_MB_RetVal.cfg </action>  
-        <action>'0' </action>    </button>
-
-    <button   tooltip-text="_External_CTB_UP_Scan_DN_External_" > 
-        <input file>"'/tmp/EmGr-img-jug-redxyel.svg'"</input><width>15</width><height>15</height>   
-        <label>"'{_CTB-SLX_}'"</label>
-        <action>echo '/root/my-applications/rc.z_CTB-SLX.sh' > /0-MGR_MB_RetVal.cfg </action>  
-       <action>'0' </action>    </button>
-  
-     <hseparator width-request="11" ></hseparator>
-    </vbox>
-
-    <vbox>
-                 <button    tooltip-text="_Multi-Box_ReStart_???_">
-                    <input file>"'/tmp/EmGr-img-Check-grnXgrn.svg'"</input><width> "35" </width> <height> "35" </height>
-                    <label>'EXIT'</label>
-                    <action>EXIT:guiSimReStart</action>	
-                    </button>
-    </vbox>
-
-    <vbox visible="false">
-                <hseparator width-request="11" ></hseparator>
-        <button cancel><label>Quit</label>	</button>
-                <hseparator width-request="11" ></hseparator>
-                <vseparator height-request="7" > </vseparator>
-    </vbox>
-
-</vbox>
-</frame>
-<variable>msg_DC_LxgenVmb_window</variable>
-</window>'
-export msg_DC_LxgenVmb_window   ### REQUIRED Msg Window ##########################
-#! ############################################################
-
-#!
-#! #######################################################
-#! END:     Msg_Windows :  Independent  Floating  Pages 
-#! END:     Msg_Windows :  Independent  Floating  Pages 
-#! END:     Msg_Windows :  Independent  Floating  Pages 
-#! #######################################################
-#!
-#!
-#!
-#!
-#!
-#!
-#! #######################################################
-#! BEGIN:     Combo-Boxes   on  Page One "Main" 
-#! #######################################################
 #!
 #!
 #(: ======================================================
-#(: fx(Sbr_Cbx_ReStart)
+#(: fx Sbr_Cbx_ReStart
 #(: called by:  # CBX_ReStart et al
 #(: param:
 #(: purpose: ReStart $0 , fresh !
@@ -3553,98 +4705,173 @@ export msg_DC_LxgenVmb_window   ### REQUIRED Msg Window ########################
 #(: rationale:
 #(: note : called by ROX
 #(:
-#! ######################################################
-function Sbr_Cbx_ReStart() {   # Active Check-Box # ARB_ReStart
-	n=0
-     #! called by guiROX with no parameter
-    if [ ! "${lcPupRamObjMsg}" ] ; then   #  IF NOT file,  THEN this is First-Time-Run
-        #!
-        if [ $1  ] ; then # No Param = control Splash
-            Sbr_Splash_It  "Manager ReStart" "black" "yellow" "1"     #! -D---   First-Time-Running-Messsage
-         fi # end: [ $1 ne "0" ] ; then
-        #!
-    fi
-    #!
-    Sbr_ClearFlagsSystem  ""  #: clear lockfile, etc,  so that ReStart can run.
-    #! ReStart
-    . ${gcZeroRun}      #: $ ZERO	# will run ReStart fresh , todo: must control double ReStart/WriteImg	
-    #~ echo "=== Sbr_Cbx_ReStart ===" 
+#! ###_CBX_###  "Sbr_Cbx_Re" ##############################################
+function Sbr_Cbx_ReStart() {   # ACTIVE   Group:  "Sbr_Cbx_Re"
+    #! for Check-Box ARB_ReStart a simple 'warm' restart 
+    n=0
+    lcMsgStr="ReStart"
+    #! Sbr_Splash_Flip3  ${lcMsgStr} ".3"   #! too much 
+    #!  for ReStart, retain this embedded images file, so quicker. 
+    #!   !!! rm -f ${gcEmGaImgFnTrgTxtMaster}   #! image files master file 
+    Sbr_ClearFlagsSystem  ""   
     sleep 1
+    clear   #! screen 
+    #! This is "ReStart"   
+    . ${0}      #: $ ZERO   # will run $0 / ReStart fresh .
     #!
+    #! ELSE
+    Sbr_FnNotFound "ReStart"
+    #! should not get to here.
 } #
-export -f Sbr_Cbx_ReStart
+export -f Sbr_Cbxb
 #!
 #!
 #(: ======================================================
-#(: fx(Sbr_Cbx_ReBoot)
-#(: called by: CBX_Reboot et al 
+#(: fx Sbr_Cbx_ReBoot
+#(: called by: C3C_Reboot et al 
 #(: param:
 #(: purpose:
 #(: calls:
-#(: called by: CBX, ARB, E3R
+#(: called by: C3C, ARB, E3R
 #(: method:
 #(: sends:
 #(: rationale:
 #(: note :
 #(:
-#! ######################################################
-function Sbr_Cbx_ReBoot() {   # Active Check-Box # ARB_ReBoot
+# working
+#! ###_CBX_################################################
+function Sbr_Cbx_ReBoot() {   # ACTIVE
+    #! for Check-Box ARB_ReBoot  for Simple for "wm"reboot
     n=0
-	#
-	if [ $1  ] ; then	# control Splash
-    	Sbr_Splash_It "ReBOOT" "black" "yellow"  "1"         #! -D---
-	fi
-	#
- 	lcFnRun="/usr/bin/wmreboot"	   # wmpoweroff wmreboot
-    if [ -f "${lcFnRun}" ]  ; then    # wmpoweroff wmreboot
-        rm -f ${gcEmGaImgFnTrgTxtMaster}
-		${lcFnRun}  && ${lcFnRun}  && exit
-    else
-        n=0
-    	Sbr_Splash_It " ERROR: File Not Found : ${lcFnRun} " "black" "red"  "3"         #! -D---
- 	fi
-    exit 1	# Should NOT get here !
+    #
+    lcMsgStr="Sbr_Cbx_ReBoot__${gcDistroReboot}_Alternative_ReBoot"
+    Sbr_Splash_Flip3  ${lcMsgStr} "3"  &&     sleep 1
+    Sbr_ClearFlagsSystem  ""  #: clear lockfile, etc,  L:3551
+        #!
+        ${gcDistroReboot}   #! possibly "wmreboot"
+        #!
+    #!
+    Sbr_FnNotFound "ReBoot ${gcDistroReboot}" 
+    #! 
 } #
 export -f Sbr_Cbx_ReBoot
 #!
 #!
 #(: ======================================================================
-#(: fx(Sbr_Cbx_ReQuit)
-#(: called by: CBX_ReQuit
+#(: fx Sbr_Cbx_ReQuit
+#(: called by: CBX_ReQuit Simple PowerOff
 #(: param:
 #(: purpose:
 #(: calls:
-#(: called by: CBX, ARB, E3R
+#(: called by: Simple ReQuit on Main System Screen
 #(: method:
 #(: sends:
 #(: rationale:
 #(: note :
 #(:
-#! ############################################################
-function Sbr_Cbx_ReQuit() {   # Active Check-Box # ARB_ReQuit ShutDown
-	n=0
-	#
-	if [ $1 ] ; then
-    	Sbr_Splash_It "ReQuit" "black" "yellow"  "1"         #! -D---
- 	fi
-	#
-	lcFnRun="/usr/bin/wmpoweroff"    # wmpoweroff calls /usr/bin/wmexit 
-    if [ -f "${lcFnRun}" ]  ; then   # wmpoweroff calls /usr/bin/wmexit 
-        n=0
-        rm -f ${gcEmGaImgFnTrgTxtMaster}
-         ${lcFnRun} && ${lcFnRun} && exit
-     else
-        n=0
-    	Sbr_Splash_It " ERROR: File Not Found : ${lcFnRun} " "black" "red"  "3"         #! -D---
- 		#
-	fi
-    exit 1
+# working
+#! ###_CBX_################################################
+function Sbr_Cbx_ReQuit() {   # ACTIVE      Simple PowerOff
+    #! for Check-Box ARB_ReQUIT  for Simple for "wm"poweroff
+    n=0
+    #!
+    lcMsgStr="Sbr_Cbx_ReQUIT___BASH_PowerOff"
+    Sbr_Splash_Flip3  ${lcMsgStr} ".3"  &&     sleep 7
+    Sbr_ClearFlagsSystem  ""  #: clear lockfile, etc,  L:3551
+    #!
+    poweroff            #! ReQUIT___BASH_poweroff_
+    #!
+    lcMsgStr="Sbr_Cbx_ReQUIT___BASH_PowerOff___FAILED___"
+    Sbr_Splash_Flip3  ${lcMsgStr} "3"  &&     sleep 3
+    Sbr_FnNotFound "System ReQUIT PowerOFF" 
 } #
 export -f Sbr_Cbx_ReQuit
 #!
+#(: ======================================================================
+#(: fx Sbr_Cbx_RePowerOff
+#(: called by: CBX_ReQuit Simple PowerOff
+#(: param:
+#(: purpose:
+#(: calls:
+#(: called by: Simple ReQuit on Main System Screen
+#(: method:
+#(: sends:
+#(: rationale:
+#(: note :
+#(:
+#! ###_CBX_################################################
+function Sbr_Cbx_RePowerOff() {   # ACTIVE      Simple PowerOff
+    #! for Check-Box ARB_ReQUIT  for Simple for "wm"poweroff
+    n=0
+    #!
+    lcMsgStr="Sbr_Cbx_RePowerOff___BASH_PowerOff_"
+    Sbr_Splash_Flip3  ${lcMsgStr} ".3"  &&     sleep 1
+    Sbr_ClearFlagsSystem  ""  #: clear lockfile, etc,  L:3551
+    #!
+    poweroff            #! RePowerOFF___absolute_for_popping_stack___BASH_poweroff___BUT! Different OS /= 
+    #!
+    Sbr_FnNotFound "System PowerOFF" 
+} #
+export -f Sbr_Cbx_RePowerOff
+#!
+#!
+#(: ======================================================================
+#(: fx Sbr_Cbx_ReHalt
+#(: called by: simple CBX_ReHalt
+#(: param:
+#(: purpose:
+#(: calls:
+#(: called by: Simple ReHalt on Main System Screen 
+#(: method:
+#(: sends:
+#(: rationale:
+#(: note :
+#(:
+#! ###_CBX_################################################
+function Sbr_Cbx_ReHalt() {   # ACTIVE
+    #! for Check-Box ARB_ReHalt___  absolute_for_killing_stack ___ 
+    n=0
+    #!
+    lcMsgStr="Sbr_Cbx_ReHALT___BASH_halt_"
+    Sbr_Splash_Flip3  ${lcMsgStr} ".3"  &&     sleep 1
+    Sbr_ClearFlagsSystem  ""  #: clear lockfile, etc,  L:3551
+    #!
+    halt
+    #!
+    Sbr_FnNotFound "System HALT" 
+} #
+export -f Sbr_Cbx_ReHalt
+#!
+#(: ======================================================================
+#(: fx Sbr_Cbx_ReHalt
+#(: called by: simple CBX_ReHalt
+#(: param:
+#(: purpose:
+#(: calls:
+#(: called by: Simple ReHalt on Main System Screen 
+#(: method:
+#(: sends:
+#(: rationale:
+#(: note :
+#(:
+#! ###_CBX_################################################
+function Sbr_Cbx_Clear_Restart() {   # ACTIVE
+    #! for Check-Box ARB_ReHalt___  absolute_for_killing_stack ___ 
+    n=0
+    #!
+    lcMsgStr="Sbr_Sbr_Cbx_Clear_Restart_"
+    Sbr_Splash_Flip3  ${lcMsgStr} ".3"  &&     sleep 1
+    #!
+    Sbr_ClearFlagsSystem 0      ### clear lockfile so that ReStart can run.
+    Sbr_Cbx_ReStart 1    # display and no wait
+    #!
+} #
+export -f Sbr_Cbx_Clear_Restart
+#!
+#!
 #!
 #! #######################################################
-#! END:     Combo-Boxes   on  Page One "Main" 
+#! END:    CBx  Combo-Boxes   on  Primary System Page
 #! #######################################################
 #!
 #!
@@ -3656,7 +4883,7 @@ export -f Sbr_Cbx_ReQuit
 #! #######################################################
 #!
 #(: ====================================================================
-#(: fx(Sbr_Sys_SDA_Only)
+#(: fx Sbr_Sys_SDA_Only
 #(: called by: MainMenu Builder; Some Calls Only Allowed if /SDA1
 #(: param:
 #(: purpose: Some subroutines are only to be run from SDA system.
@@ -3669,15 +4896,18 @@ export -f Sbr_Cbx_ReQuit
 #(: note : MUST copy EDIT code from ONLY SDA1 !!!
 #(:
 #! #####################################################################
-function Sbr_Sys_SDA_Only() {    # Active  # if [!SDA] then skip and restart
-	#! Sbr_Sys_SDA_Only	# control: test "SDA" && ReStart
-	n=0
+function Sbr_Sys_SDA_Only() {    # ACTIVE
+    #! if [!SDA] then skip and restart
+    #! Sbr_Sys_SDA_Only # control is test "SDA" && ReStart
+       #! only SDA ! KLM must not write to /SDA/menu.lst 
+    n=0
     #! Key Routine ! Check IF Hard-Drive Identifier 
     if [ ! -f "/initrd/mnt/dev_save/MARK-SDA" ] || [ ! -f "/initrd/mnt/dev_save/MARK-SDA1" ]; then  
         #! if this HD is NOT the Primary Boot Drive. 
         #! then fail = ReStart
-        Sbr_Splash_It "= SDA ONLY =" "yellow" "red"  "5"         #! -D---
+        Sbr_Splash_It "= SDA-ONLY --- $1 =" "yellow" "red"  "5"         #! -D---
         #!
+        Sbr_ClearFlagsSystem  ""  && sleep 1 
         Sbr_Cbx_ReStart 1   ### Clean ReStart #  do not continue the called command.
     fi
     #! IF this is SDA1, THEN OK to run 
@@ -3688,7 +4918,7 @@ export -f Sbr_Sys_SDA_Only
 #!
 #!
 #(: ===========================================================
-#(: ft(Sbr_Sys_KillProc)
+#(: fx Sbr_Sys_KillProc
 #(: called by: Main GUI Fall-Thru
 #(: param:
 #(: purpose: Kill current Proc, stub , and restart
@@ -3698,22 +4928,21 @@ export -f Sbr_Sys_SDA_Only
 #(: rationale: Allows "killing" a <button> call for 'test' or 'demo' purposes.
 #(:
 #! ###########################################################
-function Sbr_Sys_KillProc() { # ACTIVE # permission control # Exit if in Test Mode 
-	n=0 # Allows to Skip a Proc , Important for use IF Test file is published as sample. 
-lcParam=$1   # "1" will enable ReStart 
-# if [ $gcSysKillProc -eq 1 ] ; then  # sets up a Sbr_Button_Only as a "stub" .
-if [ ! $gcSysKillProc ] ; then  # sets up a Sbr_Button_Only as a "stub" .
-	lcMsgStr="Kill Process "
-   	Sbr_Splash_It "! $lcParam !  Kill Procss____STUB called  --- ! ${lcParam} ---____" "yellow" "red"  "3"         #! -D---
-	Sbr_Cbx_ReStart 1
-fi
+function Sbr_Sys_KillProc() { # ACTIVE
+    #! permission control # control is  Exit if in Test Mode 
+    n=0 # Allows to Skip a Proc , Important for use IF Test file is published as sample. 
+    if [ ! $gcSysKillProc ] ; then  # sets up a Sbr_Button_Only as a "stub" .
+        Sbr_Splash_It "! Kill Procss____STUB call  --- ! ---____" "yellow" "red"  "5"         #! -D---
+        Sbr_ClearFlagsSystem  ""    &&     sleep 1
+        Sbr_Cbx_ReStart 1
+    fi
 } #
 export -f Sbr_Sys_KillProc
 #!
 #!
 #!
 #(: ======================================================================
-#(: fx(Sbr_Sys_SetVerDts)
+#(: fx Sbr_Sys_SetVerDts
 #(: called by: Main ( )
 #(: param:
 #(: purpose: 'gc' and 'Sys' System Standard Constants can be installed here.
@@ -3725,36 +4954,39 @@ export -f Sbr_Sys_KillProc
 #(: note:
 #(:
 #! ############################################################
-function Sbr_Sys_SetVerDts() {  #: ACTIVE in Main
-#! requires Manual Entry for  Developers Version  Date-Time-Stamp
-#! which is above in "header"
-n=0    #: common "stub" so bare funxtion() will not fault during test/dev.
+function Sbr_Sys_SetVerDts() {  # ACTIVE   in   main 
+#!  in Main
+#! requires gcSysDvar  Developers Version  Date-Time-Stamp
+n=0    #: common "stub" so bare function() will not fault during test/dev.
+#! Not Used
 export gcSysDvar="`date +%y-%m-%d--%H%M-%S`"
+#! ACTIVE  for "now" dts 
 export    gcSysDts="`date +%y%m%d-%H%M-%S`"
 #(: ====================================
 #(: gcSysDtsNow   todo: 
-#(: 		### Rationale: 
+#(:         ### Rationale: 
 #(:       ### some Puppy OS default to GMT, we prefer Local time.
 #(:       ### some Puppy OS default to GMT, we prefer Local time.
-#(: 		### This is Attempt to generate a "NOW" (this-moment) date-time constant.
-#(: 		### Date : grave-mark in date () !!!
-#(: 		###  Dts="`date +%y%m%d-%H%M-%S`"
-#(: 		### adust from default "z" time
-#(: 		###		to local mid-america dts ( -5 hours ).
-#(:			###		Does not calc DayLightSavingsTime
-#(:			###		But still a consistent error day-to-day.
-#(: 	lcNowDts=""
-#(: 	lcNowDts="`date +%y%m%d%H%M-%S`"
-#(: 	lcNowDts="${lcNowDts:0:6}-${lcNowDts:6:7}"
-#(: 	gcSysDtsNow="${lcNowDts}-local"
+#(:         ### This is Attempt to generate a "NOW" (this-moment) date-time constant.
+#(:         ### Date : grave-mark in date () !!!
+#(:         ###  Dts="`date +%y%m%d-%H%M-%S`"
+#(:         ### adust from default "z" time
+#(:         ###     to local mid-america dts ( -5 hours ).
+#(:         ###     Does not calc DayLightSavingsTime
+#(:         ###     But still a consistent error day-to-day.
+#(:     lcNowDts=""
+#(:     lcNowDts="`date +%y%m%d%H%M-%S`"
+#(:     lcNowDts="${lcNowDts:0:6}-${lcNowDts:6:7}"
+#(:     gcSysDtsNow="${lcNowDts}-local"
 #(: ====================================
-#(: date funxtion is ticky. 
+#(: date function is ticky. 
 #(: ====================================
             #! #! todo:  Not yet used 
             #! lcNowDts="${lcNowDts:0:6}-${lcNowDts:6:7}"
             #! gcSysDtsNow="${lcNowDts}"
             #! gcSysDtsNow-local="${lcNowDts}-local"
 #!
+#! Not Used 
 #!  Prefix SubDir location of all Editing Routines .   This is the original Source code for MGR project, et al. 
 gcSys_MyDev="/initrd/mnt/dev_save/MY_/usr-share/My_Dev_"
 #!
@@ -3764,65 +4996,10 @@ export -f Sbr_Sys_SetVerDts
 #!
 #!
 #!
-#(: =====================================================================
-#(: fx(Sbr_ClearFlagsSystem)   #: Active for System
-#(: called by:
-#(: param:
-#(: purpose: clear all system flags
-#(: calls:
-#(: method:
-#(: sends:
-#(: rationale:
-#(: note : some flags are still hard-code ; ie, LockFile , BackUpStatus
-#(:
-#! ############################################################
-function Sbr_ClearFlagsSystem() {   #: ACTIVE for System
-	n=0
-		rm -f "${MGR_LockFile}"  ### this is "MGR_LockFile"	###  but not E3R  CBX
-		rm -f "/tmp/snapmergepuppy-error"  ### this is SMP flag ,  Not Used
-		rm -f "/tmp/box_help"       ### remove the lingering temp file.
-		rm -f "/tmp/box_source"       ### remove the lingering temp file.
-		rm -f "${MGR_BackUpStatus}"
-		gcMGRConfigArbIdd=""		### cleared for 'next reboot' Menu Selection
-	/bin/echo " " > /dev/console
-} #
-export -f Sbr_ClearFlagsSystem
-#!
-#!
-#(: =====================================================================
-#(: fx(Sbr_ClearFlagsQuit)
-#(: called by:
-#(: param:
-#(: purpose: Clear Quit Flags at "QUIT" program
-#(: calls:
-#(: method:
-#(: sends:
-#(: rationale:
-#(: note : some flags are still hard-code ; ie, LockFile , BackUpStatus
-#(:
-#! ############################################################
-function Sbr_ClearFlagsQuit() {   #: ACTIVE for QUIT
-    n=0
-#!
-if [ ! $1  ] ; then   # display active
-       Sbr_Splash_It  "Clear Flags Quit" "orange" "purple" "1"
-fi # end: [ $1 = "1" ]
-#!
-	rm -f "${MGR_LockFile}"  ### this is "MGR_LockFile"	   ###  but not E3R  CBX
-	rm -f "${MGR_TouchCBXstatus}" # ## CBX applied flag must linger for GUI		# Carry-Over
-	rm -f "${MGR_BackUpStatus}" # ## CBX applied  flag must linger for GUI		# Sbr_ClearFlagsQuit
-    rm -f "${MGR_ReStart_flg}"  # ## MGR initial Re-ReStart to init GEANY		# Sbr_ClearFlagsQuit
-    rm -f "/tmp/MGR_Page_Control.flg"
-	/bin/echo " " > /dev/console
-#!
-} #
-export -f Sbr_ClearFlagsQuit
-#!
-#!
 #!
 #!
 #(: ======================================================================
-#(: fx(Sbr_Utl_Mandelbrot)
+#(: fx Sbr_Utl_Mandelbrot
 #(:  name: 
 #(:  @param
 #(:  @return
@@ -3835,86 +5012,88 @@ export -f Sbr_ClearFlagsQuit
 #(: method:
 #(: rationale:
 #(: note:
-#(:	# Draw_Mandelbrot_Robert.sh
-#(:	# draw mandelbrot to terminal
-#(:	# very slow, to terminal, runs OK !
+#(: # Draw_Mandelbrot_Robert.sh
+#(: # draw mandelbrot to terminal
+#(: # very slow, 33 minutes, to terminal, runs OK !
 #(:
 #! ############################################################
-function Sbr_Utl_Mandelbrot() {  # Active
-    n=0 # ALWAYS install a stub, so 'funxtion' is legit code
+function Sbr_Utl_Mandelbrot() {  # ACTIVE
+    n=0 
     Sbr_Splash_It "_Sbr_Utl_Mandelbrot_()_
   should be run/viewed from Xterm
        may run 30 minutes   " "yellow" "red" "7"
-	#! 
-	#! Required params:
-	#! BAILOUT
-	#! MAX_ITERATIONS
-	#! 
-	lnBAILOUT=16  # max loop was 16
-	lnMAX_ITERATIONS=100	# 100 is ok for terminal screen.
-	#! 
-	function sub_mandelbrot_iterate {   # sub-main 
-		local zi=0
-		local zr=0
-		local i=0
-		local cr
-		cr=$(printf "%s\n" "scale=16; $2 - 0.5" | bc)
-		while true
-		do
-			local temp
-			local zr2
-			local zi2
-			i=$((i + 1))
-			zr2=$(printf "%s\n" "scale=16; ($zr * $zr) - ($zi * $zi) + $cr" | bc)
-			zi2=$(printf "%s\n" "scale=16; (($zr * $zi) * 2) + $1" | bc)
-			temp=$(printf "%s\n" "(($zi * $zi) + ($zr * $zr)) > $lnBAILOUT" | bc)
-			if ((temp == 1))
-			then
-				return "$i"
-			fi
-			if ((i > lnMAX_ITERATIONS))
-			then
-				return 0
-			fi
-			zr="$zr2"
-			zi="$zi2"
-		done
-		#!
-	} # end: sub-mandelbrot_iterate
     #!
-	function sub_mandelbrot_main {	# sub-main
-		local y
+    #! Must Match with Terminal Screen Size
+    #! Required params:
+    #! BAILOUT
+    #! MAX_ITERATIONS
+    #! 
+    lnBAILOUT=16  # max loop was 16
+    lnMAX_ITERATIONS=100    # 100 is ok for terminal screen.
+    #! 
+    function sub_mandelbrot_iterate {   # sub-main 
+        local zi=0
+        local zr=0
+        local i=0
+        local cr
+        cr=$(printf "%s\n" "scale=16; $2 - 0.5" | bc)
+        while true
+        do
+            local temp
+            local zr2
+            local zi2
+            i=$((i + 1))
+            zr2=$(printf "%s\n" "scale=16; ($zr * $zr) - ($zi * $zi) + $cr" | bc)
+            zi2=$(printf "%s\n" "scale=16; (($zr * $zi) * 2) + $1" | bc)
+            temp=$(printf "%s\n" "(($zi * $zi) + ($zr * $zr)) > $lnBAILOUT" | bc)
+            if ((temp == 1))
+            then
+                return "$i"
+            fi
+            if ((i > lnMAX_ITERATIONS))
+            then
+                return 0
+            fi
+            zr="$zr2"
+            zi="$zi2"
+        done
+        #!
+    } # end: sub-mandelbrot_iterate
+    #!
+    function sub_mandelbrot_main {  # ACTIVE
+        #! mandelbrot sub-main
+        local y
                     printf "* Mandelbrot*" > /root/my-applications/Mandelbrot.txt
-		for ((y = -39; y < 39; y++))
-		do
-			printf "\n"
-			printf "\n" >>  /root/my-applications/Mandelbrot.txt
-			local x
-			for ((x = -39; x < 39; x++))
-			do
-				local xi
-				local yi
-				local ires
-				xi=$(printf "%s\n" "scale=16; $x / 40.0" | bc)
-				yi=$(printf "%s\n" "scale=16; $y / 40.0" | bc)
-				#! 
-				sub_mandelbrot_iterate "$xi" "$yi"
-				#!
-				ires=$?
-				if ((ires == 0))
-				then
-					printf "*"
+        for ((y = -39; y < 39; y++))
+        do
+            printf "\n"
+            printf "\n" >>  /root/my-applications/Mandelbrot.txt
+            local x
+            for ((x = -39; x < 39; x++))
+            do
+                local xi
+                local yi
+                local ires
+                xi=$(printf "%s\n" "scale=16; $x / 40.0" | bc)
+                yi=$(printf "%s\n" "scale=16; $y / 40.0" | bc)
+                #! 
+                sub_mandelbrot_iterate "$xi" "$yi"
+                #!
+                ires=$?
+                if ((ires == 0))
+                then
+                    printf "*"
                     printf "*" >> /root/my-applications/Mandelbrot.txt
-				else
-					printf "."
+                else
+                    printf "."
                     printf "." >> /root/my-applications/Mandelbrot.txt
-				fi
-			done
-		done
-		printf "\n"
-	}
-#! # below is the mandelbrot main ()
-sub_mandelbrot_main   # this is the mandelbrot main ()
+                fi
+            done
+        done
+        printf "\n"
+    }
+#! # below is call to the calculating mandelbrot main ()
+sub_mandelbrot_main   # this is the calculating mandelbrot main ()
 } # 
 export -f Sbr_Utl_Mandelbrot
 #! export -f sub_mandelbrot_iterate 
@@ -3925,7 +5104,7 @@ export -f Sbr_Utl_Mandelbrot
 #!
 #!
 #(: ======================================================================
-#(: fx(Sbr_Base64)  Base64 Base-64 Base_64 Base 64
+#(: fx Sbr_Base64     Base64 Base-64 Base_64 Base 64
 #(:  name: 
 #(:  @param
 #(:  @return
@@ -3937,11 +5116,12 @@ export -f Sbr_Utl_Mandelbrot
 #(: returns:
 #(: method:
 #(: rationale:
-#(: note:
+#(: note: 
 #(:
 #! ####################################################################
-function Sbr_Dump_SRC_Base64() {  #: ACTIVE Col 3  Base 64, Base_64, Base-64
-    n=0    # This is a "stub", so 'funxtion' is legit code
+function Sbr_Dump_SRC_Base64() {  # ACTIVE
+    #! calculates/restores     Base 64, Base_64, Base-64
+    n=0
     echo "" 
     echo "=== Base64  cat /tmp/Base64-Encoded.txt ============"
     #! Display Information
@@ -3950,8 +5130,7 @@ function Sbr_Dump_SRC_Base64() {  #: ACTIVE Col 3  Base 64, Base_64, Base-64
     #! gxmessage is expands to 72++
 lxDumpMsg="Usage: base64 [OPTION]... [FILE]
 ______________________________________________________________________
-MUST USE Xterm to see this dump calculated routine !
-
+MUST USE Xterm to see this dump the calculated data .
 ______________________________________________________________________
 Base64 encode or decode FILE, or standard input, to standard output.
 ______________________________________________________________________
@@ -3971,19 +5150,22 @@ the formal base64 alphabet.  Use --ignore-garbage to attempt to recover
 from any other non-alphabet bytes in the encoded stream.
 GNU coreutils online help: <https://www.gnu.org/software/coreutils/>
 Full documentation <https://www.gnu.org/software/coreutils/base64>
-or available locally via: info '(coreutils) base64 invocation'
-)"
-	gxmessage -name "Sbr_Dump_SRC_Base64 documentation 'timeout 20 seconds'"  -fg blue -bg lightyellow -timeout 20  -center  "${lxDumpMsg}"
+or available locally via: info '(coreutils) base64 invocation')"
+  gxmessage -name "Sbr_Dump_SRC_Base64_documentation"   -fg blue -bg lightyellow  -center  -wrap "${lxDumpMsg}"
     #!
     lcBase64fn="/tmp/box_help" 
     cat "$0" > "/tmp/box_help"
     #! Display Encoded
-    lcBase64fnEncoded="/tmp/Base64-Encoded.txt"
+    lcBase64fnEncoded="/tmp/Base64-Encoded-`date +%y%m%d-%H%M-%S`.txt"
     base64 ${lcBase64fn} > ${lcBase64fnEncoded}
     gxmessage -title "SourceCode Encoded in Base64"  -name "-Encoded-Base64-" -font bold -bg lightyellow -fg darkblue -center -wrap -file ${lcBase64fnEncoded}
     #!
-    echo "" && echo "=== Base64  cat //tmp/Base-64-Decoded.txt ============"
+    #! backup copy + DTS  
+    lcFnSrc="${lcBase64fnEncoded}"
+    lcFnTrg="/root/my-applications" 
+    cp -v ${lcFnSrc} ${lcFnTrg}
     #!
+    echo "" && echo "=== Base64  cat //tmp/Base-64-Decoded.txt ============"
     #! Display Decoded
     lcBase64fnDecoded="/tmp/Base-64-Decoded.txt"
     base64 -d ${lcBase64fnEncoded} > ${lcBase64fnDecoded}
@@ -3996,152 +5178,20 @@ export -f Sbr_Dump_SRC_Base64
 #!
 #!
 #!
-#(: #####################################################################
-#(: fx(Sbr_Box_Message)	  # internal hack on gtkdialog box_help, by gae
-#(: called by :
-#(:    GuiHLP+  to  fx(Sys_Box_HLP)  to  Sbr_Box_Message
-#(:    GuiFAQ+  to  fx(Sys_Box_FAQ)  to  Sbr_Box_Message
-#(:
-#(: fx(Sbr_Box_Message)
-#(: receives param : Header$1 and loads '/tmp/box_help' for Top-Edge Window Title. 
-#(:
-#(: fx(Sbr_Box_Message)
-#(: purpose : publish '/tmp/box_help'
-#(:   "case and hack"  rewrite based on "box_help" , by gae 2401
-#(:   provides wider screen width.
-#(:   based directly on gtkdialog box_help code processes.
-#(:
-#(: fx(Sbr_Box_Message) 
-#(:   usage :
-#(:   HEADING is a short "title bar" description.
-#(:   XML code is custom written to format "/tmp/box_help".
-#(: returns:
-#(:
-#(: fx(Sbr_Box_Message) 
-#(: method:
-#(:     gtkdialog --center -p XML-Format-file (which loads /tmp/box_help )
-#(: purpose : publish '/tmp/box_help'
-#(:   "case and hack"  rewrite based on "box_help" 
-#(:   based on gtkdialog box_help code processes.
-#(:   provides wider screen width.
-#(:
-#(: fx(Sbr_Box_Message) 
-#(: note:
-#(: purpose :  Simple Message sbr based on gtkdialog box_help
-#(:   "case and hack"  rewrite based on "box_help" 
-#(:   which allows author to change the "lead-in" XML code
-#(:   and thus change the "format" of this custom "message_box".
-#(:   Sbr_Box_Message does provide a "OK" user button.
-#(:   Sbr_Box_Message does provide a "markup" on text for colors.
-#(:   Sbr_Box_Message does allow dimension changes to box.
-#(:   Sbr_Box_Message does not require a "URL" param.
-#(: note:
-#(:   XML assumes /tmp/box_help and "gtkdialog -p" internal code.
-#(:   XML sets up the markup and color options for the imported text.
-#(:   XML sets up the "OK" control button, and will show/close/"OK"
-#(:
-#(: - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
-#(: Message Box Routines used:  Sbr_Box_Message  and  gxMessage 
-#(:
-#(: fx(Sbr_Box_Message) 
-#(: used by "Hlp" , "Distro", "Proc", "Faq"
-#(:
-#(: gxMessage   Display Information:
-#(:     expects plain text .
-#(:     displays 45 char long, then wraps.
-#(:     line-length expands to 72++
-#(: 
-#! ############################################################
-function Sbr_Box_Message() {  #: ACTIVE   for HELP and FAQ
-#
-n=0
-#(:   "case and hack"  rewrite based on "box_help"  by  gae
-#(:   which allows author to change the "lead-in" XML code
-
-export TEXTDOMAIN=libstardust
-export OUTPUT_CHARSET=UTF-8
-#
-if [ "$1" ] ; then
-	Box_Msg_Heading="${1}"
-else
-	Box_Msg_Heading="$(gettext '---Sbr_Box_Message---')"
-fi
-#! Is Used by Help and FAQ  : 
-export Box_MessageXML='
-<window title="MGR_'${Box_Msg_Heading}'"
-default-height="550"
-default-width="760"
-visible="true" >
-<vbox space-expand="true" space-fill="true">
-  <vbox space-expand="true" space-fill="true">
-    <vbox scrollable="true" shadow-type="3" space-expand="true" space-fill="true">
-      <vbox space-expand="false" space-fill="false">
-        <text xpad="10" ypad="15" use-markup="true"><input file>'/tmp/box_help'</input></text>
-      </vbox>
-    </vbox>
-  </vbox>
-  <hbox space-expand="false" space-fill="false">
-    <button>
-      '"`/usr/lib/gtkdialog/xml_button-icon ok`"'
-      <label>'$(gettext 'Ok')'</label>
-    </button>
-  </hbox>
-</vbox>
-</window>'
-#
-gtkdialog --center -p Box_MessageXML	# assumes '/tmp/box_help'    #! -D---
-#
-} #
-export -f Sbr_Box_Message
-#! ACTIVE   for HELP and FAQ
-#!
-#!
-#(: ============================================================
-#(: fx(Sbr_ARB_Init)	#: Active #  read config and write menulst 
-#(: called by:   main run ( )
-#(:    main run ( )  calls  fx(Sbr_ARB_Init)
-#(: purpose:  read pre-set configfile then assign to "gcC3MConfigArbId"
-#(: receives param:
-#(: returns:
-#(: note: Setup is gui Fall-Thru ft(Sbr_ARB_00}  /   EXIT:ARB_00
-#(:
-#! ############################################################ READ CONFIG ###
-function Sbr_ARB_Init() {   #: ACTIVE called at main () :  init for "ARB" config  /root/my-applications/bin
-#(: purpose:  read pre-set configfile then assign to "gcC3MConfigArbId"
-    n=0
-    gcMgrArbCfgFn="/root/my-applications/bin/MGR_Config_ARB.cfg"   #: ? ASSIGNED fx(Sbr_Sys_PupState)
-if [ -f ${gcMgrArbCfgFn} ] ; then   #: read config 
-    n=0
-    gcC3MConfigArbId=`cat ${gcMgrArbCfgFn}`   #:  extract Id
-    chmod +x ${gcMgrArbCfgFn}
-    echo "gcC3MConfigArbId:${gcC3MConfigArbId}:================="
-else
-	n=0
-    touch ${gcMgrArbCfgFn}
-	gcC3MConfigArbId=""
-    echo "${gcC3MConfigArbId}" > ${gcMgrArbCfgFn}
-	echo "ID:gcC3MConfigArbId:${gcC3MConfigArbId}:"
-	echo "FN:${gcMgrArbCfgFn}: Not Found:"
-    Sbr_Splash_It "${gcC3MConfigArbId} Config Not Found  ${gcMgrArbCfgFn} empty file created" "yellow" "red" "3"   #! -D---
-fi
-} #
-export -f Sbr_ARB_Init
-#!
-#!
-#!
 #!
 #(:===========================================================
 #! begin: Up Pmount       
 #(:===========================================================
-#(: fx(Sys_MGR_pMount_One)
-#(: called by:   Sbr_Sys_pMount_All calls "Sys_MGR_pMount_One"
+#(: fx Sbr_MGR_pMount_One
+#(: called by:   Sbr_MGR_pMount_All calls "Sbr_MGR_pMount_One"
 #(: purpose:  pMOUNT  only one hard-drive
 #(: receives param: "/mnt/sd?1"
 #(: returns:
 #(: note:
 #(:
 #! ############################################################
-function Sys_MGR_pMount_One() {   # ACTIVE UpPmount ONE Special
+function Sbr_MGR_pMount_One() {   # ACTIVE   called by below ...
+    #! UpPmount ONE Special
     n=0
     lcParam1="${1}" # trg drive ID
     lcMsgStr="${1}:trg drive ID"
@@ -4149,9 +5199,8 @@ function Sys_MGR_pMount_One() {   # ACTIVE UpPmount ONE Special
     #!
 if [ "$gcActiveGui" = "1" ] ; then 
     #! -D---   Small splash 
-/usr/lib/gtkdialog/box_splash -fg yellow -bg blue -border true  -close never -text "\
-.      Quick Sys_MGR_pMount_One
-.             '${1}'                              "&
+/usr/lib/gtkdialog/box_splash -fg yellow -bg blue -border false  -close never -text "\
+.            '${1}'                              "&
     RETVAL=$?
     GTKPIDPMNTsbr=$! 
     #! kill ${GTKPIDPMNTsbr} is split
@@ -4163,29 +5212,29 @@ fi
     mount -t vfat /dev/${1} /mnt/${1}
 if [ "$gcActiveGui" = "1" ] ; then 
     sleep .5
-    kill ${GTKPIDPMNTsbr}       #! kill ${GTKPIDPMNTsbr} is split
+    kill ${GTKPIDPMNTsbr}  2> /dev/null    #! kill ${GTKPIDPMNTsbr} is split
 fi
 } #
-export -f Sys_MGR_pMount_One
+export -f Sbr_MGR_pMount_One
 #!
 #!
 #(: ====================================================================
-#(: fx(Sbr_Sys_pMount_All)
+#(: fx Sbr_MGR_pMount_All
 #(: called from gui
 #(: called by: E3R_Main_Int_Long_List    and gui-P-MntInt
 #(: method: code is INTERNAL to MGR
 #(: param:
 #(: purpose:
-#(: calls: fx(Sys_MGR_pMount_One)
+#(: calls: fx(Sbr_MGR_pMount_One)
 #(: method: calls internal script with lowercase HD names
 #(: sends:
 #(: rationale:
 #(: note :
 #(:
-#(:Dump calls Sys_MGR_pMount_One with internal prep.
-#(:
+#(: calls Sbr_MGR_pMount_One
 #! ############################################################
-function Sbr_Sys_pMount_All() {    # ACTIVE UpPmount Special
+function Sbr_MGR_pMount_All() {    # ACTIVE    
+    #! UpPmount Special
     n=0
     gcActiveGui="1"
     lcActiveMntId="P"   # Id    # Not Used
@@ -4193,47 +5242,43 @@ function Sbr_Sys_pMount_All() {    # ACTIVE UpPmount Special
 if [ "$gcActiveGui" = "1" ] ; then 
     #! -D---  Big Splash BackGround 
 /usr/lib/gtkdialog/box_splash -fg yellow -bg blue -border true  -close never -text "\
-*.      MGR_P_Mount_All INTERNAL
-*.
-*.
-*.
-*.
-*.
-*.                                                          "&
+   *.      P_Mount_All INTERNAL
+    .
+    .
+    .                                                          "&
     RETVAL=$?
     GTKPIDPMNT1=$!
     sleep .3
 fi
 #!
-# Sbr_Sys_pMount_All
+#! Sbr_MGR_pMount_All
 #! if -d /root then already mounted
 #;;; multiple calls to subroutine , which runs a single "mount" routine
 #;;; begin looping internal code 
 #;;; DO NOT USE ON SDA1, because it is the primary drive. 
-Sys_MGR_pMount_One "sda2"
-Sys_MGR_pMount_One "sdb1"
-Sys_MGR_pMount_One "sdc1"
-Sys_MGR_pMount_One "sdd1"
-Sys_MGR_pMount_One "sde1"
-Sys_MGR_pMount_One "sdf1"
-Sys_MGR_pMount_One "sdg1"
-Sys_MGR_pMount_One "sdh1"
-Sys_MGR_pMount_One "sdi1"
-Sys_MGR_pMount_One "sdj1"
-Sys_MGR_pMount_One "sdk1"
-Sys_MGR_pMount_One "sdl1"
-Sys_MGR_pMount_One "sdm1"
-Sys_MGR_pMount_One "sdn1"
-Sys_MGR_pMount_One "sdo1"
-Sys_MGR_pMount_One "sdp1"
+Sbr_MGR_pMount_One "sda2"
+Sbr_MGR_pMount_One "sdb1"
+Sbr_MGR_pMount_One "sdc1"
+Sbr_MGR_pMount_One "sdd1"
+Sbr_MGR_pMount_One "sde1"
+Sbr_MGR_pMount_One "sdf1"
+Sbr_MGR_pMount_One "sdg1"
+Sbr_MGR_pMount_One "sdh1"
+Sbr_MGR_pMount_One "sdi1"
+Sbr_MGR_pMount_One "sdj1"
+Sbr_MGR_pMount_One "sdk1"
+Sbr_MGR_pMount_One "sdl1"
+Sbr_MGR_pMount_One "sdm1"
+Sbr_MGR_pMount_One "sdn1"
+Sbr_MGR_pMount_One "sdo1"
+Sbr_MGR_pMount_One "sdp1"
 #;;; end looping ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 if [ "$gcActiveGui" = "1" ] ; then 
     Sbr_Splash_It  "DONE : _pMount_All" "yellow" "red" "3"           #! -D---
-    kill ${GTKPIDPMNT1} # background splash yel/red 
+    kill ${GTKPIDPMNT1}   2> /dev/null   # background splash yel/red 
 fi #
-    Sbr_Cbx_ReStart 1   # no wait
 } # 
-export -f Sbr_Sys_pMount_All
+export -f Sbr_MGR_pMount_All
 #!
 #! ===========================================================
 #! end: Up Pmount     
@@ -4245,31 +5290,28 @@ export -f Sbr_Sys_pMount_All
 #! ===========================================================
 #!
 #(:===========================================================
-#(: fx(Sys_MGR_uMount_One)	#: Active
+#(: fx Sbr_MGR_uMount_One
 #(: called by:   ft(EXIT:guiUMntInt)  (each one)
 #(: calls:
 #(: purpose:  uMOUNT only one hard-drive
 #(: receives param: "/mnt/sd?1"
 #(: returns:
 #(: note:
-#(:    funxtion "Sbr_Sys_uMount_All"  calls "Sys_MGR_uMount_One"
+#(:    function "Sbr_Sys_uMount_All"  calls "Sbr_MGR_uMount_One"
 #! ############################################################
-function Sys_MGR_uMount_One() {   # ACTIVE DnUmount ONE Special
+function Sbr_MGR_uMount_One() {   # ACTIVE   called by next ...
+    #! DnUmount ONE Special
     n=0
     lcParam1="${1}" # trg drive ID
     gcActiveGui="1"
-    #~ #lcActiveMntId="U"   # Id    # Not Used
     #!
 if [ "$gcActiveGui" = "1" ] ; then 
     #! -D--- Small Splash
-/usr/lib/gtkdialog/box_splash -fg yellow -bg blue -border true  -close never -text "\
-.        Sys_MGR_uMount_One
-.             '${1}'                              "&
+/usr/lib/gtkdialog/box_splash -fg yellow -bg blue -border false  -close never -text "\
+.            '${1}'                              "&
     RETVAL=$?
     GTKPIDUMNTsbr=$!
 fi
-    # # # todo: ? choose a different test subdir.  Not /root, which is the Current Active drive /root
-    # # # check for conflict.   None on 7 drives and 17 OS.  240205-0710
         lcDirName="/root"
         if [ -d ${lcDirName} ] ; then # IF target directory is real 
             umount -lv      /mnt/${1}
@@ -4278,74 +5320,69 @@ fi
         fi
 if [ "$gcActiveGui" = "1" ] ; then 
        sleep 1
-       kill ${GTKPIDUMNTsbr}
+       kill ${GTKPIDUMNTsbr}  2> /dev/null
 fi
 } #
-export -f Sys_MGR_uMount_One
+export -f Sbr_MGR_uMount_One
 #!
 #!
 #(: ============================================================
-#(: fx(Sbr_Sys_uMount_All)
-#(: calls: Sys_MGR_pMount_One
+#(: fx Sbr_Sys_uMount_All
+#(: calls: Sbr_MGR_uMount_One
 #(: called from: Gui
 #(: called by: E3R_Main_Int_Long_List    and gui-P-MntInt
 #(: method: Fall-Thru and code is INTERNAL to MGR
 #(: param:
-#(: purpose:
+#(: purpose:  DnUmount Special
 #(: calls:
 #(: method: calls internal script with lowercase HD names
 #(: sends:
 #(: rationale:
 #(: note :
 #(:
-#(: calls Sys_MGR_uMount_One with internal prep.
+#(: calls Sbr_MGR_uMount_One with internal prep.
 #(:
 #! ############################################################
-function Sbr_Sys_uMount_All() {   # ACTIVE DnUmount Special
+function Sbr_Sys_uMount_All() {   # ACTIVE
+    #! DnUmount Special
     n=0
     gcMntAllLogP="/tmp/MGR_MntAllU.log "
-    #~ #lcMntAllTrg=${gcMntAllLogU} # Not Used
     gcActiveGui="1"
-    #~ #lcActiveMntId="U"      # Not Used
 if [ "$gcActiveGui" = "1" ] ; then 
     #! -D---   Big Splash BackGround
-/usr/lib/gtkdialog/box_splash -fg yellow -bg blue -border true  -close never -text "
-*.        Sbr_Sys_uMount_All
-*.        :${lcMntAllLogFn}:
-*.
-*.
-*.
-*.
-*.                                                          "&
+/usr/lib/gtkdialog/box_splash -fg yellow -bg blue -border true -close never -text "\
+  *.         U_Mount_All_Internal
+   . 
+   .
+   .                                                          "&
     RETVAL=$?
     GTKPIDUMNT1=$!
 fi
 #;;; never try to unmount /dev/SDA
 #;;; begin looping subroutine umount process ;;;;;;;;;;;;;;;;;;;
 #;;; DO NOT USE ON SDA1, which is the primary drive. 
-Sys_MGR_uMount_One "sda2"
-Sys_MGR_uMount_One "sdb1"
-Sys_MGR_uMount_One "sdc1"
-Sys_MGR_uMount_One "sdd1"
-Sys_MGR_uMount_One "sde1"
-Sys_MGR_uMount_One "sdf1"
-Sys_MGR_uMount_One "sdg1"
-Sys_MGR_uMount_One "sdh1"
-Sys_MGR_uMount_One "sdi1"
-Sys_MGR_uMount_One "sdj1"
-Sys_MGR_uMount_One "sdk1"
-Sys_MGR_uMount_One "sdl1"
-Sys_MGR_uMount_One "sdm1"
-Sys_MGR_uMount_One "sdn1"
-Sys_MGR_uMount_One "sdo1"
-Sys_MGR_uMount_One "sdp1"
+Sbr_MGR_uMount_One "sda2"
+Sbr_MGR_uMount_One "sdb1"
+Sbr_MGR_uMount_One "sdc1"
+Sbr_MGR_uMount_One "sdd1"
+Sbr_MGR_uMount_One "sde1"
+Sbr_MGR_uMount_One "sdf1"
+Sbr_MGR_uMount_One "sdg1"
+Sbr_MGR_uMount_One "sdh1"
+Sbr_MGR_uMount_One "sdi1"
+Sbr_MGR_uMount_One "sdj1"
+Sbr_MGR_uMount_One "sdk1"
+Sbr_MGR_uMount_One "sdl1"
+Sbr_MGR_uMount_One "sdm1"
+Sbr_MGR_uMount_One "sdn1"
+Sbr_MGR_uMount_One "sdo1"
+Sbr_MGR_uMount_One "sdp1"
 #;;; end looping ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 #!
 if [ "$gcActiveGui" = "1" ] ; then  
     Sbr_Splash_It  "DONE : Sbr_Sys_uMount_All" "yellow" "red" "3"           #! -D---
-    kill ${GTKPIDUMNT1} # background
+    kill ${GTKPIDUMNT1}   2> /dev/null  
 fi
-    Sbr_Cbx_ReStart 1   # no wait
 } #
 export -f Sbr_Sys_uMount_All
 #!
@@ -4363,11 +5400,9 @@ export -f Sbr_Sys_uMount_All
 #! ### DUMPS ########################################################################
 #!
 #!
-
-
 #!
 #(: =====================================================================
-#(: fx(Sbr_Dump_HLP)  Dump_Help
+#(: fx Sbr_Dump_HLP 
 #(: called by:  Main_GUI
 #(: param:
 #(: purpose:  MGR Help general
@@ -4376,63 +5411,65 @@ export -f Sbr_Sys_uMount_All
 #(: sends:
 #(: rationale:
 #(: note :
-#(: 	gtkdialog/box_help will handle format and embedded color text codes.
-#(: 	xmessage will NOT handle format and color embedded text codes.
-#(: 	system gtkdialog "box_help" location is  '/usr/lib/gtkdialog/box_help'
+#(:     gtkdialog/box_help will handle format and embedded color text codes.
+#(:     xmessage will NOT handle format and color embedded text codes.
+#(:     system gtkdialog "box_help" location is  '/usr/lib/gtkdialog/box_help'
 #(:
 #(: note: requires /tmp/box_help
 #(:  gcMGRDob is declared/assigned at beginning (top) of program
 #(:  fx(MGR_SetVerDate) is called at top of '=== MAIN ( ) ==='
 #(:  echo this out as one long string, to standard /tmp/help_box
-#(:  then call it via Sbr_Box_Message "=== 'Sbr_Box_Message' for '/tmp/box_help'"
+#(:  then call it via Sbr_Box_Message for '/tmp/box_help'"
 #(: 
+#! <b><span foreground='"'red'"'>"${gcSysNameBase} 'Puppy Project Manager'"</span></b>
+#! <b><span foreground='"'blue'"'>"Not intended to be a Turn-Key project."</span></b>
 #(:
-#! ############################################################
-function Sbr_Dump_HLP2() {   #: ACTIVE  echo "${gcSysDistroName} = textfile > cat + gxmessage" > ${lcMsgTrgDP}
-	n=0
-	echo "\
+#! ### #########################################################
+function Sbr_Dump_HLP() {   #: ACTIVE  
+    #! echo "${gcSysDistroName} = textfile > cat + gxmessage" > ${lcMsgTrgDP}
+    n=0
+    echo "\
 <span background='"'brown'"'><span foreground='"'yellow'"'> "========" </span></span>\
 <span background='"'yellow'"'><span foreground='"'blue'"'>"     "${gcSysNameBase}" Help "</span></span>\
 <span background='"'brown'"'><span foreground='"'yellow'"'> "========" </span></span>
-<b><span foreground='"'red'"'>"${gcSysNameBase} 'Puppy Project Manager'"</span></b>
-<b><span foreground='"'green'"'>"Not intended for general distribution"</span></b>
-<b><span foreground='"'blue'"'>"Not intended to be a Turn-Key project."</span></b>
-"--- "
-<span foreground='"'red'"'>"About : "</span>
 <b><span foreground='"'red'"'>"${gcSysNameBase}"</span></b> is a general <b><span foreground='"'red'"'>'Menu Framework' </span></b>
-    <span foreground='"'green'"'>"Purpose is to provide a test-bed for '<b>'experiments'</b>'."</span>
-    <span foreground='"'green'"'>"and Allow-Flipping-between-'<b>'20-Puppy_Distros_!'</b>'"</span>
-<span foreground='"'red'"'>"About : "</span>
+    <span foreground='"'green'"'>"  Purpose : is to provide a '<b>'sand-box'</b>"</span>
+    <span foreground='"'green'"'>"' for '<b>'BASH GTK experiments'</b>'."</span>
+    <span foreground='"'green'"'>"   and Allow-Flipping-between-'<b>'22-Puppy_Distros_!'</b>'"</span>
+    <span foreground='"'green'"'>"   by rewriting part of menu lst and rebooting"</span>
 <b><span foreground='"'red'"'>"Special Features of ${gcSysNameBase}: "</span> <span foreground='"'green'"'></span></b>
-    <span foreground='"'blue'"'>"has Multiple Page-Book Floating Windows. ! "</span>
-    <span foreground='purple'>       "#! to form a compact main screen ."</span>
+    <span foreground='"'blue'"'>"has Multiple BASH and GTK Page Windows. ! "</span>
+    <span foreground='purple'>       "#! to form a compact screens ."</span>
     <span foreground='"'blue'"'>"has Embedded-Graphics ! "</span>
     <span foreground='purple'>       "#! to eliminate dependence on system images ."</span>
     <span foreground='"'blue'"'>"has some Double-Click buttons ! "</span>
     <span foreground='purple'>       "#! to reduce accidental triggers."</span>
-"--- "
-<span foreground='"'green'"'>"--------------------------------------------------------------------------------"</span>
+    <span foreground='"'blue'"'>"has GTK 'NoteBook' for Primary screen ! "</span>
+    <span foreground='purple'>       "#! for compact screen real-estate."</span>
 <span foreground='red'>"#! Each OS is tested via its own original distro BASH ."</span>
 <span foreground='red'>"#! Each OS is tested via its own original distro GTK ."</span>
-<span foreground='"'green'"'>"_____________________________________________________"</span>
-"--- "
+<span foreground='red'>"#! Each OS is original as written by Mik01 or PeaBee ."</span>
 <span foreground='"'green'"'>"______________________________"</span>
 <b><span foreground='"'blue'"'>"buttons with Double-Click will trigger "</span></b>
 <b><span foreground='"'blue'"'>"a large tear-drop shaped ICON."</span></b>
 <b>:<span foreground='"'red'"'>"RED Border"</span>": tear-"<span foreground='"'yellow'"'>"YELLOW "</span>"-drop:"</b>
-<b><span foreground='"'green'"'>"pop-up in middle of screen"</span></b>
+<b><span foreground='"'green'"'>"will pop-up in middle of screen"</span></b>
 "--- "
 <span foreground='"'purple'"'>"${gcSysNameBase} is LINUX ! "</span>
 <span foreground='"'purple'"'>"___${gcSysNameBase} is Free Open Source ! "</span>
 <span foreground='"'purple'"'>"_____ so READ the code ! "</span>
 "--- "
-<b><span foreground='"'green'"'>"___Tested across 20 Puppy Distros______________________"</span></b>
-<b><span foreground='"'red'"'>"BASH will always work "</span></b>
+<b><span foreground='"'green'"'>"___Tested across 22 Puppy Distros______________________"</span></b>
+<b><span foreground='"'red'"'>"BASH will always work, with a few quirks "</span></b>
 <b><span foreground='"'red'"'>"but, GTK is sensitive to the theme settings/formatting"</span></b>
-
+<b><span foreground='"'blue'"'>"#! for MGR with "Deep Thought" theme. "</span></b>
+<b><span foreground='"'blue'"'>"#!      Screen : gcMrgGuiWid='1200'"</span></b>
+<b><span foreground='"'blue'"'>"#! for MGR with 'Default' theme."</span></b>
+<b><span foreground='"'blue'"'>"#!      Screen : gcMrgGuiWid='1100'"</span></b>
+<b><span foreground='"'blue'"'>"__________________________________________"</span></b>
 "--- "
 <span foreground='"'green'"'>"______________________________"</span>
-<span foreground='"'blue'"'>"Authors note about MGR.sh coding :"</span>
+<span foreground='"'blue'"'>"Authors note about ${gcSysNameBase}.sh coding :"</span>
 ${gcSysNameBase} code is <span background='"'white'"' foreground='"'red'"'>"documented code "</span>
 ${gcSysNameBase} code is <span background='"'white'"' foreground='"'green'"'>"modular code "</span>
 ${gcSysNameBase} code is <span background='"'white'"' foreground='"'green'"'>"... grouped in similar function names "</span>
@@ -4442,43 +5479,45 @@ ${gcSysNameBase} code is <span background='"'white'"' foreground='"'green'"'>"de
 ${gcSysNameBase} code is <span background='"'white'"' foreground='"'green'"'>"... between bash and gtkdialog "</span>
 "--- "
 <span foreground='"'green'"'>"${gcSysNameBase}.sh restarts $0, uses '/tmp' "</span>
-<span foreground='"'green'"'>"${gcSysNameBase}.sh requires 1 second to write all 37 images"</span>
+<span foreground='"'green'"'>"${gcSysNameBase}.sh requires  second to write all 41 images"</span>
 <span foreground='"'green'"'>" . . . . . . .  writes all images one time, at StartUp only."</span>
 <span foreground='"'green'"'>" . . . . . . .  into 13 KBytes in /tmp "</span>
 "--- "
 <span foreground='"'green'"'>"_________________________________________"</span>
-<b><span foreground='"'purple'"'>" Running Tests on 20 Puppy OS : "</span></b>
-<span foreground='purple'>"#! Each OS is tested via its own original distro BASH ."</span>
-<span foreground='purple'>"#! Each OS is tested via its own original distro GTK ."</span>
-"---"
-<span foreground='"'blue'"'>  "iso-KineticPup32-22.10+2________________230604"</span>
+<b><span foreground='"'purple'"'>" Running Tests on 22 Puppy OS : "</span></b>
+<span foreground='red'>"#! Each OS is tested via its own original distro BASH ."</span>
+<span foreground='red'>"#! Each OS is tested via its own original distro GTK ."</span>
+<span foreground='red'>"#! Each OS is original as written by Mik01 or PeaBee ."</span>
+<span foreground='green'>"-------------------------------------"</span>
+"---HLP: including:"
+<b><span foreground='"'red'"'>"#! iso_NoblePup32-24.04-__K:6.1.115___240907"</span></b>
+<b><span foreground='"'blue'"'>"#! iso_BionicPup32-19.03-K5.9--- K:5 __32  231209"</span></b>
+<b><span foreground='"'brown'"'>"iso-bionicpup64-8.0-uefi_ _ _ _ _ _ _ _K:4__64_231219"</span></b>
 <span foreground='"'blue'"'>  "iso-BionicPup32-8.0+30_BionicBeaver_____220407"</span>
-<b><span foreground='"'red'"'>"iso_BionicPup32-19.03-K5.9_.iso__Kernal:5.9_231209"</span></b>
-<b><span foreground='"'red'"'>"iso_ManticPup32-23.10+1.iso_____Kernal:6.1_231209"</span></b>
+<b><span foreground='"'red'"'>"iso-UpupTahr-6.0.6-k4.1.30-uefi_K:4.1___190211"</span></b>
+<span foreground='"'blue'"'>  "iso_ManticPup32-23.10+1.iso_____Kernal:6.1_231209"</span>
 <span foreground='"'blue'"'>  "iso-JammyPup32-22.04+8_JammyJellyfish___22123"</span>
 <span foreground='"'blue'"'>  "iso-UPupFF+D-20.12+4_Focal-Fossa________201210"</span>
-<b><span foreground='"'red'"'>"iso-UpupTahr-6.0.6-k4.1.30-uefi__Kernal:4.1_190211"</span></b>
+<span foreground='"'blue'"'>  "iso-KineticPup32-22.10+2________________230604"</span>
 <span foreground='"'blue'"'>   "iso-Slacko-7.0_DpupS7_14.2________________220205"</span>
 <span foreground='"'blue'"'>   "iso-Xenial-64_7.5_XL_______________________220401"</span>
-<span foreground='"'blue'"'>   "iso-S15Pup-64_22.12+1-T__________________220922"</span>
-<span foreground='"'blue'"'>   "iso-Quirky_April-7.0.1F-uefi________________200511"</span>
+<span foreground='"'blue'"'>   "iso-S15Pup-64_22.12+1-T___________________220922"</span>
+<span foreground='"'blue'"'>   "iso-Quirky_April-7.0.1F-uefi______________200511"</span>
 <span foreground='"'blue'"'>   "iso_devuanpup-9.7.0-chimaera_4.0_i386____211206"</span>
-<span foreground='"'blue'"'>   "iso_BookwormPup32-23.11-B4_Kernal:6_____231210"</span>
 <span foreground='"'blue'"'>   "iso_LxPupSc-slacko-20.01+0-T-k64_________200129"</span>
 <span foreground='"'blue'"'>   "iso_slacko64_14.2_32-674-bit_comptible___220227"</span>
+<span foreground='"'blue'"'>   "iso_BookwormPup32-B4-231101___220227"</span>
 <span foreground='"'green'"'>"____________________________________________"</span>
-<span background='brown'><span foreground='yellow'> '===================='</span></span>
-<span background='yellow'><span foreground='blue'> '#! 20 Distros  '</span></span>
-<span background='yellow'><span foreground='blue'> '#! Some require '</span></span>
-<span background='yellow'><span foreground='blue'> '#! the default Themes '</span></span>
-<span background='yellow'><span foreground='blue'> '#! for GTK  '</span></span>
-<span background='brown'><span foreground='yellow'> '====================' </span></span>
+<span background='brown'><span foreground='yellow'> '===================='</span></span> 
+<span background='yellow'><span foreground='blue'> '#! 22 Distros  '</span></span>
+<span background='yellow'><span foreground='blue'> '#! Some require  </span></span>  
+<span background='yellow'><span foreground='blue'> '#! the default Themes for GTK '</span></span> 
+<span background='brown'><span foreground='yellow'> '====================' </span></span> 
 <span foreground='blue'></span>
-
 "--- "
 <span foreground='"'green'"'>"______________________________"</span>
 <span foreground='"'darkred'"'>
-This MGR project series is posted 
+This ${gcSysNameBase} project series is posted 
    on the Murga website 
    https://forum.puppylinux.com
 <b><span foreground='"'red'"'> "'"Menu Framework"'" </span></b>
@@ -4487,7 +5526,7 @@ This project is posted on my website:
    https://www.geocities.ws/glene77is/   
    under the LINUX button.</span>
 <span foreground='"'green'"'>and on GitHub 
-   https://github.com/GlenE77is</span>
+   https://github.com</span>
 "--- "
 <span foreground='"'green'"'>"______________________________"</span>
 <span foreground='"'red'"'>"Note on running executable BASH script :"</span>
@@ -4506,8 +5545,9 @@ to see how Your System is setting environmentals.
 <span foreground='red'>'ROX Debug Method :'</span>
 Use the ROX 'Run in Terminal' to Execute a script.
 <span foreground='red'>'Geany Debug Method :'</span>
-Use the Geany Execute funxtion
-   to run the script 'BASH-Terminal'
+Use the Geany Execute function
+<span foreground='"'green'"'>"'/usr/bin/xterm -e bash -c -e "/bin/sh %c" '"</span>
+   to run the Geany script 'BASH-Terminal'
 All 'echo' commands will display.
 "--- "
 <span foreground='green'>'______________________________'</span>
@@ -4526,9 +5566,10 @@ All 'echo' commands will display.
 <span foreground='blue'>"  MGR is written with GTK as originally installed"</span>
 <span foreground='red'>"  gtkdialog 'Button' Format-Sequence-is-critical "</span>
 <span foreground='red'>"  gtkdialog 'Button' Format-Sequence-is-critical "</span>
-<span foreground='purple'>"#! Each OS is tested via its own original distro BASH ."</span>
-<span foreground='purple'>"#! Each OS is tested via its own original distro GTK ."</span>
-<span foreground='red'>"-------------------------------------"</span>
+<span foreground='green'>"-------------------------------------"</span>
+<span foreground='red'>"#! Each OS is tested via its own original distro BASH ."</span>
+<span foreground='red'>"#! Each OS is tested via its own original distro GTK ."</span>
+<span foreground='red'>"#! Each OS is original as written by Mik01 or PeaBee ."</span>
 <span foreground='green'>"-------------------------------------"</span>
 "--- "
 <span foreground='blue'>"-------------------------------------"</span>
@@ -4550,206 +5591,9 @@ All 'echo' commands will display.
 <span foreground='"'purple'"'>"_____ so READ the code ! "</span>
 ......................................................"\
 > /tmp/box_help
-Sbr_Box_Message "=== HELP === via 'Sbr_Box_Message' > /tmp/box_help + box_help"
+Sbr_Box_Message "=== HELP === Sbr_Box_Message > /tmp/box_help + box_help"
 #
-} # end
-export -f Sbr_Dump_HLP2
-#! ############################################################
-#!
-#!
-#!
-#(: =====================================================================
-#(: fx(Sbr_Dump_HLP2)  Dump_Help        #  Dump Distro
-#(: called by:  Main_GUI
-#(: param:
-#(: purpose:  MGR Help general
-#(: calls:
-#(: method:  > /tmp/box_help & /usr/lib/gtkdialog/box_help
-#(: sends:
-#(: rationale:
-#(: note :
-#(: 	gtkdialog/box_help will handle format and embedded color text codes.
-#(: 	xmessage will NOT handle format and color embedded text codes.
-#(: 	system gtkdialog "box_help" location is  '/usr/lib/gtkdialog/box_help'
-#(:
-#(: note: requires /tmp/box_help
-#(:  gcMGRDob is declared/assigned at beginning (top) of program
-#(:  fx(MGR_SetVerDate) is called at top of '=== MAIN ( ) ==='
-#(:  echo this out as one long string, to standard /tmp/help_box
-#(:  then call it via Sbr_Box_Message "=== 'Sbr_Box_Message' for '/tmp/box_help'"
-#(:
-#! ############################################################
-
-#(: ============================================================
-#(: fx(Sbr_Dump_HLP)  Dump_Help
-#(: called by:  Main_GUI
-#(: param:
-#(: purpose:  MGR Help general
-#(: calls:
-#(: method:  > /tmp/box_help & /usr/lib/gtkdialog/box_help
-#(: sends:
-#(: rationale:
-#(: note :
-#(: 	gtkdialog/box_help will handle format and embedded color text codes.
-#(: 	xmessage will NOT handle format and color embedded text codes.
-#(: 	system gtkdialog "box_help" location is  '/usr/lib/gtkdialog/box_help'
-#(:
-#(: note: requires /tmp/box_help
-#(:  gcMGRDob is declared/assigned at beginning (top) of program
-#(:  fx(MGR_SetVerDate) is called at top of '=== MAIN ( ) ==='
-#(:  echo this out as one long string, to standard /tmp/help_box
-#(:  then call it via Sbr_Box_Message "=== 'Sbr_Box_Message' for '/tmp/box_help'"
-#(:
-#! ############################################################
-function Sbr_Dump_HLP() {   #: ACTIVE  echo "${gcSysDistroName} = textfile > cat + gxmessage" > ${lcMsgTrgDP}
-	n=0
-	echo "\
-<span background='"'brown'"'><span foreground='"'yellow'"'> "========" </span></span>\
-<span background='"'yellow'"'><span foreground='"'blue'"'>"     "${gcSysNameBase}" Help "</span></span>\
-<span background='"'brown'"'><span foreground='"'yellow'"'> "========" </span></span>
-<b><span foreground='"'red'"'>"${gcSysNameBase} 'Puppy Project Manager'"</span></b>
-<b><span foreground='"'green'"'>"Not intended for general distribution"</span></b>
-<b><span foreground='"'blue'"'>"Not intended to be a Turn-Key project."</span></b>
-"--- "
-<span foreground='"'red'"'>"About : "</span>
-<b><span foreground='"'red'"'>"${gcSysNameBase} is a General Menu framework ! "</span></b>
-    <span foreground='"'green'"'>"Purpose is to provide a test-bed for '<b>'experiments'</b>'."</span>
-    <span foreground='"'green'"'>"and Allow-Flipping-between-'<b>'20-Puppy_Distros_!'</b>'"</span>
-<span foreground='"'red'"'>"About : "</span>
-<b><span foreground='"'red'"'>"Special Features of ${gcSysNameBase}: "</span> <span foreground='"'green'"'></span></b>
-    <span foreground='"'blue'"'>"has Multiple NoteBook type pages. ! "</span>
-    <span foreground='purple'>       "#! to form an expandable compact main screen ."</span>
-    <span foreground='"'blue'"'>"has Embedded-Graphics ! "</span>
-    <span foreground='purple'>       "#! to reduce dependence on system resources ."</span>
-    <span foreground='"'blue'"'>"has Double-Click buttons ! "</span>
-    <span foreground='purple'>       "#! to reduce accidental triggers."</span>
-"--- "
-This 'MGR' project series is posted 
-   on the Murga website as 
-<b><span foreground='"'red'"'> "'"Menu Framework"'" </span></b>
-   in the 'utilities' .
-This project is posted on "'"GitHub"'"
-"---"
-<b><span foreground='"'red'"'>"Double-Click"</span></b>
-<b><span foreground='"'blue'"'>"buttons with Double-Click will trigger "</span></b>
-<b><span foreground='"'blue'"'>"a large tear-drop shaped ICON."</span></b>
-<b>:<span foreground='"'red'"'>"RED Border"</span>": tear-"<span foreground='"'yellow'"'>"YELLOW "</span>"-drop:"</b>
-<b><span foreground='"'green'"'>"pop-up in middle of screen"</span></b>
-"--- "
-<span foreground='"'purple'"'>"${gcSysNameBase} is LINUX ! "</span>
-<span foreground='"'purple'"'>"___${gcSysNameBase} is Free Open Source ! "</span>
-<span foreground='"'purple'"'>"_____ so READ the code ! "</span>
-"--- "
-<b><span foreground='"'green'"'>"___Tested across 20 Puppy Distros______________________"</span></b>
-<b><span foreground='"'red'"'>"BASH will always work "</span></b>
-<b><span foreground='"'red'"'>"but, GTK is sensitive to the theme settings/formatting"</span></b>
-
-"--- "
-<span foreground='"'green'"'>"______________________________"</span>
-<span foreground='"'blue'"'>"Authors note about MGR.sh coding :"</span>
-${gcSysNameBase} code is <span background='"'white'"' foreground='"'red'"'>"documented code "</span>
-${gcSysNameBase} code is <span background='"'white'"' foreground='"'green'"'>"modular  code "</span>
-${gcSysNameBase} code is <span background='"'white'"' foreground='"'green'"'>"readable code "</span>
-${gcSysNameBase} code is <span background='"'white'"' foreground='"'green'"'>"modifiable code "</span>
-${gcSysNameBase} code is <span background='"'white'"' foreground='"'green'"'>"designed to prevent interaction "</span>
-${gcSysNameBase} code is <span background='"'white'"' foreground='"'green'"'>"... between bash and gtkdialog "</span>
-"--- "
-<span foreground='"'green'"'>"${gcSysNameBase}.sh restarts $0, uses '/tmp' "</span>
-<span foreground='"'green'"'>"${gcSysNameBase}.sh requires 1 second to write all 37 images"</span>
-<span foreground='"'green'"'>" . . . . . . . . . . . writes all images one time, at StartUp."</span>
-<span foreground='"'green'"'>" . . . . . . . . . . . into 13 KBytes in /tmp "</span>
-"--- "
-<span foreground='"'green'"'>"____________________________________________"</span>
-<b><span foreground='"'purple'"'>" Running Tests on 20 Puppy OS, including: "</span></b>
-<span foreground='purple'>"#! Each OS is tested via its own original distro BASH ."</span>
-<span foreground='purple'>"#! Each OS is tested via its own original distro GTK ."</span>
-"---"
-<span foreground='"'blue'"'>  "iso-KineticPup32-22.10+2________________230604"</span>
-<span foreground='"'blue'"'>  "iso-BionicPup32-8.0+30_BionicBeaver_____220407"</span>
-<b><span foreground='"'red'"'>"iso_BionicPup32-19.03-K5.9_231209.iso___K:5.9_231209"</span></b>
-<b><span foreground='"'red'"'>"iso_ManticPup32-23.10+1.iso______________K:6.1_231209"</span></b>
-<span foreground='"'blue'"'>  "iso-JammyPup32-22.04+8_JammyJellyfish__22123"</span>
-<span foreground='"'blue'"'>  "iso-UPupFF+D-20.12+4_Focal-Fossa_______201210"</span>
-<b><span foreground='"'red'"'>"iso-UpupTahr-6.0.6-k4.1.30-uefi___________K:4.1_190211"</span></b>
-<span foreground='"'blue'"'>   "iso-Slacko-7.0_DpupS7_14.2_____________220205"</span>
-<span foreground='"'blue'"'>   "iso-Xenial-64_7.5_XL____________________220401"</span>
-<span foreground='"'blue'"'>   "iso-S15Pup-64_22.12+1-T_________________220922"</span>
-<span foreground='"'blue'"'>   "iso-Quirky_April-7.0.1F-uefi____________200511"</span>
-<span foreground='"'blue'"'>   "iso_devuanpup-9.7.0-chimaera_4.0_i386___211206"</span>
-<span foreground='"'blue'"'>   "iso_BookwormPup32-23.11-B4_K:6__________231210"</span>
-<span foreground='"'blue'"'>   "iso_LxPupSc-slacko-20.01+0-T-k64________200129"</span>
-<span foreground='"'blue'"'>   "iso_slacko64_14.2_32-674-bit_comptible__220227"</span>
-<span foreground='"'green'"'>"____________________________________________"</span>
-"--- "
-This 'MGR' project series is posted 
-   on the Murga website as 
-<b><span foreground='"'red'"'> "'"Menu Framework"'" </span></b>
-   in the 'utilities' .
-This project is posted on "'"GitHub"'" :
-This project is posted on website:
-   www.GeoCities.WS/glene77is
-"--- "
-<span foreground='"'green'"'>"______________________________"</span>
-<span foreground='"'red'"'>"Note on running executable BASH script :"</span>
-Always check the file "\'set action\'"
-... ' $ @ '  'Use-Command'
-Always check the file "\'type\'"
-... 'Exec'
-Always check the file "\'Properties\'"
-... 'Exec'
-Always check the file "\'Permissions\'"
-...'Executable'
-Always examine other running scripts
-to see how Your System is setting environmentals.
-"--- "
-<span foreground='green'>'______________________________'</span>
-<span foreground='red'>'Geany ROX Debug Method :'</span>
-Use the 'Run in Terminal' to Execute a script.
-<span foreground='red'>'Geany Debug Method :'</span>
-Use the Geany Execute funxtion
-   to run the script 'BASH-Terminal'
-All 'echo' commands will display.
-"--- "
-<span foreground='green'>'______________________________'</span>
-### output 'HELP' temp file MUST BE '/tmp/box_help'
-### due to hard-code in '/gtkdialog/box_help'
-<span foreground='green'>'______________________________'</span>
-... Dumps available:
-... 'Help', 'Faq', 'Pup', 'Src', 'Gui', 'Img', 'Upl', 'Dev'
-... All Dumps will run, and 'ReStart' this program.
-... User should Run '${gcSysNameBase}' script
-...    in 'Geany' or 'ROX' 'terminal'
-...    to view/trace action of internal operations !
-"--- "
-<span foreground='green'>"__________________________________________"</span>
-<span foreground='red'>" gtkdialog version as delivered with this Puppy OS  "</span>
-<span foreground='blue'>"  MGR is written with GTK as originally installed"</span>
-<span foreground='red'>"  gtkdialog 'Button' Format-Sequence-is-critical "</span>
-<span foreground='red'>"  gtkdialog 'Button' Format-Sequence-is-critical "</span>
-<span foreground='purple'>"#! Each OS is tested via its own original distro BASH ."</span>
-<span foreground='purple'>"#! Each OS is tested via its own original distro GTK ."</span>
-<span foreground='red'>"-------------------------------------"</span>
-<span foreground='green'>"-------------------------------------"</span>
-"--- "
-<span foreground='blue'>"-------------------------------------"</span>
-<span foreground='red'>"Message Box Routines used:  "</span>
-<span foreground='green'>"#: Sbr_Box_Message :  "</span>
-<span foreground='green'>"#: ... custom rewrite of gtkdialog Box_Help"</span>
-<span foreground='green'>"#: ... used by 'HELP' , 'Distro', 'Proc', 'FAQ' "</span>
-<span foreground='green'>"#: gxMessage : "</span>
-<span foreground='green'>"#: ...    used by: PUP, GUI, SRC, IMG, UPL, SYS. "</span>
-<span foreground='green'>"#: ...    expects plain text . "</span>
-<span foreground='green'>"#: ...    displays 45 char long, then wraps. "</span>
-<span foreground='green'>"#: ...    line-length expands to 72++ "</span>
-<span foreground='blue'>"-------------------------------------"</span>
-"--- "
-<b><span foreground='"'red'"'>"     ${0} "</span></b>
-<span foreground='"'purple'"'>"${gcSysNameBase} is LINUX ! "</span>
-<span foreground='"'purple'"'>"___${gcSysNameBase} is FOSS ! "</span>
-<span foreground='"'purple'"'>"_____ so READ the code ! "</span>
-......................................................"\
-> /tmp/box_help
-Sbr_Box_Message "=== HELP === 'Sbr_Box_Message' > /tmp/box_help + box_help"
+#! working ReStart
 #
 } # end
 export -f Sbr_Dump_HLP
@@ -4757,9 +5601,8 @@ export -f Sbr_Dump_HLP
 #!
 #!
 #!
-#!
 #(: ============================================================
-#(: fx(Sbr_Dump_Sbr_Dump_Proc)  
+#(: fx Sbr_Dump_Sbr_Dump_Proc  
 #(: called by:  Main_GUI
 #(: param:
 #(: purpose:  MGR Sbr_Dump_Proc  
@@ -4768,42 +5611,44 @@ export -f Sbr_Dump_HLP
 #(: sends:
 #(: rationale:
 #(: note :
-#(: 	gtkdialog/box_help will handle format and embedded color text codes.
-#(: 	xmessage will NOT handle format and color embedded text codes.
-#(: 	system gtkdialog "box_help" location is  '/usr/lib/gtkdialog/box_help'
+#(:     gtkdialog/box_help will handle format and embedded color text codes.
+#(:     xmessage will NOT handle format and color embedded text codes.
+#(:     system gtkdialog "box_help" location is  '/usr/lib/gtkdialog/box_help'
 #(:
 #(: note: requires /tmp/box_help
 #(:  gcMGRDob is declared/assigned at beginning (top) of program
 #(:  fx(MGR_SetVerDate) is called at top of '=== MAIN ( ) ==='
 #(:  echo this out as one long string, to standard /tmp/help_box
-#(:  then call it via Sbr_Box_Message "=== 'Sbr_Box_Message' for '/tmp/box_help'"
+#(:  then call it via Sbr_Box_Message for '/tmp/box_help'"
 #(:
 #! ############################################################
-function Sbr_Dump_Proc() {   #: ACTIVE  echo "${gcSysDistroName} = textfile > cat + gxmessage" > ${lcMsgTrgDP}
-	n=0
-	echo "\
+function Sbr_Dump_Proc() {   # ACTIVE  
+    #! echo "${gcSysDistroName} = textfile > cat + gxmessage" > ${lcMsgTrgDP}
+    n=0
+    echo "\
 <span background='"'brown'"'><span foreground='"'yellow'"'> "========" </span></span>\
 <span background='"'yellow'"'><span foreground='"'blue'"'>"     "${gcSysNameBase}" Procedure-Documention "</span></span>\
 <span background='"'brown'"'><span foreground='"'yellow'"'> "========" </span></span>
 "--- "
 "--- "
 <span foreground='red'>"#! MGR software has a four part organization.  ."</span>
-
 <span foreground='blue'>"#  1"</span> <span foreground='green'>" = '"Intro"', Setup  Var and Constants : BASH"</span>
-
 <span foreground='blue'>"#  2"</span> <span foreground='green'>"  = '"SubRoutines"' : BASH"</span>
 <span foreground='blue'>"  "</span> <span foreground='green'>". . . . which execute Tokens from GTK XML dialog"</span>
-
-<span foreground='blue'>"#  3"</span> <span foreground='green'>"  = '"GTK GUI XML"' "</span>
+<span foreground='blue'>"#  3"</span> <span foreground='green'>"  = '"GTK XML Dialog "' "</span>
 <span foreground='blue'>"  "</span> <span foreground='green'>".. . . . =  interface Display and Select Buttons. GTK code. "</span>
-
 <span foreground='blue'>"#  4"</span> <span foreground='green'>"  = Fall-Thru '"IF/fi"' BASH routines to :"</span>
 <span foreground='blue'>"  "</span> <span foreground='green'>". . . . '"capture"'  GTK Button  Tokens via the '"EXIT"' var "</span>
-<span foreground='blue'>"  "</span> <span foreground='green'>". . . . '"re-direct"' to Token SubRoutines."</span>
-
+<span foreground='blue'>"  "</span> <span foreground='green'>". . . . '"re-direct"' to Token SubRoutines above."</span>
+<span foreground='blue'>"  "</span> <span foreground='green'>". PET install not required"</span>
+<span foreground='blue'>"  "</span> <span foreground='green'>". . . . dependencies embedded or included."</span>
+<span foreground='blue'>"  "</span> <span foreground='green'>". just place downloaded scripts into /root/my-applications."</span>
+<span foreground='blue'>"  "</span> <span foreground='green'>". . . . check PATH."</span>
 <span foreground='red'>"-------------------------------------"</span>"\
 > /tmp/box_help
-Sbr_Box_Message "=== Proc ===  'Sbr_Box_Message' > /tmp/box_help + box_help"
+Sbr_Box_Message "=== Code Process ==='Sbr_Box_Message'=== /tmp/box_help"
+#
+#! working ReStart
 #
 } # end
 export -f Sbr_Dump_Proc
@@ -4812,7 +5657,7 @@ export -f Sbr_Dump_Proc
 #! 
 #!
 #(: =====================================================================
-#(: fx(Sbr_Dump_FAQ)
+#(: fx Sbr_Dump_FAQ
 #(: called by:
 #(: param:
 #(: purpose:  Display FAQ via  direct link in Main_GUI , returns to same.
@@ -4821,61 +5666,68 @@ export -f Sbr_Dump_Proc
 #(: sends:
 #(: rationale:
 #(: note : requires /tmp/box_help
-#(: 	gtkdialog/box_help will handle format and embedded color text codes.
-#(: 	xmessage will NOT handle format and color embedded text codes.
-#(:		system gtkdialog "box_help" location is  '/usr/lib/gtkdialog/box_help'
+#(:     gtkdialog/box_help will handle format and embedded color text codes.
+#(:     xmessage will NOT handle format and color embedded text codes.
+#(:     system gtkdialog "box_help" location is  '/usr/lib/gtkdialog/box_help'
 #(:
 #! ############################################################
-function Sbr_Dump_FAQ() {   #: ACTIVE
-	n=0
-	echo "\
+function Sbr_Dump_FAQ() {   # ACTIVE
+    n=0
+    echo "\
 <span background='brown'><span foreground='yellow'> '=========='</span></span>\
 <span background='yellow'><span foreground='blue'> '      $gcSysNameBase FAQ    '</span></span>\
 <span background='brown'><span foreground='yellow'> '==========' </span></span>
-<span foreground='green'>                     # Compiled: ${gcSysDevDob} # </span> 
-
-<span background='brown'><span foreground='yellow'> '=========='</span></span>\
-<b><span background='yellow'><span foreground='blue'> '#! Running Tests '</span></span></b>\
-<span background='brown'><span foreground='yellow'> '==========' </span></span>\
-<span foreground='green'>
-
-"--- "
-<span foreground='"'green'"'>"______________________________"</span>
-<b><span background='lightyellow'><span foreground='red'>     #! Running Tests on 20 live-active Puppy Linux OS </span></span></b>
-<b><span background='lightyellow'><span foreground='brown'>     #! including: </span></span></b>
-    #! iso-KineticPup32-22.10+2__________________230604
-<b><span foreground='blue'> '    #!*** iso_BionicPup32-19.03-K5.9____K:5____231209'</span></b>
-    #! iso-BionicPup32-8.0+30_____________K:4____220407
-    #! iso-UPupFF+D-20.12+4_Focal-Fossa__________201210
-<b><span foreground='blue'> '    #!*** iso_ManticPup32-23.10+1_______K:6____231209'</span></b>
-    #! iso_BookwormPup32-23.11-B4_K6.1.55_K:6____231210
-    #! iso-JammyPup32-22.04+8_____________K:5.1__221203
-    #! iso-S15Pup-64_22.12+1-T____________K:5.1__220922
-    #! iso-Xenial-64_7.5_XL_______________K:4.9__220401
-    #! iso_slacko64_14.2_32-674-bit_comptible____220227
-    #! iso-Slacko-7.0_DpupS7_14.2________________220205
-    #! iso_devuanpup-9.7.0-chimaera_4.0_i386_____211206 beta
-    #! iso-Quirky_April-7.0.1F-uefi______________200511 beta
-    #! iso_LxPupSc-slacko-20.01+0-T-k64__________200129
-    #!* iso-UpupTahr-6.0.6-k4.1.30-uefi____K:4.1__190211
-<b><span foreground='blue'> '    #!*** iso-UpupTahr-6.0.6-k4.1.30-uefi__K:4.1__190211'</span></b>
-    #(: ------------------------------------------------
-</span>
-
+<span foreground='green'>                     # Compiled: ${gcMgrSysDob} # </span> 
+<span background='brown'><span foreground='yellow'> '================='</span></span>
+<b><span background='yellow'><span foreground='blue'> '#! Running Tests '</span></span></b>
+<b><span background='yellow'><span foreground='blue'> '#! Running Tests on 22 live-active Puppy Linux OS'</span></span></b>
+<span background='brown'><span foreground='yellow'> '=================' </span></span>
+<span foreground='red'>"-------------------------------------"</span>
+<span foreground='brown'>"#! Each Puppy OS is tested via its own original distro BASH ."</span>
+<span foreground='brown'>"#! Each Puppy OS is tested via its own original distro GTK ."</span>
+<span foreground='brown'>"#! Each Puppy OS is Original as written by Mik01 or PeaBee ."</span>
+<span foreground='red'>"-------------------------------------"</span>
 "---"
-<span background='brown'><span foreground='yellow'> '===================='</span></span>
-<span background='yellow'><span foreground='blue'> '#! 20 Distros  '</span></span>
-<span background='yellow'><span foreground='blue'> '#! Some require '</span></span>
-<span background='yellow'><span foreground='blue'> '#! the default Themes '</span></span>
-<span background='yellow'><span foreground='blue'> '#! for GTK  '</span></span>
-<span background='brown'><span foreground='yellow'> '====================' </span></span>
-<span foreground='blue'></span>
-
+<span background='brown'><span foreground='yellow'> '===================='</span></span> 
+<span background='yellow'><span foreground='blue'> '#! 22 Distros  '</span></span>
+<span background='yellow'><span foreground='blue'> '#! Some require  </span></span>  
+<span background='yellow'><span foreground='blue'> '#! the default Themes for GTK '</span></span> 
+<span background='brown'><span foreground='yellow'> '====================' </span></span> 
+"--- FAQ including:"
+<b><span foreground='"'red'"'>"#! iso_NoblePup32-24.04-__K:6.1.115___240907"</span></b>
+<b><span foreground='"'blue'"'>"#! iso_BionicPup32-19.03-K5.9--- K:5 __32  231209"</span></b>
+<b><span foreground='"'brown'"'>"iso-bionicpup64-8.0-uefi_ _ _ _ _ _ _ _K:4__64_231219"</span></b>
+<span foreground='"'blue'"'>  "iso-BionicPup32-8.0+30_BionicBeaver_____220407"</span>
+<b><span foreground='"'red'"'>"iso-UpupTahr-6.0.6-k4.1.30-uefi_K:4.1___190211"</span></b>
+<span foreground='"'blue'"'>  "iso_ManticPup32-23.10+1.iso_____Kernal:6.1_231209"</span>
+<span foreground='"'blue'"'>  "iso-JammyPup32-22.04+8_JammyJellyfish___22123"</span>
+<span foreground='"'blue'"'>  "iso-UPupFF+D-20.12+4_Focal-Fossa________201210"</span>
+<span foreground='"'blue'"'>  "iso-KineticPup32-22.10+2________________230604"</span>
+<span foreground='"'blue'"'>   "iso-Slacko-7.0_DpupS7_14.2________________220205"</span>
+<span foreground='"'blue'"'>   "iso-Xenial-64_7.5_XL_______________________220401"</span>
+<span foreground='"'blue'"'>   "iso-S15Pup-64_22.12+1-T___________________220922"</span>
+<span foreground='"'blue'"'>   "iso-Quirky_April-7.0.1F-uefi______________200511"</span>
+<span foreground='"'blue'"'>   "iso_devuanpup-9.7.0-chimaera_4.0_i386____211206"</span>
+<span foreground='"'blue'"'>   "iso_LxPupSc-slacko-20.01+0-T-k64_________200129"</span>
+<span foreground='"'blue'"'>   "iso_slacko64_14.2_32-674-bit_comptible___220227"</span>
+<span foreground='"'blue'"'>   "iso_BookwormPup32-B4-231101___220227"</span>
 "--- "
-<span foreground='"'green'"'>"______________________________"</span>
+<span foreground='"'darkblue'"'>\
+    NOTE: Different "'"GTK Themes"'" 
+    will alter font size and screen usage.
 
+    for MGR with  "'"Default"'" theme. 
+         Screen : "'"gcMrgGuiWid"'" = 1100 
+
+    for MGR with "'"Deep-Thought"'" theme. 
+         Screen : "'"gcMrgGuiWid"'" = 1200 
+
+    more tests required to differentiate 
+        various themes and screen dimensions for each Distro
+        which alter font size and screen usage. 
+</span>
 "--- "
-<span foreground='"'green'"'>"______________________________"</span>
+<span foreground='green'>"______________________________"</span>
 <span background='brown'><span foreground='yellow'> '=========='</span></span>\
 <span background='yellow'><span foreground='blue'> ' "SOFT" LockFile:'</span></span>\
 <span background='brown'><span foreground='yellow'> '==========' </span></span>
@@ -4887,73 +5739,36 @@ function Sbr_Dump_FAQ() {   #: ACTIVE
     #(:      and program continues to run. 
     #(:  Note: 
     #(:  'strict' lockfile method NOT implemented.
-    #(:  	example: for 'LockFile' using 'exit 1'
-    #(:  'strict' lockfile WILL 'exit' subroutine  
-    #(:      at 'current' stack level. 
-    #(:  'strict' lockfile WILL 'exit' program  
-    #(:       only at 'base' stack. 
-    #(:  'strict' lockfile MAY NOT exit/quit the script program. 
-    #(:
-    #(:  IF 'strict' lockfile block is written into a funxtion()
+    #(:  IF 'strict' lockfile block is written into a function ()
     #(:     ( which is a "sub-routine" )
-    #(:		[which by definition is a sublevel in the stack],
+    #(:     [which by definition is a sublevel in the stack],
     #(:  THEN 'exit' will only "pop" one level
-    #(:     at the funxtion() stack level,
-    #(:  	and will not 'quit' or 'halt' the PRG as desired.
+    #(:     at the function () stack level,
+    #(:     and will not 'quit' or 'halt' the PRG as desired.
     #(:
-<b><span foreground='"'brown'"'>    "#:	MGR.sh has a 'SOFT Lock' method "</span> </b>
-    #(:		User is responsible for correcting 
-    #(:		repeated runs of MGR.sh . 
+<b><span foreground='"'brown'"'>    "#: MGR.sh has a 'SOFT Lock' method "</span> </b>
+    #(:     User is responsible for correcting 
+    #(:     repeated runs of MGR.sh . 
     #(:  'soft' lock produces 'non-fatal' errors.  
     #(:
-    #(:
-    #(:  A monster BASH script program like this 
-    #(:  ('MGR' core program has 8357 lines) 
-    #(:  ('MGR' system has > 12,000 lines )
-    #(:   would be better implemented via 
-    #(:   modern high-level language like Python.
-    #(:   and would have been a flash 
-    #(:   using FoxPro/VisualFox with imbedded T-SQL.
-    #(:
-    #(: ------------------------------------------------
+ #(: ------------------------------------------------
+ #(:
+    <span foreground='blue'>"  "</span> <span foreground='green'>". PET install not required"</span>
+    <span foreground='blue'>"  "</span> <span foreground='green'>". . . . dependencies embedded or included."</span>
+    <span foreground='blue'>"  "</span> <span foreground='green'>". just place downloaded scripts into /root/my-applications."</span>
+    <span foreground='blue'>"  "</span> <span foreground='green'>". . . . check PATH."</span>
+ #(: ------------------------------------------------
 </span>
-
-"--- "
-<span foreground='"'green'"'>"___ Future Dev ___________________________"</span>
-<b><span foreground='"'red'"'>"#: note:  Middle-Page-module"</span></b>
-<span foreground='"'red'"'>"#: fxSbr_gui_MB_xml  "</span>
-<span foreground='"'blue'"'>"#: called by : Main_GUI, EXIT:guiMB "</span>
-<span foreground='"'red'"'>"#: purpose :  Middle-Page  Multi-Buttons  array "</span>
-<span foreground='"'blue'"'>"#: - - -    of functional calls to sub-routines"</span>
-<span foreground='"'blue'"'>"#: returns : "</span>
-<span foreground='"'red'"'>"#:  "<b>"Selected Button"</b>" generates "'"token FnTarget"'" "</span>
-<span foreground='"'blue'"'>"#:  - - - is sent as a token string echo into config-file"</span>
-<span foreground='"'red'"'>"#:  "'"action"'" echo  token FnTarget  "'/"action"'""</span>
-<span foreground='"'blue'"'>"#:  - - - is sent as a token string echo  "</span>
-<span foreground='"'blue'"'>"#:  - - - into "'"0-MGR_MB_RetVal.cfg"'" "</span>
-<span foreground='"'blue'"'>"#:  "<b>"File.cfg "</b>"will be read to "'"extract"'" token FnTarget"'". "</span>
-<span foreground='"'blue'"'>"#:  "'""<b>"token FnTarget"</b>""'" will be "'"executed"'". "</span>
-<span foreground='"'green'"'>"______________________________"</span>
-<b><span foreground='"'darkred'"'>"#:       READ the CODE in the Middle-Vertical "'"Page 1-2-3"'" sections ."</span></b>
-<span foreground='"'brown'"'>"#:		Sbr_gui_MB_xml  eval  will not initiate "'"action"'" "</span>
-<span foreground='"'brown'"'>"#:		Sbr_gui_MB_xml writes "'"action"'" results into a file.cfg"</span>
-<span foreground='"'brown'"'>"#:       BASH code  will import the "'"file.cfg"'" "</span>
-<span foreground='"'brown'"'>"#:       BASH code  will call the "'"action"'" subroutine."</span>
-<span foreground='"'brown'"'>"#:       BASH code  will call the external system executables"</span>
-<span foreground='"'brown'"'>"#:       ... by passing a token thru a /tmp/Page_Control.flg "</span>
-<span foreground='"'brown'"'>"#:       READ the CODE in the vertical "'"Center-Page"'" section ."</span>
-<span foreground='"'brown'"'>"#:       READ the CODE  to see the specific method."</span>
-<span foreground='"'green'"'>"------------------------------------------------------------------"</span>
 ..."\
 > /tmp/box_help
-Sbr_Box_Message "=== FAQ === 'Sbr_Box_Message' > /tmp/box_help + box_help"
+Sbr_Box_Message "=== FAQ === 'Sbr_Box_Message ' > /tmp/box_help + box_help"
 #
 } #
 export -f Sbr_Dump_FAQ
 #!
 #!
 #(: =====================================================================
-#(: fx(Sbr_Dump_SRC)   #: A
+#(: fx Sbr_Dump_SRC 
 #(: called by:  Main_GUI
 #(: param:
 #(: purpose:  Display Source via direct link in Main_GUI , returns to same.
@@ -4969,50 +5784,26 @@ export -f Sbr_Dump_FAQ
 #(: First Section is a Dump to Screen via gxmessage pulling /tmp/box_help
 #(: Second Section is a Base-64 Cat to /my-applications/Mgr_Cat_64_.txt
 #! #######################################################################
-function Sbr_Dump_SRC() {   #: ACTIVE requires /tmp/box_help
-	n=0
-#(: lcFileXmessage="/usr/bin/xmessage" # old target
+function Sbr_Dump_SRC() {   # ACTIVE  called at 8754
+    n=0
+#! requires /tmp/box_help
 lcFileGXmessage="/usr/bin/gxmessage"    # current target 
-    #!
-lcMsgStr="===  Sbr_Dump_SRC gxmessage === "  # &&     Sbr_Str2DevTrm "$lcMsgStr" "3" "7"
-    #!
 #! begin Source Header
-lcMsgSrc="${0}"	# "${gcZeroRun}"
+lcMsgSrc="${0}" # "${gcZeroRun}"
 lcMsgTrg="/tmp/box_help"   # box_help is required by gtkdialog 
-echo "# ${gcSysNameBase} #  textfile > cat + gxmessage" > ${lcMsgTrg}    # preset First Line
-echo "# " >> ${lcMsgTrg}
-echo "# { ${gcSysDistroName} } " >> ${lcMsgTrg}
-echo "# " >> ${lcMsgTrg}
-echo "# SOURCE CODE " >> ${lcMsgTrg}
-echo "# Running fx Sbr_Dump_SRC " >> ${lcMsgTrg}
-echo "# ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^" >> ${lcMsgTrg}
-echo "# This is Linux "  >> ${lcMsgTrg}
-echo "#    This is Free Open Source  " >> ${lcMsgTrg}
-echo "#       So, Read the Code" >> ${lcMsgTrg}
-echo "# ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^" >> ${lcMsgTrg}
-echo "# Source:  ${lcMsgSrc}"  >> ${lcMsgTrg}
-echo "# Target:  ${lcMsgTrg}"  >> ${lcMsgTrg}
-echo "# DOB:     ${gcSysDevDob}" >> ${lcMsgTrg}
-echo "# Compiled: `date +%y%m%d-%H%M-%S-%a`"  >> ${lcMsgTrg}
-echo "# ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^" >> ${lcMsgTrg}
-echo "#       " >> ${lcMsgTrg}
-#! end Source Header
-#!
 #! begin Source Body
-cat ${0} >> ${lcMsgTrg}     ### Sbr_Dump_SRC   /tmp/box_help ###
-    #!lcMsgTrgTxt="/MGR-Source.txt"
-    #!cat ${0} > ${lcMsgTrgTxt}     ### Sbr_Dump_SRC   /tmp/box_help ###
-    #! end Source Body
-sleep 1		# wait for system 
+cat ${0} > ${lcMsgTrg}     ### Sbr_Dump_SRC   /tmp/box_help ###
+    #!
+#! display SOURCE 
+gxmessage -title "Dump_Source + ReStart "  -name "-SRC-" -font bold -bg lightyellow -fg darkblue -center -wrap -file ${lcMsgTrg} 
 #!
-gxmessage -title "SRC:::${gcSysDistroName}:::${gcSysNameBase}:::"  -name "-SRC-" -font bold -bg lightyellow -fg darkblue -center -wrap -file ${lcMsgTrg}
-#!
+Sbr_Cbx_ReStart 1
 } #
+#
 export -f Sbr_Dump_SRC
 #!
-#!
 #(: ====================================================================
-#(: fx(Sbr_Dump_PUP)
+#(: fx Sbr_Dump_PUP
 #(: called by: Main Gui
 #(: param:
 #(: purpose:  Display PUPSTATE via direct link in Main_GUI , returns to same.
@@ -5021,17 +5812,18 @@ export -f Sbr_Dump_SRC
 #(: sends:
 #(: rationale:
 #(: note :
-#(: 	gtkdialog/box_help will handle format and embedded color text codes.
-#(: 	xmessage will NOT interpret markup text codes.
-#(: 	Method: cat ${lcMsgSrc} > ${lcMsgTrg} & xmessage
+#(:     gtkdialog/box_help will handle format and embedded color text codes.
+#(:     xmessage will NOT interpret markup text codes.
+#(:     Method: cat ${lcMsgSrc} > ${lcMsgTrg} & xmessage
 #(:
 #! ############################################################
-function Sbr_Dump_PUP() {    #: ACTIVE
-	n=0
+function Sbr_Dump_PUP() {    # ACTIVE
+    n=0
 lcMsgSrcDP="/etc/rc.d/PUPSTATE"
-lcMsgTrgDP="/tmp/box_help"	# /tmp/MGR_PUPSTATE
+lcMsgTrgDP="/tmp/box_help"  # /tmp/MGR_PUPSTATE
 #
-echo "${gcSysDistroName} = textfile > cat + gxmessage" > ${lcMsgTrgDP}
+echo "# ${gcSysDistroName} = textfile > cat + gxmessage" > ${lcMsgTrgDP}
+    #!
 echo "# ${lcMsgSrcDP}"  >> ${lcMsgTrgDP}
 echo "# ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^" >> ${lcMsgTrgDP}
 echo "# This is Linux "  >> ${lcMsgTrgDP}
@@ -5043,38 +5835,40 @@ echo "# `date +%y%m%d-%H%M-%S`"  >> ${lcMsgTrgDP}
 cat ${lcMsgSrcDP} >> ${lcMsgTrgDP}
 #
 lcMGR_dts="=== MGR  NowDTS  `date +%y%m%d-%H%M-%S`"
-echo "${lcMGR_dts}" >> ${lcMsgTrgDP}	#: add string to PUPSTATE Text Output
+echo "${lcMGR_dts}" >> ${lcMsgTrgDP}    #: add string to PUPSTATE Text Output
 echo "=== {PUP+} MGR_Pup_Box ============================" >> ${lcMsgTrgDP}
 sleep 1
-gxmessage -name "PUPSTATE via cat + gxmesage" -bg lightyellow  -center -file "${lcMsgTrgDP}" -wrap
+gxmessage -name "Dump PUPSTATE + ReStart " -bg lightyellow  -center -file "${lcMsgTrgDP}" -wrap
+#
 } #
 export -f Sbr_Dump_PUP
 #!
 #!
 #(: =====================================================================
-#(: fx(Sbr_Dump_GUI)
+#(: fx Sbr_Dump_GUI
 #(: called by:
 #(: param:
-#(: purpose: splash GTK GUI XML code 
+#(: purpose: splash GTK XML Dialog code 
 #(: calls:
-#(: method: gtk box_ok
+#(: method: gxmessage
 #(: sends:
 #(: rationale:
 #(: note : line length < 62
 #(:
 #! ############################################################
-function Sbr_Dump_GUI() {   #: ACTIVE # ${MGR_Master_Main_GUI}
-	n=0
+function Sbr_Dump_GUI() {   # ACTIVE 
+    #! called by ${MGR_Master_Main_GUI}
+    n=0
 lcFileGXmessage="/usr/bin/gxmessage"
    #
-lcMsgStr="===  Sbr_Dump_Master_Main_GUI gxmessage === "  &&     Sbr_Str2DevTrm "$lcMsgStr" "3" "7"
+lcMsgStr="# ===  Sbr_Dump_Master_Main_GUI gxmessage + ReStart  === "  &&     Sbr_Str2DevTrm "$lcMsgStr" "3" "7"
     #
 lcMsgSrc="/tmp/EmGa-Master-GUI.txt"
 lcMsgTrg="/tmp/box_help"
     #!
 echo "# ${gcSysDistroName} = textfile > cat + gxmessage" > ${lcMsgTrg}    # preset First Line
     #!
-echo "# Compiled: ${gcSysDevDob}" >> ${lcMsgTrg}
+echo "# Compiled: ${gcMgrSysDob}" >> ${lcMsgTrg}
 echo "# Running fx Sbr_Dump_GUI " >> ${lcMsgTrg}
 echo "# Running fx Sbr_Dump_Master_Main_GUI_XML " >> ${lcMsgTrg}
 echo "# ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^" >> ${lcMsgTrg}
@@ -5087,40 +5881,43 @@ echo "# DistroKernel: ${gcMGRKernVer}"  >> ${lcMsgTrg}
 echo "# MGR ## Target: ${lcMsgTrg}"  >> ${lcMsgTrg}
 echo "# "  >> ${lcMsgTrg}
 cat ${lcMsgSrc} >> ${lcMsgTrg}     ### /tmp/box_help ###
-sleep 1		# wait for system 
-gxmessage -title "Master-GUI"  -name "-Master-GUI-" -font bold -bg lightyellow -fg darkblue -center -wrap -file ${lcMsgTrg}
+sleep 1     # wait for system 
+gxmessage -title "Dump-Master-GUI + ReStart"  -name "-Master-GUI-" -font bold -bg lightyellow -fg darkblue -center -wrap -file ${lcMsgTrg}
+#
 } #
 export -f Sbr_Dump_GUI
 #!
 #!
 #!
 #(: =====================================================================
-#(: fx(Sbr_Dump_IMG)
+#(: fx Sbr_Dump_IMG
 #(: called by:
 #(: param:
 #(: purpose: display all IMG code
 #(: calls:
-#(: method: gtk box_ok
+#(: method: gxmessage
 #(: sends:
 #(: rationale:
 #(: note : line length < 62
 #(:
 #! ############################################################
-function Sbr_Dump_IMG() {   #: ACTIVE Dump_Image
-	n=0
+function Sbr_Dump_IMG() {   # ACTIVE 
+    #! Dump_Image   EmGa-Master-IMG.txt
+    n=0
 lcFileXmessage="/usr/bin/xmessage"
 lcFileGXmessage="/usr/bin/gxmessage"
     #
-lcMsgStr="===  Sbr_Dump_IMG gxmessage === "  &&     Sbr_Str2DevTrm "$lcMsgStr" "3" "7"
+lcMsgStr="# ===  Sbr_Dump_IMG gxmessage + ReStart === "  &&     Sbr_Str2DevTrm "$lcMsgStr" "3" "7"
     #
-lcMsgSrc="EmGa-Master-IMG.txt"	
+lcMsgSrc="EmGa-Master-IMG.txt"  
 lcMsgTrg="/tmp/box_help"  
-echo "# ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^" >> ${lcMsgTrg}
+echo "# ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^" > ${lcMsgTrg}
+    #!
 echo "${gcSysDistroName} = textfile > cat + gxmessage" >> ${lcMsgTrg}    # preset First Line
 echo "# running fx(Sbr_Dump_IMG) showing IMAGE code" >> ${lcMsgTrg}
-echo "# Compiled: ${gcSysDevDob}" >> ${lcMsgTrg}
+echo "# Compiled: ${gcMgrSysDob}" >> ${lcMsgTrg}
 echo "#============================" >> ${lcMsgTrg}
-echo "# EmGr-Image-all ===${lcMsgSrc}===" >> ${lcMsgTrg}	
+echo "# EmGr-Image-all ===${lcMsgSrc}===" >> ${lcMsgTrg}    
 echo "# total 37 images: 17 KBytes " >> ${lcMsgTrg}
 echo "# total load time: 0.7 second" >> ${lcMsgTrg}
 echo "#============================" >> ${lcMsgTrg}
@@ -5134,14 +5931,15 @@ echo "# MGR Target: ${lcMsgTrg}"  >> ${lcMsgTrg}
 echo "# `date +%y%m%d-%H%M-%S`"      >> ${lcMsgTrg}
 echo "# ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^" >> ${lcMsgTrg}
 echo "# "  >> ${lcMsgTrg}
-cat /tmp/EmGa-Master-IMG.txt >> ${lcMsgTrg} 	### /tmp/box_help ###
-gxmessage -title "IMG" -name "-IMG-" -font bold -bg lightyellow -fg darkblue -center  -file ${lcMsgTrg}
+cat /tmp/EmGa-Master-IMG.txt >> ${lcMsgTrg}     ### gxmessage pulls /tmp/box_help ###
+gxmessage -title "Dump-Images + ReStart " -name "Sbr_Dump_IMG-" -font bold -bg lightyellow -fg darkblue -center  -file ${lcMsgTrg}
+#
 } #
 export -f Sbr_Dump_IMG
 #!
 #!
 #(: =====================================================
-#(: fx(Sbr_Dump_UPL)
+#(: fx Sbr_Dump_UPL     "User Popup Legal" by PeeBee
 #(: called by:
 #(: param:
 #(: purpose: splash legal statement by PeeBee
@@ -5152,15 +5950,14 @@ export -f Sbr_Dump_IMG
 #(: note : line length < 62
 #(:
 #! #####################################################
-function Sbr_Dump_UPL() {   #: ACTIVE
-	n=0
-# lcStrUpPop is picked up by /box_ok 
-lcStrUpPop="
-DistroName: {   ${DISTRO_NAME}   }
-Compiled: ${gcSysDevDob}
+function Sbr_Dump_UPL() {   # ACTIVE
+    n=0
+lcStrUpPop="...  
+DistroName: ${DISTRO_NAME}
+Compiled: ${gcMgrSysDob}
 ===========================================
-Legal notice subroutine developed by peebee
-- https://sourceforge.net/u/peabee/profile/
+Legal notice subroutine developed by GlenE77is
+#
 This program is free software; you can redistribute it
 and/or modify it
 under the terms of the GNU General Public License
@@ -5169,22 +5966,18 @@ This program is distributed in the hope that it will be useful,
 but WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 See the GNU General Public License for more details.
+.....
 "
     #! -D---
-/usr/lib/gtkdialog/box_ok "=== Sys === Legal === Message box_ok" error "
-.
-${lcStrUpPop}
-.                                                      "
+/usr/lib/gtkdialog/box_ok "=== Dump Legal + ReStart ===" "ERROR" "${lcStrUpPop}"
     RETVAL=$?
-	GTKPIDMAIN0=$!
-    #
-	kill ${GTKPIDMAIN0}
+#
 } #
 export -f Sbr_Dump_UPL
 #!
 #!
 #(: =====================================================
-#(: fx(Sbr_Dump_Sys)
+#(: fx Sbr_Dump_Sys
 #(: called by:
 #(: param:
 #(: purpose: splash Dev Notes and test var
@@ -5193,78 +5986,211 @@ export -f Sbr_Dump_UPL
 #(: sends:
 #(: rationale:
 #(: note : line length < 62
-#(:
+#(: note:
+#(: Some Data is NOT PROVIDED in Puppy "DISTRO_SPECS" . 
+#(:  example of data not provided : gcOsIso="iso-bionicpup64-8.0-uefi : 19 Feb" 
+#(:  therefore "Sbr_Dump_Sys" cannot automatically present this "ISO" data. 
+#(:  SINCE  Manager must run on "ALL"  Puppy Distro, 
+#(:  THEN   this system identifying data is not provided. 
 #! #####################################################
-function Sbr_Dump_Sys() {   #: ACTIVE
-	n=0
+function Sbr_Dump_Sys() {   # ACTIVE
+    n=0
+    
 #! lcStrUpPop is picked up by /box_ok 
-lcStrUpPop="fx(Sbr_Dump_Sys)
+lcStrUpPop="# fx(Sbr_Dump_Sys) + ReStart 
+Date-Now-Run: "`date +%y%m%d-%H%M-%S-%a`" 
 =======================================
-DistroName: {   ${DISTRO_NAME}   }
-DistroVersion: ${DISTRO_VERSION}
-DistroKernel: ${gcMGRKernVer}
-DateOfBirth: ${gcSysDevDob}
-DateCompiled: "`date +%y%m%d-%H%M-%S-%a`"
+DISTRO-NAME:  ${DISTRO_NAME}       DistroVersion: ${DISTRO_VERSION}
+Puppy-SUBDIR: ${PSUBDIR}
+Symbol: ${gcMgrDistroSymbol}
+DistroKernel: ${gcMGRKernVer} 
+Distro_PuppyDate: ${DISTRO_PUPPYDATE}
+Iso-file-Date: ${gcMgrIsoDate}  
 =======================================
-Save Bak File Name Mount=
-"`cat /sys/fs/aufs/si_*/br0 | head -1 | cut -f1 -d'='`"
-Save Bak File Name Base Src=
-"`cat /sys/fs/aufs/si_*/br1 | head -1 | cut -f1 -d'='`"
+Mgr-Running: ${gcMgrSysDob}
+Mgr-Key-ID: ${gcMgrKey}
+Mgr-BashPid: ${gcMgrBashPid} 
 =======================================
-uname: 
-`uname -a` 
-kernal name: `uname -s` 
-kernel release: `uname -r` 
-kernel verson  `uname -v` 
-system: machine: `uname -m` 
-processor: `uname -p` 
-platform: `uname -i` 
-operating sys: `uname -o` 
-gcSysDevDob = ${gcSysDevDob}
-gcMgrDevId = ${gcMgrDevId}
-gcSysDistroPuppySFS=${gcSysDistroPuppySFS}
-gcPupSfsFile=${gcPupSfsFile}
-gcMGRDistroVer=${gcMGRDistroVer}
-gcMGRKernVer=${gcMGRKernVer}
-  "
+PUP_HOME: ${PUP_HOME}
+: ${PUPSAVE}
+Save-Data-Name-Mount="`cat /sys/fs/aufs/si_*/br0 | head -1 | cut -f1 -d'='`"
+    Src:/sys/fs/aufs="`cat /sys/fs/aufs/si_*/br1 | head -1 | cut -f1 -d'='`"   RamObj: ${lcPupRamObjMsg}
+=======================================
+* uname: `uname -a`    
+* kernal name: `uname -s`  
+* kernel release: `uname -r` 
+* kernel verson  `uname -v` 
+* system: machine: `uname -m` 
+* processor: `uname -p`      * platform: `uname -i` 
+* operating sys: `uname -o` 
+*gcMgrSysDob = ${gcMgrSysDob}   *gcMgrDevId = ${gcMgrDevId} 
+*gcSysDistroPuppySFS=${gcSysDistroPuppySFS}  
+*gcPupSfsFile=${gcPupSfsFile}"
 #! -D---
-/usr/lib/gtkdialog/box_ok "=== Sys Notes and Var === Message box_ok" error "
-.
-${lcStrUpPop}
-.                                                      "
+/usr/lib/gtkdialog/box_ok "=== Dump System + ReStart ===" "x" " ${lcStrUpPop}                                                      "
     RETVAL=$?
-	GTKPIDMAIN0=$!
-    #
-	kill ${GTKPIDMAIN0}
+#
+#! / tmp / Mgr_Dump_Declare.txt
+#! declare sbr used at main ( ) 
+#! Sbr_Dump_SYS-Declare used after Sbr_Dump_Sys ( the "A" version ) 
+#!
 } # 
 export -f Sbr_Dump_Sys
 #!
+#!
+#(: =====================================================
+#(: fx Sbr_Dump_Declare
+#(: called by:
+#(: param:
+#(: purpose: splash Dev Notes and test var
+#(: calls:
+#(: method: gtk box_ok
+#(: sends:
+#(: rationale:
+#(: note : line length < 62
+#(: note:
+#! #####################################################
+function Sbr_Dump_Declare() {   # ACTIVE
+    n=0
+#! / tmp / Mgr_Dump_Declare.txt
+#! declare sbr used at main ( ) 
+#! Sbr_Dump_Declare used after Sbr_Dump_Sys ( the "A" version ) 
+rm -f /tmp/Mgr_Dump_Declare.txt
+echo "# fx( Sbr_Dump_Declare )   Attributes and Values of all Variables ..."  > /tmp/Mgr_Dump_Declare.txt
+declare >> /tmp/Mgr_Dump_Declare.txt
+lcMsgSrc="/tmp/Mgr_Dump_Declare.txt"
+gxmessage -title "gxmessage Dump Declare + ReStart" -name "Sbr_Dump_Declare  /tmp/Mgr_Dump_Declare.txt" -font bold -bg lightyellow -fg darkblue -center  -file "${lcMsgSrc}"
+} # 
+export -f Sbr_Dump_Declare
+#!
+#!
+#(: =====================================================
+#(: fx EXIT:Sbr_Dump_Path
+#(: called by:
+#(: param:
+#(: purpose: splash Dev Notes and test var
+#(: calls:
+#(: method: gtk box_ok
+#(: sends:
+#(: rationale:
+#(: note : line length < 62
+#(: note:
+#! #####################################################
+function Sbr_Dump_Path() {   # ACTIVE
+    n=0
+#! / tmp / Mgr_Dump_Path.txt
+#! declare sbr used at main ( ) 
+#!
+#  lcFn = "/tmp/Mgr_Dump_Path.txt"
+#  rm -f /tmp/Mgr_Dump_Path.txt
+touch /tmp/Mgr_Dump_Path.txt
+echo "# fx( Sbr_Dump_Path )    ..."  > /tmp/Mgr_Dump_Path.txt
+#!
+echo "======= ii-in-path.sh === ls -simple ==="
+IFS=':'
+for ii in $PATH
+do
+        echo $ii    #! extra trace to terminal 
+        lcMsgStr="${ii}"
+        /bin/echo     "${lcMsgStr}" >> /tmp/Mgr_Dump_Path.txt
+done
+lcMsgSrc="/tmp/Mgr_Dump_Path.txt"
+gxmessage -title "gxmessage DumpPath + ReStart" -name "Sbr_Dump_Path  /tmp/Mgr_Dump_Path.txt" -font bold -bg lightyellow -fg darkblue -center  -file /tmp/Mgr_Dump_Path.txt
+#!
+} # 
+export -f Sbr_Dump_Path
+#!
+#!
+#! 
+#(: ============================================================
+#(: fx Sbr_Dxstro_Window   
+#(: called by:  DOX_GUI
+#(: param:
+#(: purpose:  MGR Help general
+#(: calls:
+#(: method:  > /tmp/box_help & /usr/lib/gtkdialog/box_help
+#(: sends:
+#(: rationale:
+#(: note :
+#(:     gtkdialog/box_help will handle format and embedded color text codes.
+#(:     xmessage will NOT handle format and color embedded text codes.
+#(:     system gtkdialog "box_help" location is  '/usr/lib/gtkdialog/box_help'
+#(:
+#(: note: requires /tmp/box_help
+#(:  gcMGRDob is declared/assigned at beginning (top) of program
+#(:  fx(MGR_SetVerDate) is called at top of '=== MAIN ( ) ==='
+#(:  echo this out as one long string, to standard /tmp/help_box
+#(:  then call it via Sbr_Box_Message  for '/tmp/box_help'"
+#(:
+#! ###    #! echo "${gcSysDistroName} = textfile > cat + gxmessage" > ${lcMsgTrgDP}
+#########################################################
+function Sbr_Dxstro_Window () {   # ACTIVE  
+    n=0
+    echo "\
+<span background='"'brown'"'><span foreground='"'yellow'"'> "========" </span></span>\
+<span background='"'yellow'"'><span foreground='"'blue'"'>"     "${gcSysNameBase}" Dxstro_List "</span></span>\
+<span background='"'brown'"'><span foreground='"'yellow'"'> "========" </span></span>
+<b><span foreground='"'red'"'>". . . . ${gcSysNameBase} 'Puppy Project Manager'"</span></b>
+"--- "
+<span foreground='"'green'"'>"____________________________________________"</span>
+<b><span foreground='"'purple'"'>" Running Tests on 22 Puppy OS, including: "</span></b>
+<span foreground='purple'>"#! Each OS is tested via its own original distro BASH ."</span>
+<span foreground='purple'>"#! Each OS is tested via its own original distro GTK ."</span>
+"---DXstro 1: including: "
+<b><span foreground='"'red'"'>"#! iso_NoblePup32-24.04-__K:6.1.115___240907"</span></b>
+<b><span foreground='"'blue'"'>"#! iso_BionicPup32-19.03-K5.9--- K:5 __32  231209"</span></b>
+<b><span foreground='"'brown'"'>"iso-bionicpup64-8.0-uefi_ _ _ _ _ _ _ _K:4__64_231219"</span></b>
+<span foreground='"'blue'"'>  "iso-BionicPup32-8.0+30_BionicBeaver_____220407"</span>
+<b><span foreground='"'red'"'>"iso-UpupTahr-6.0.6-k4.1.30-uefi_K:4.1___190211"</span></b>
+<span foreground='"'blue'"'>  "iso_ManticPup32-23.10+1.iso_____Kernal:6.1_231209"</span>
+<span foreground='"'blue'"'>  "iso-JammyPup32-22.04+8_JammyJellyfish___22123"</span>
+<span foreground='"'blue'"'>  "iso-UPupFF+D-20.12+4_Focal-Fossa________201210"</span>
+<span foreground='"'blue'"'>  "iso-KineticPup32-22.10+2________________230604"</span>
+<span foreground='"'blue'"'>   "iso-Slacko-7.0_DpupS7_14.2________________220205"</span>
+<span foreground='"'blue'"'>   "iso-Xenial-64_7.5_XL_______________________220401"</span>
+<span foreground='"'blue'"'>   "iso-S15Pup-64_22.12+1-T___________________220922"</span>
+<span foreground='"'blue'"'>   "iso-Quirky_April-7.0.1F-uefi______________200511"</span>
+<span foreground='"'blue'"'>   "iso_devuanpup-9.7.0-chimaera_4.0_i386____211206"</span>
+<span foreground='"'blue'"'>   "iso_LxPupSc-slacko-20.01+0-T-k64_________200129"</span>
+<span foreground='"'blue'"'>   "iso_slacko64_14.2_32-674-bit_comptible___220227"</span>
+<span foreground='"'blue'"'>   "iso_BookwormPup32-B4-231101___220227"</span>
+<span foreground='"'green'"'>"____________________________________________"</span>
+"--- "
+......................................................"\
+> /tmp/box_help
+Sbr_Box_Message "=== Dxstro ==='function Sbr_Dxstro_Window'===/tmp/box_help==="
+#
+} # end
+export -f Sbr_Dxstro_Window
+#! ############################################################
 #! ### DUMPS ########################################################################
 #! ### DUMPS ########################################################################
 #! ### DUMPS ########################################################################
 #!
+#!
+#!
         #!
         #! ###################################################
-        function MGR_TouchLockFile() {   #: NOT USED
+        function MGR_TouchLockFile() {   #: NOT ACTIVE
             n=0
         } #
         #!
         #!
         #! ###################################################
-        function MGR_TouchCBXstatus() {   #: NOT USED
-            n=0
-        } #
+        #~ function MGR_TouchCBXstatus() {   #: NOT ACTIVE
+            #~ n=0
+        #~ } #
         #!
         #!
         #! ###################################################
-        function MGR_TouchE3Rstatus() {   #: NOT USED
-            n=0
-        } #
+        #~ function MGR_TouchE3Rstatus() {   #: NOT ACTIVE
+            #~ n=0
+        #~ } #
         #!
 #!
 #!
 #(: ======================================================
-#(: fx(Sbr_Sys_Sync)
+#(: fx Sbr_Sys_Sync
 #(: called by: '/sbin/sync' is a link into 'busybox' binary '/bin/busybox' + splash
 #(: param:
 #(: purpose:  link into 'busybox' binary '/bin/busybox'
@@ -5275,71 +6201,97 @@ export -f Sbr_Dump_Sys
 #(: note :
 #(:
 #! ######################################################
-function Sbr_Sys_Sync() {   #: ACTIVE
+function Sbr_Sys_Sync() {   # ACTIVE
 #!
 n=0
 #!  clear lingering colors
-/bin/echo -en "\\033[0;39m"		>  /dev/console
-/bin/echo -en "\\033[60G"    >/dev/console
-/bin/echo -en "\\033[1;33m"    >/dev/console
-/bin/echo -e  "\\033[0;39m"   >/dev/console
+/bin/echo -en "\\033[0;39m"    #>/dev/console
+/bin/echo -en "\\033[60G"      #>/dev/console
+/bin/echo -en "\\033[1;33m"    #>/dev/console
+/bin/echo -e  "\\033[0;39m"    #>/dev/console
 #! 
 if [ ! $1  ] ; then   # display
 Sbr_Splash_It "< SYNC >  flush buffers" "orange" "purple" "1"    #! -D---
 fi # end: [ $1 = "1" ]
 #!
-	sync   	# # '/sbin/sync' is a link into 'busybox' binary '/bin/busybox'
+    sync    # # '/sbin/sync' is a link into 'busybox' binary '/bin/busybox'
 #!
 } #
 export -f Sbr_Sys_Sync
 #!
 #!
-
-
-
-
-
 #(: ======================================================
-#(: fx(Sbr_S2F1)
+#(: fx Sbr_S2F1_MI
 #(: called by:    EXIT:guiSimReStart, ReBoot, ReQuit
 #(: param:
 #(: purpose:
 #(:
-#(: calls: 	nice -n ${lcRunNum} snapmergepuppy /initrd/pup_ro1 /initrd/pup_rw
+#(: calls:  nice -n ${lcRunNum} snapmergepuppy /initrd/pup_ro1 /initrd/pup_rw
 #(: method: code calling handled internal,
-#(:		could loop via param
+#(:     could loop via param
 #(:     could call to external S2F-1 multiple times.
 #(: sends:
 #(: rationale:
 #(: note :
+#(:     # ## Save-2-Flash...Must.Close.XTerm...to clear buffers.
 #(:     # ## purpose: one-shot "SMP"
 #(:     # ## nice -19 puts SMP at top of priority stack
+#(:     # ## ionice -c 1 puts SMP at #1 priority. 
 #(:
-#! ######################################################
-function Sbr_S2F1() {   #: ACTIVE Sbr_S2F1
-    # called by EXIT:guiSimReStart, ReBoot, ReQuit
-	n=0
-llRun01=1
-lcRunNum01="19"
-lcRunNum="${lcRunNum01}"
-### write "C" syntax here
-Sbr_Splash_It " ...Save-2-Flash...Standard...
-.             nice -n ${lcRunNum} snapmergepuppy" "yellow" "brown" "3"    #! -D---
+#(: ================================================================
+#(: fx Sbr_S2F1_MI    #! Internal   :1: SMP1_MI :    #!ACTIVE 
+#(: called by:  To Do: call direct INTERNAL ( no dependency ) 
+#(: param:  
+#(: purpose: wrapper for external system call to SMP 
+#(: method: 
+#(: sends:
+#(: rationale:
+#! #######################################################
+function Sbr_S2F1_MI() {   #! :1: SMP1_MI :  Save2File  Internal  ACTIVE
+    #! see msg_DC_LxgenVmb_window
+    #! called by Sbr_MB  and Sbr_MB_Reboot Installed Menu
+    n=0
+    #! ========================
+    Sbr_Splash_It ":MI : SMP1_MI :"  "black" "yellow"  ""         #! -D---
+    ionice -c 1 snapmergepuppy   
+    sleep 1
+    kill ${GTKPID_Cold_Splash}   2> /dev/null   
+    sleep 2
+    kill ${GTKPID_Cold_Splash}   2> /dev/null   
+} #! end
+export -f Sbr_S2F1_MI    
 #!
-	nice -n ${lcRunNum} snapmergepuppy /initrd/pup_ro1 /initrd/pup_rw  > /dev/null
 #!
-#
-} #
-export -f Sbr_S2F1
 #!
-
-
-
-
-#!
+#(: ================================================================
+#(: fx Sbr_S2F3_MI  # Internal  :3: SMP3_MI  #! ACTIVE   
+#(: called by:  To Do: call direct INTERNAL ( no dependency ) 
+#(: param:  
+#(: purpose: wrapper for external system call to SMP 
+#(: method: 
+#(: sends:
+#(: rationale:
+#! #######################################################
+function Sbr_S2F3_MI() {    #! :3:  SMP3_MI  #!ACTIVE     # Internal 
+    #! called by Sbr_MB_ALL   
+    n="0"
+    Sbr_Splash_It  ":1: SMP3_MI :==="  "black" "yellow"  ""         #! -D---
+    ionice -c 1 snapmergepuppy    
+    sleep 1
+    Sbr_Splash_It " :2: SMP3_MI :==="  "black" "yellow"  ""         #! -D---
+    ionice -c 1 snapmergepuppy    
+    sleep 1
+    Sbr_Splash_It " :3: SMP3_MI :==="  "black" "yellow"  ""         #! -D---
+    ionice -c 1 snapmergepuppy    
+    sleep 1
+    Sbr_Splash_It ": DONE : SMP3_MI :"  "yellow" "red"  ""         #! -D---
+    sleep 2
+} #! end
+export -f Sbr_S2F3_MI    
+#! #################################################################
 #!
 #(: ====================================================================
-#(: fx(Sbr_Sys_PupState)
+#(: fx Sbr_Sys_PupState
 #(: called by Main
 #(: param
 #(: purpose:
@@ -5347,53 +6299,35 @@ export -f Sbr_S2F1
 #(:     control generation of local var
 #(:     control configfile
 #(: rationale:
-#(: 	Puppy writes the "state" variables into /etc/rc.d/PUPSTATE .
+#(:     Puppy writes the "state" variables into /etc/rc.d/PUPSTATE .
 #(: sends:
 #(: note:
-#(: 	dox for export
-#(:	export      varname
-#(: 	export -f	file or funxtion
-#(: 	export -d 	directory
+#(:     dox for export
+#(: export      varname
+#(:     export -f   file or function
+#(:     export -d   directory
 #(:
-#! ############################################################
-function Sbr_Sys_PupState() {   #: ACTIVE
-	n=0
+#! ########################################################
+function Sbr_Sys_PupState() {   # ACTIVE  #! could test for not 12 or not 13 !
+    n=0
     lcVerDtsTmp="${gcMGRDob}"
-	#
-		if [ $PUPMODE -eq 2 ] ; then
-			#
-			lcMsgStr="
-		PUPMODE is 2
-		MGR requires 'Frugal Install'
-		PUPMODE must be '13'           "
-			#
-			xmessage -timeout 3 -name 'MGR' -center -bg brown -fg yellow "${lcMsgStr}"
-			exit
-			#
-		else
-			lcMsgStr="PUPMODE=${PUPMODE}" && Sbr_Str2DevTrm "$lcMsgStr" "2" "3"
-		fi
-	#
+    #
+    #! already done at main () entry.
+    #
     export gcMGRDob="${lcVerDtsTmp}"
-	#
-	export gcSysDistroLoc="${PDEV1}"	### from PUPSTATE, from rc.sysinit.
-	export gcZeroRun="$0"
-    # note  if [ "`cat /tmp/pup_event_backend/pup_event_module_devpath_log* | grep -m 1 'usb_storage'`" != "" ];then
-	echo "BK ==============================================="
-	lcSaveBkFileNameMount="`cat /sys/fs/aufs/si_*/br0 | head -1 | cut -f1 -d'='`"
-	lcSaveBkFileNameBaseSrc="`cat /sys/fs/aufs/si_*/br1 | head -1 | cut -f1 -d'='`"
-	echo "BK ==============================================="
-    # note  fi
+    #
+    export gcSysDistroLoc="${PDEV1}"    ### from PUPSTATE, from rc.sysinit.
+    export gcZeroRun="$0"
+    #! "BK ==============================================="
     export gcSysDistroVer="${PUPSFS}"
     export gcSysKernVer=${gcSysKernVer}
-	export gcSysVer="${PUPSFS}"	#: ${gcSysDistroVer}
-	export gcPupSfsFile="`echo "$PUPSFS" | cut -f 3 -d ','`"
+    export gcSysVer="${PUPSFS}" #: ${gcSysDistroVer}
+    export gcPupSfsFile="`echo "$PUPSFS" | cut -f 3 -d ','`"
     export gcMGRDistroVer="${PUPSFS}"
     export gcMGRKernVer="`uname -r`"
     export lcPupMode=${PUPMODE}
     export lcPupHome=${PUP_HOME}
     export lcPupSave=${PUPSAVE}
-    export lcPupMode=${PUPMODE}
     export gcPupSubDir=${PSUBDIR}
     export gcPupSubDirDts="${gcPupSubDir}.BKP-`date +%y%m%d-%H%M-%S`"
     lcPupSaveNameRaw="PUPSAVE : ${lcPupSave}"
@@ -5404,45 +6338,45 @@ function Sbr_Sys_PupState() {   #: ACTIVE
     lcPupSaveData="`echo $lcPupSave | cut -f 2 -d "/"`"
     lcPupSaveData="/initrd${lcPupHome}/${lcPupSaveData}/${lcPupSaveName}"
     lcPupDistroVer="${PUPSFS}"
+    #!
+    #! "top=RamObj ==============================================="
     #! dev: "calc" if [ zero ]  for "${lcPupRamObjMsg}"
     if [ "${lcPupRamObjMsg}" ] ; then  # NOT ZERO   # do nothing
          n="0"
         #! MGR has been run/initialized the "first" time. So, Will Show "RamObjMsg" Col #1, bottom. 
         sleep .1    
     else    # so must generate . 
+    #! "gen=RamObj ==============================================="
         #! ------------------------------------
         aa="$(du -c -m -s ${lcPupSaveData} )"     # error flag on Zero-length file shown inside Geany/XTerm
-        read -r b ccc <<< "$aa"	# --- saveDATA size calc
+        read -r b ccc <<< "$aa" # --- saveDATA size calc
         #!
         lcPupRamObj="${b}"
-        lcPupRamObjMsg=" DATA size > ${lcPupRamObj} MB "
+        lcPupRamObjMsg="${lcPupRamObj} MB "
         #!
         ### changed from leading grave [`] to enclosing double-apostrophe ["]
         ### FREERAM="free | grep -o 'Mem: .*' | tr -s ' ' | cut -f 4 -d ' '"
         ### export gcFreeRamNow="${FREERAM}"
         ### export gcFreeRamData="# Ram: ${gcFreeRamNow} Bytes "
     fi
+    #! "bot=RamObj ==============================================="
+    export gcPupSave="${PUPSAVE}"
+    export MGR_CBXstatus="/tmp/MGR_CBX_Status"
+    export MGR_LockFile="/tmp/MGR_LockFile"
+    export MGR_CBXstatus="/tmp/MGR_CBX_Status"
     #!
-	export gcPupSave="${PUPSAVE}"
-	export MGR_CBXstatus="/tmp/MGR_CBX_Status"
-	export MGR_LockFile="/tmp/MGR_LockFile"
-	export MGR_CBXstatus="/tmp/MGR_CBX_Status"
-    #!
-	export gcPupSave="${PUPSAVE}"
-	export MGR_ReStart_flg="/tmp/MGR_ReStart.flg"
-    export lcPupHome lcPupSave  lcPupMode
-    export lcPupSaveNameRaw lcPupSaveName lcPupSaveNameDts
-    export lcPupSaveNameTrg lcPupSaveNameSrc gcPupSubDir
+    export gcPupSave="${PUPSAVE}"
+    export MGR_ReStart_flg="/tmp/MGR_ReStart.flg"
     #!
 } #
 export -f Sbr_Sys_PupState
 #!
 #!
 #!
-#(: ===========================================================
-#! Check-Box "CBX"  
-#(: ===========================================================
-#(: fx(Sbr_CBXAR3)       # NOT ACTIVE  Check-Box "CBX"  # External calls
+#(: ================================================================
+#! Check-Box "CBX"  Old Code   ComboBox not implemented in v.8, v.9
+#(: ================================================================
+#(: fx Sbr_CBXAR3       # NOT ACTIVE  Check-Box "CBX"   # External calls
 #(: called by: if [ "${EXIT}" == "CBXARS" ] || [ "${EXIT}" == "CBXARB" ] || [ "${EXIT}" == "CBXARQ" ] ; then
 #(: param:
 #(: purpose:
@@ -5454,307 +6388,320 @@ export -f Sbr_Sys_PupState
 #(:
 #! begin: ( EXIT:'CBX APPLY+')
 #(: begin: check for "APPLY Checks" command   Check-Box "CBX"  # External calls
-#(: fx(FT_EXIT='APPLY_Checks_All_')
-#(: fx(FT_EXIT='CBXARR')
-#(: fx(FT_EXIT='CBXARS')
-#(: fx(FT_EXIT='CBXARB')
-#(: fx(FT_EXIT='CBXAPO')
+#(: fx EXIT='APPLY_Checks_All_'
+#(: fx EXIT='CBXAR3')
+#(: fx EXIT='CBXARS'
+#(: fx EXIT='CBXARB'
+#(: fx EXIT='CBXAPO'
 #!
 #! Fall-Thru Method 
 #!
-#! ############################################################
+#! ===============================================================
+#(: fx IF EXIT:CBXAR3   #! EXIT:CBXARS  #! EXIT:CBXARB #! CBXARQ      #! Not Used 
 #!  via ( EXIT:CBX_APPLY+ )
 #! if [ "$EXIT" = "CBXARS" ] ; then ; n=0 ; fi   # CBX ARS, ARB, ARQ ComboBox
-#! function #! function [EXIT:CBXAR3() #! function [EXIT:CBXARB() #! function [EXIT:CBXARQ()
-#! function Sbr_CBXAR3() {     # NOT ACTIVE  Line 6297
-#!     n=0
-#! if [ ${EXIT} == "CBXARS" ] || [ ${EXIT} == "CBXARB" ] || [ ${EXIT} == "CBXARQ" ] ; then
-#!  		n=0     
-    #(: Apply button NOT CONVERTED to funxtion format 
-    #(: check for prior "APPLY Checks" commands
- 	#(: function ft(FT_EXIT=') [ ${llCBXMASTER} = "1" ]
-    #! NO FUNCTION HERE !
-#! fi	# end: check for "APPLY Checks" command
-#! } #! end: ( EXIT:'CBX_APPLY+')
-#! export Sbr_CBXAR3
+#!
+ #! end: ( EXIT:'CBX_APPLY+')
+#!
 #! =====================================================================
 #!
 #!
 #!
 #! ===========================================================
-#! begin :  Bak---   BakAll   BakOne
-#! begin :  Bak---   BakAll   BakOne
-#! begin :  Bak---   BakAll   BakOne
+#! begin :  Bak---   
+#! Sbr_BakOneArcDts
+#! Sbr_BakAllArcDts_One
+#! Sbr_BakAllArcDts
 #! ===========================================================
-#!
+#! working  function Sbr_BakOneArcDts() {       # ACTIVE  
 #(: ===========================================================
-#(: ft(Sbr_BakOneArcDts)
+#(: fx Sbr_BakOneArcDts
 #(: called by: Page "Main"
 #(: param:
 #(: purpose: Backup/Archive with DTS, only on /Dev /Edit sdir
 #(:     only for "MGR" "Manager" Shell Script
 #(: calls:
-#(: method: 
+#(: method: pull from "EDIT" files.sh  over into "/root/my-applications" 
 #(: sends:
 #(: rationale:
-#(: note : BakAll for ONLY the curret 'MGR.sh' 
+#(: note : BakAll for ONLY the curret 'MGR.sh' but all versions. 
 #(:    into the /Edit developmental subdir 
 #! ##########################################################
-function Sbr_BakOneArcDts() {       # Active  # cleanup the  fnSrc  and  fnTrg 
+function Sbr_BakOneArcDts() {       # ACTIVE  
+    #! cleanup the  fnSrc  and  fnTrg 
     #! [EXIT:guiMgrOneArcDts] [BakOne]
     #!
-    #~ lcMgrFnPre="rc.z_"
-	#~ lcMgrFnVer="${gcMgrVer}"   # -8
-	#~ lcSysNameBase="MGR"         # ${gcSysNameBase}
-    #~ lcSysNameExt=".sh"
-	#~ lcMgrArcFnSrc="${lcMgrFnPre}${lcSysNameBase}${lcMgrFnVer}"
- 
+    #! ================ Not Req for "Bak One Dts "
+     lcTargetSDbase="/mnt/home"
+    #!
+#! pull from initial code : 
     lcSysFnPre="rc.z_"
-	lcSysNameBase="MGR"         # ${gcSysNameBase}
-	lcSysFnVer="-8"     # "${gcMgrVer}"   # -8
+    lcSysNameBase="${gcSysNameBase}"  # "MGR"         # ${gcSysNameBase}
+    lcSysFnVer="-${gcMgrVer}"   # -10
+    lcSysFnVerExt="${gcMgrVerExt}"   # -10.0
     lcSysNameExt=".sh"
-	lcSysArcFnSrc="${lcSysFnPre}${lcSysNameBase}${lcSysFnVer}"
-
+    lcSysArcFnSrc="${lcSysFnPre}${lcSysNameBase}${lcSysFnVer}"
+    #! pull from initial code : 
     #!   
-    lcMgrRealFnSrc="`echo -n "$0" | cut -f 2 -d '/'`" 
+    #! lcMgrRealFnSrc="`echo -n "$0" | cut -f 2 -d '/'`" 
     #! grRealFnsrc="`echo -n "$0" | cut -f -1 -d '/'`"   #  "./MGR-7.sh"
     #! used only in Sbr_BakOneArcDts
     #! *********************************************************
     #!
-    lcMgrArcSubName="${DISTRO_DB_SUBNAME}${gcMgrDevSubId}"	# upupkk, upupbb, upupjj, upupmm+bw
-	lcMgrArcDtsNow="-`date +%y%m%d-%H%M-%S`"
-    #!
-
 #! === MGR Arc+DTS === BackGround ============================
+#!   Yellow / DarkRed
 /usr/lib/gtkdialog/box_splash -fg yellow -bg darkred -border true -close never -text "\
-*.      BakOne  This Shell Script  + DTS  
-*.   -> /mnt/home/MY_/usr-share/My_Dev_/Edit_MGR/arc_Common_dts_sh_/     
+*.    EDIT version :   BakOne  pulls from "EDIT" Shell Script + DTS  
+*.   ->  over into "/arc_Common_dts_" 
+*.   
 *.   
 *.
 *.
-*.
-*.
+*.      Sbr_BakOneArcDts
 *.
 *.
 *.
 *.
 *.   
 *________________________________________________________________________________________" &
-	pidx=$!
-	GTKPIDmgrarcdtsA=$!
+    pidx=$!
+    GTKPIDmgrarcdtsA=$!
     sleep 1
-    # kill ${GTKPIDmgrarcdtsA}
-    Sbr_Splash_It "#(: note : BakAll for ONLY the current 'MGR.sh' 
-        #(: into the /Edit developmental subdir " "green" "yellow" "3"
     #!
-	Sbr_ClearFlagsSystem 0  	### clear lockfile so that ReStart can run.
+    Sbr_ClearFlagsSystem 0      ### clear lockfile so that ReStart can run.
     #!
     #! === duplicate ============================================
-	lcFnSrc="/mnt/home/MY_/usr-share/My_Dev_/Edit_MGR/${lcSysArcFnSrc}.sh"
-    lcFnTrg="/mnt/home/MY_/usr-share/My_Dev_/Edit_MGR/arc_Common_dts_sh_/${lcSysArcFnSrc}-${lcMgrArcSubName}${lcMgrArcDtsNow}.sh"
+    lcMgrArcSubName="${DISTRO_DB_SUBNAME}${gcMgrDevSubId}"  # upupkk, upupbb, upupjj, upupmm+bw
+    lcMgrArcDtsNow="`date +%y%m%d-%H%M-%S`"
+    #! Source is the current "active" MGR source code $0 .
+    lcFnSrc="/mnt/home/MY_/usr-share/My_Dev_/Edit_MGR/${lcSysArcFnSrc}.sh"
+    #! Target Repository of /Edit_MGR/arc_Common_dts_/arc_Common_10_dts_sh_/${lcSysArcFnSrc}-${lcMgrArcSubName}-${gcMgrVerExt}-${lcMgrArcDtsNow}.sh"
+    #! KLM is   /mnt/sdc1 
+    #! lcFnTrg="/mnt/home/MY_/usr-share/My_Dev_/Edit_MGR/arc_Common_dts_/arc_Common_10_dts_sh_/${lcSysArcFnSrc}-${lcMgrArcSubName}-${gcMgrVerExt}-${lcMgrArcDtsNow}.sh"
+    #! simplify to this on SDA1 : 
+    lcFnTrg="/mnt/home/MY_/usr-share/My_Dev_/Edit_MGR/arc_Common_dts_/${lcSysArcFnSrc}-${lcMgrArcSubName}-${gcMgrVerExt}-${lcMgrArcDtsNow}.sh"
     #! ===============================================
     #!   
     echo  "!:  ${lcSysArcFnSrc}"
-	echo  "fr: ${lcFnSrc}"
-	echo  "to: ${lcFnTrg}"
-     #!
+    echo  "fr: ${lcFnSrc}"
+    echo  "to: ${lcFnTrg}"
+     #!   Yellow / Blue
 /usr/lib/gtkdialog/box_splash -fg yellow -bg blue -border true -close never -text "\
-*.  Single MGR file DTS backup
-*.   from:   ${lcFnSrc}
-*.   to:      ${lcFnTrg}
-*." &
-	pidx=$!
-	GTKPIDmgrarcdts=$!
-    sleep 1
-	#!
-        #~ Sbr_Splash_It "---  ${lcMgrFnPre}${lcSysNameBase}${lcMgrFnVer} --- Found & Copy--- " "black" "green" "2" #! -D---
-        #!
-        cp -v ${lcFnSrc} ${lcFnTrg}
-        #!
-        sleep 1
-        Sbr_Splash_It "Done:
-    *.   from:   ${lcFnSrc}                                        .
-    *.   to:      ${lcFnTrg}" "yellow" "black" "2"
-        #!
-        kill ${GTKPIDmgrarcdtsA}
-        kill ${GTKPIDmgrarcdts}
-        #!
-     #!
+    Single MGR file 10_DTS backup
+     from:   ${lcFnSrc}
+     to:     ${lcFnTrg}
+  " &
+    pidx=$!
+    GTKPIDmgrarcdts=$!
+    #!_______________________________
+    cp -v ${lcFnSrc} ${lcFnTrg}
+    #!_______________________________
+    #!
+    sleep 3
+    kill ${GTKPIDmgrarcdtsA}   2> /dev/null   
+    kill ${GTKPIDmgrarcdts}   2> /dev/null   
+    #!
  } # 
 export -f Sbr_BakOneArcDts
+#(: =====================================================
+#! find "$BACKUP_DIR" -type d -name "backup_*" -mtime +30 -exec rm -rf {} \;
+#!
 #!
 #!
 #(: =====================================================
-#(: fx(Sbr_BakAllArcDts_One)
+#(: fx Sbr_BakAllArcDts_One
 #(: called by: Sbr_BakAllArcDts
 #(: param:
 #(: purpose: Backup/Archive with DTS, all Major Edit Shell Scripts
 #(: called by:  Sbr_BakAllArcDts
-#(: method: cp -v -u  
+#(: method: cp -v -u   in this Sbr . 
 #(: sends:
 #(: rationale:  replaces external rc.z_E3R.sh 
 #(: note : todo: IF find /dir, else, mkdir /dir, touch flag file. 
 #(:
-#(: ft Sbr_AllArcDts     # called by: Sbr_BakAllArcDts   # [ BakAll ]
 #! #####################################################
-function Sbr_BakAllArcDts_One() {    #  ACTIVE #  # called by: Sbr_BakAllArcDts    for < BakAll-RS > < BakAll-RB >
+function Sbr_BakAllArcDts_One() {    #  ACTIVE   
+    #! called by: Sbr_BakAllArcDts  from list into /root/myapplications
     n=0 # [ BakAll ]
-    #! param: SubDir ,  FileName 
-	lcSysNameSD="${1}"
-    lcSysFnPre="rc.z_"
-	lcSysNameFN="${2}" 
-    lcSysFnExt=".sh"
-	#! lcSysArcFnSrc="${lcSysFnPre}${lcSysNameFN}"
-	lcSysRealFnSrc="${lcSysFnPre}${lcSysNameFN}"
-    #!  gcSysDevSubId  is  upupkk, upupbb, upupjj, upupmm+bw, else "..."
-    lcSysArcSubName="${DISTRO_DB_SUBNAME}${gcMgrDevSubId}"	
-	lcSysArcDtsNow="-`date +%y%m%d-%H%M-%S`"
     #!
-    #~ lcSysRealFnSrc=${lcSysArcFnSrc}    # !!! will be "rc.z_"  and "MGR" and  ".sh"
-     #!           /mnt/home/MY_/usr-share/My_Dev_/Edit_MGR/rc.z_MGR-7.sh
-	lcFnSrc="/mnt/home/MY_/usr-share/My_Dev_/Edit_${lcSysNameSD}/${lcSysRealFnSrc}${lcSysFnExt}"
+    #! Check-if  and mkdir "/root/my-applications" 
+    #! created via "init" and "profile" 
+    #! to do : "TOUCH" placed in main () 
+    #!
+    #! param: SubDir ,  FileName    lcSysNameSD lcSysNameFN
+    lcSysNameSD="${1}"
+    lcSysFnPre="rc.z_"
+    lcSysNameFN="${2}" 
+    lcSysFnExt=".sh"
+    #! lcSysArcFnSrc="${lcSysFnPre}${lcSysNameFN}"
+    lcSysRealFnSrc="${lcSysFnPre}${lcSysNameFN}"
+    #!  gcSysDevSubId  is  upupkk, upupbb, upupjj, upupmm+bw, else "..."
+    lcSysArcSubName="${DISTRO_DB_SUBNAME}${gcMgrDevSubId}"  
+    lcSysArcDtsNow="-`date +%y%m%d-%H%M-%S`"
+    #!
+    #! format: lcSysRealFnSrc=${lcSysArcFnSrc}    # will be "rc.z_"  and "BaseName" and  ".sh"
+    #!           /mnt/home/MY_/usr-share/My_Dev_/Edit_MGR/rc.z_MGR-7.sh
+    #~ lcFnSrc="/mnt/home/MY_/usr-share/My_Dev_/Edit_${lcSysNameSD}/${lcSysRealFnSrc}${lcSysFnExt}"
+    lcFnSrc="/mnt/home/MY_/usr-share/My_Dev_/Edit_${lcSysNameSD}/${lcSysRealFnSrc}${lcSysFnExt}"
+    #~ Sbr_Splash_It "--- ${lcFnSrc}" "yellow" "green" ".3"       #! -D--- 
     #!
     #! target root/my-applications   RA     is  RootApplicatons
     lcFnTrgRA="/root/my-applications/${lcSysRealFnSrc}${lcSysFnExt}"
-    #! target /mnt/home/MGR-All-Arc-Dts_   MH    is   MainHome 
-    lcFnTrgMH="/mnt/home/MGR-All-Arc-Dts_/${lcSysRealFnSrc}_${lcSysArcSubName}${lcSysArcDtsNow}${lcSysFnExt}"
-    #!
-    echo "======================================="
-    echo "=SRC=:${lcFnSrc}:"
-    echo "=RA=:${lcFnTrgRA}:" 
-    echo "=MH=:${lcFnTrgMH}:" 
-    echo "======================================="
-    #!
-   #! ===== Sbr_BakAllArcDts_One ==========================
-    #!
-    Sbr_Splash_It "--- ${lcFnTrgRA} ---" "yellow" "black" ""       #! -D---   temp
-    #! to do :  Check-if  and touch "RA" 
-    #! "cp -v  "  is  faster  then  "cp -v -u   "   
-	cp -v   ${lcFnSrc} ${lcFnTrgRA}
-    #!
-    Sbr_Splash_It "--- ${lcFnTrgMH} ---" "orange" "black" ""       #! -D---   temp
-    #! to do:   Check-if  and touch "MH" 
-    #! "cp -v  "  is  faster  then  "cp -v -u   "   
-	cp -v ${lcFnSrc} ${lcFnTrgMH}
-    #!
-    echo "======================================="
+    #! --- Sbr_BakAllArcDts_One
+    if [ -f "${lcFnSrc}" ]  ; then 
+/usr/lib/gtkdialog/box_splash -fg yellow -bg blue -border true -close never -text "\
+  BakOne---RA--- ${lcFnSrc} --- into ${lcFnTrgRA}" &
+    pidx=$!
+    GTKPIDmgrarcdtsB=$!
+        echo "=== ${lcFnTrgRA} ======" 
+        cp -v   ${lcFnSrc} ${lcFnTrgRA}
+        #! "cp -v  "  is  faster  than  "cp -v -u   "   
+        sleep .1     #! major time eater
+        kill ${GTKPIDmgrarcdtsB}   2> /dev/null   
+    else
+        Sbr_Splash_It "--- ERROR BakAll --- ${lcFnSrc}:${lcFnTrgRA} --- NOT FOUND --- " "yellow" "black" "7"       #! -D--- 
+    fi
     #!
 } # 
 export -f Sbr_BakAllArcDts_One # called by: Sbr_BakAllArcDts
 #!
 #!
 #(: =====================================================
-#(: fx(Sbr_BakAllArcDts)
+#(: fx Sbr_BakAllArcDts
 #(: called by: Main GUI Fall-Thru
+#(: calls: Sbr_BakAllArcDts_One
 #(: param:
 #(: purpose: Backup/Archive with DTS, all Major Edit Shell Scripts
 #(: called by:
+#(:     should be called by < BakAll-RS > < BakAll-RB > < BakAll-RQ >
 #(: method: cp -v 
 #(: sends:
 #(: rationale:
 #(: note : todo: IF find /dir, else, mkdir /dir, touch flag file. 
-#(:
-#! =====================================
-#(: ft Sbr_BakAllArcDts   to "/mnt/home/MGR-All-Arc-Dts_"
-#(: ft Sbr_E3RAllArcDts   to "/root/my-applications"
 #! =====================================
 #!
 #! #####################################################
-function Sbr_BakAllArcDts() {    #  ACTIVE # should be called by < BakAll-RS > < BakAll-RB >
-	n=0
-    lcTargetSD="/mnt/home/MGR-All-Arc-Dts_"
+function Sbr_BakAllArcDts() {    #  ACTIVE 
+    #! called by < BakAll-RS > < BakAll-RB >
+    n=0
+    #! === Sbr_BakAllArcDts === into  /mnt/home/MGR-All-Arc-Dts_/MGR-ALL-Arc-Dts-flg.tst
+    #! === "IF NOT FILE" CHECK    ;  THEN  make subdir and flag flg ===
+     lcTargetSD="/mnt/home/MGR-All-Arc-Dts_"
     lcTargetSDbase="/mnt/home"
-    #~ Sbr_Splash_It "--- Sbr_Bak_ALL_Arc_dts ---${lcTargetSD}" "yellow" "purple" "3"       #! -D---
     lcMgrArcDtsNow="`date +%y%m%d-%H%M-%S`"
-	Sbr_ClearFlagsSystem 0  	### clear lockfile so that ReStart can run.
+    Sbr_ClearFlagsSystem 0      ### clear lockfile so that ReStart can run.
     #! -D---  ### BackGround ###
 /usr/lib/gtkdialog/box_splash -fg yellow -bg brown -border true -close never -text "\
-*.       Sbr...Bak_All_Dts  
-*. for ALL major 'EDIT' scripts  + DTS  
+*.     Copy ALL major 'EDIT' scripts  + DTS  
+*.     Multi:  MGR, + CTX, + et al, geany.config 
+*.     into /root/applications 
+*.  
+*.  
+*.      Back-ALL-DTS
+*.  
+*.  
+*.  
 *.
-*.
-*.
-*.
-*.
-*.Multi:  MGR, + CTX, + , et al, geany.config 
-_______________________________________________________" &
-	pidx=$!
-	GTKPIDmgrarcdtsA=$!
+*._____________________________________________________
+" &    pidx=$!
+    GTKPIDmgrarcdtsA=$!
     sleep 1
-    #!     "BakAll-Arc-Dts_"     # used by Sbr_BakAllArcDts  and Sbr_BakAllArcDts
-    #! not used consistently # todo: fix 
-    #! 'touch' has required a literal 
-    lcMgrAllArcDtsSN="MGR-All-Arc-Dts_"  # used by Sbr_BakOneArcDts  and Sbr_BakAllArcDts
-    #!
-    #! === Sbr_BakAllArcDts ===
-    #! === IF NOT CHECK   /mnt/home/ flg ;  THEN  make basesubdir flg ===
-    if [ ! -f /mnt/home/MGR-All-Arc-Dts_/MGR-ALL-Arc-Dts-flg.tst ]  ;  then # make one
-        n=0
-        Sbr_Splash_It "--- TOUCH ---${lcTargetSDbase}--- " "yellow" "red" "3"       #! -D---
-        ### checkif and mkdir /mnt/home/MGR-flg/  via "touch" command
-        ### 'touch' has required a literal 
-        touch /mnt/home/MGR-All-Arc-Dts_/MGR-ALL-Arc-Dts-flg.tst # will create or update this Required SubDir
-        lcFnFlg="/mnt/home/${lcMgrAllArcDtsSN}/MGR-ALL-Arc-Dts-flg.tst"
-        echo 'MgrAllArcDts...flag...file' > ${lcFnFlg} # load filename into flag file.
-    else
-        n=0
-        #~ Sbr_Splash_It "--- INIT --- Sbr_Bak_ALL_Arc_dts --- " "yellow" "purple" "3"       #! -D---
-   fi 
+    #!     "BakAll-Arc-Dts_"     
+    #! ================
+    #!     Touch Code used by Sbr_BakOneArcDts
+    #! ================
+    #!  begin "TOUCH"    ===  'touch' has required a literal 
+     lcTargetSD="/mnt/home/MGR-All-Arc-Dts_"
+     lcTargetSDbase="/mnt/home"
+     lcMgrAllArcDtsSN="MGR-All-Arc-Dts_"  # used by Sbr_BakOneArcDts  and Sbr_BakAllArcDts
     #!
     lcFnTrg="/mnt/home/${lcMgrAllArcDtsSN}/rc.z_${lcMgrArcFnSrcFn}-${lcMgrArcSubName}-${lcMgrArcDtsNow}.sh"
     #!
     #! ===== Sbr_BakAllArcDts ==========================
     #! param:         SubDir , FileName ,   TargetSubdir 
+    #! must prefix all file names with "rc.z_" and assume suffix is ".sh"
+    #!
+    lcMntHomeSubDir="/mnt/home/MGR-All-Arc-Dts_"
     lcTargetSD="/mnt/home/MGR-All-Arc-Dts_"
-    #! Sbr_BakAllArcDts_One "MGR"    "MGR"       "/mnt/home/MGR-All-Arc-Dts_"
-    Sbr_BakAllArcDts_One "MGR"    "MGR-6"       "/mnt/home/MGR-All-Arc-Dts_"
-    Sbr_BakAllArcDts_One "MGR"    "MGR-7"       "/mnt/home/MGR-All-Arc-Dts_"
-    Sbr_BakAllArcDts_One "MGR"    "MGR-8"       "/mnt/home/MGR-All-Arc-Dts_"
-    Sbr_BakAllArcDts_One "MCI"     "MCI"         "/mnt/home/MGR-All-Arc-Dts_"
-    Sbr_BakAllArcDts_One "MGS"    "MGS"       "/mnt/home/MGR-All-Arc-Dts_"
-    Sbr_BakAllArcDts_One "E3R"     "E3R"        "/mnt/home/MGR-All-Arc-Dts_"
-    Sbr_BakAllArcDts_One "CTX"     "CTX"        "/mnt/home/MGR-All-Arc-Dts_"
-    Sbr_BakAllArcDts_One "CTU"     "CTU"        "/mnt/home/MGR-All-Arc-Dts_"
-    Sbr_BakAllArcDts_One "CTA"     "CTA"         "/mnt/home/MGR-All-Arc-Dts_"
-    Sbr_BakAllArcDts_One "CTB"     "CTB-SL"    "/mnt/home/MGR-All-Arc-Dts_"
-    Sbr_BakAllArcDts_One "CTB"     "CTB-SLX"  "/mnt/home/MGR-All-Arc-Dts_"
-    Sbr_BakAllArcDts_One "CTB"     "CTB-5.2"      "/mnt/home/MGR-All-Arc-Dts_"
-    Sbr_BakAllArcDts_One "PHB"     "PHB-deb"      "/mnt/home/MGR-All-Arc-Dts_"
-
+    #! -                  SDir     Fn           
+    #!  These are Production Programs 
+    Sbr_BakAllArcDts_One "MGR"    "MGR-5"       "${lcMntHomeSubDir}"
+    Sbr_BakAllArcDts_One "MGR"    "MGR-6"       "${lcMntHomeSubDir}"
+    Sbr_BakAllArcDts_One "MGR"    "MGR-7"       "${lcMntHomeSubDir}"
+    Sbr_BakAllArcDts_One "MGR"    "MGR-8"       "${lcMntHomeSubDir}"
+    Sbr_BakAllArcDts_One "MGR"    "MGR-9"       "${lcMntHomeSubDir}"
+    Sbr_BakAllArcDts_One "MGR"    "MGR-10"       "${lcMntHomeSubDir}"
+    Sbr_BakAllArcDts_One "MGR"    "MGR-11"       "${lcMntHomeSubDir}"
+    #~ Sbr_BakAllArcDts_One "MGR"    "MGR-11.2"       "${lcMntHomeSubDir}"
+    #!
+    #!  These are Production Programs 
+    Sbr_BakAllArcDts_One "MCI"     "MCI"        "${lcMntHomeSubDir}"
+    Sbr_BakAllArcDts_One "S2F"     "saveXflash"          "${lcMntHomeSubDir}"
+    Sbr_BakAllArcDts_One "S2F"     "S2F"          "${lcMntHomeSubDir}"
+    Sbr_BakAllArcDts_One "S2F"     "S2F-1"        "${lcMntHomeSubDir}"
+    Sbr_BakAllArcDts_One "S2F"     "S2F-3"        "${lcMntHomeSubDir}"
+    Sbr_BakAllArcDts_One "CTX"     "CTX"        "${lcMntHomeSubDir}"
+    Sbr_BakAllArcDts_One "CTX"     "CTY"        "${lcMntHomeSubDir}"
+    Sbr_BakAllArcDts_One "CTU"     "CTU"        "${lcMntHomeSubDir}"
+    Sbr_BakAllArcDts_One "CTA"     "CTA"        "${lcMntHomeSubDir}"
+    Sbr_BakAllArcDts_One "CTB"     "CTB"        "${lcMntHomeSubDir}"
+    Sbr_BakAllArcDts_One "CTB"     "CTB-SL"    "${lcMntHomeSubDir}"
+    Sbr_BakAllArcDts_One "CTB"     "CTB-SLX"    "${lcMntHomeSubDir}"
+    Sbr_BakAllArcDts_One "CTB"     "CTB-5.2"    "${lcMntHomeSubDir}"
+    #! PCB Pup Cold Backup via GlenE77is
+    Sbr_BakAllArcDts_One "PCB"     "PCB-ion"        "${lcMntHomeSubDir}"
+    Sbr_BakAllArcDts_One "PCB"     "PCB-ion-Xterm"  "${lcMntHomeSubDir}"
+    #! TXN_EXE via GlenE77is
+    #! Sbr_BakAllArcDts_One "TXN"     "TXN_RUN_CALL"  "${lcMntHomeSubDir}"
+    #! Sbr_BakAllArcDts_One "TXN"     "TXN_RUN_EXE"  "${lcMntHomeSubDir}"
+    Sbr_BakAllArcDts_One "TXN"     "TXN_RUN_EXE-9"   "${lcMntHomeSubDir}"
+    Sbr_BakAllArcDts_One "TXN"     "TXN_RUN_EXE-10"   "${lcMntHomeSubDir}"
+    #!
+    Sbr_BakAllArcDts_One "BIS"     "BIS"   "${lcMntHomeSubDir}"
+    #! #! GTK_Toggle via GlenE77is  #! toggle used in MGR-9, but NOT in MGR-11 !
+    #! Sbr_BakAllArcDts_One "GTK"     "GTK_Toggle_Menu" "${lcMntHomeSubDir}"
+    #! Sbr_BakAllArcDts_One "GTK"     "Button_Rounded" "${lcMntHomeSubDir}"
+    #! /initrd/mnt/dev_save/MY_/usr-share/My_Dev_/Edit_GTK/GTK_Toggle_Menu.sh in MGR-9 , but NOT in MGR-11 .
     #! === geany.conf Special Hard Code Arc+DTS =========================
     #! === geany.conf Special Hard Code Arc+DTS =========================
     #! === geany.conf Special Hard Code Arc+DTS =========================
-	lcMgrArcDtsNow="-`date +%y%m%d-%H%M-%S`"
-	lcSysArcFnSrc="Geany.conf"
+    lcMgrArcDtsNow="-`date +%y%m%d-%H%M-%S`"
+    lcSysArcFnSrc="Geany.conf"
     #!
-	lcFnSrc="/root/.config/geany/geany.conf"
-	lcFnTrg="/mnt/home/${gcMgrAllArcDtsSN}/geany.conf-${lcMgrArcDtsNow}.sh"
-	#!
-	Sbr_Splash_It " ${lcFnTrg} " "yellow" "blue" ""     #! -D---
-	#! from MGR(with suffixed surname)
-	cp -v ${lcFnSrc} ${lcFnTrg}
-	#! out to arc_MGR_dts_sh_
-	#!
-    #! Sbr_BakAllArcDts special image
-    #! "Lxgen_" this needs to be an embedded image.   Standard image for "MGR" .   Else "system" image. 
-	lcFnSrcBase="Lxgen_"
-	lcFnSrc="/mnt/home/MY_/usr-share/My_Dev_/Edit_MGR/d_Lxgo_/${lcFnSrcBase}.jpg"
-    lcFnTrg="/root/my-applications/${lcFnSrcBase}.jpg"
+    lcFnSrc="/root/.config/geany/geany.conf"
+    lcFnTrg="/root/my-applications/${lcFnSrcBase}"
+    cp -v   ${lcFnSrc} ${lcFnTrg}
     #!
-	cp -v  ${lcFnSrc} ${lcFnTrg}
+    #! ==================================================================
     #!
-    #! Sbr_BakAllArcDts special image
-    #! "Lxgen_" this needs to be an embedded image.   Standard image for "MGR" .  Else "system" image. 
-	lcFnSrcBase="Dxstro_"
-	lcFnSrc="/mnt/home/MY_/usr-share/My_Dev_/Edit_MGR/d_Lxgo_/${lcFnSrcBase}.jpg"
-    lcFnTrg="/root/my-applications/${lcFnSrcBase}.jpg"
+    #! ==================================================================
+    #! /menu.lst current code.  because code may be modified 
+    lcFnSrcBase="menu.lst"
+    lcFnSrc="/mnt/home/${lcFnSrcBase}"
+    lcFnTrg="/root/my-applications/${lcFnSrcBase}"
     #!
-	cp -v   ${lcFnSrc} ${lcFnTrg}
+    cp -v   ${lcFnSrc} ${lcFnTrg}
     #!
     #! =====================================================
-    #! on return, then Sbr_Cbx_ReStart 1
-    sleep .3
-	kill ${GTKPIDmgrarcdtsA}    # main
+    #! /ETC/rc.d/rc.shutdown    because code may be modified 
+    lcFnSrcBase="rc.shutdown"
+    lcFnSrc="/etc/rc.d/rc.shutdown"
+    lcFnTrg="/root/my-applications/${lcFnSrcBase}"
+    #!
+    cp -v   ${lcFnSrc} ${lcFnTrg}
+    #!
+    #! =====================================================
+    #! /ETC/rc.d/rc.sysinit    because code may be modified 
+    lcFnSrcBase="rc.sysinit"
+    lcFnSrc="/etc/rc.d/rc.sysinit"
+    lcFnTrg="/root/my-applications/${lcFnSrcBase}"
+    #!
+    cp -v   ${lcFnSrc} ${lcFnTrg}
+    #!
+    #! =====================================================
+    #! on return, then Sbr_Cbx_ReStart 1  ??? or return control 
+    sleep .9
+    kill ${GTKPIDmgrarcdtsA}    2> /dev/null      # main
     #!
     #! fi # end: guiMgrAllArcDts
 } # end  
@@ -5769,196 +6716,53 @@ export -f Sbr_BakAllArcDts
 #!
 #!
 #!
-#(: =====================================================
-#(: fx Sbr_Splash_Quit()
-#(: called by: Main GUI "QUIT Program"
-#(: param:
-#(: purpose: "QUIT" program has banner.
-#(: calls:
-#(: method:
-#(: sends:
-#(: rationale:
-#(: note : 
-#(:
-#! #####################################################
-    function Sbr_Splash_Quit() { 
-        #!
-        echo
-        echo
-        echo "*======== MGR_Main-Quit ========*"  
-        lcMsgStr0=$1
-        #!
-        echo
-        echo
-        lcMsgStr="SDT*===->->-> ${lcMsgStr0} ===*SDT"    # text fg mrg
-        Sbr_Str2DevTrm "$lcMsgStr" "7" "7" 
-        Sbr_Str2DevTrm "$lcMsgStr" "6" "6" 
-        Sbr_Str2DevTrm "$lcMsgStr" "5" "5" 
-        Sbr_Str2DevTrm "$lcMsgStr" "4" "4" 
-        Sbr_Str2DevTrm "$lcMsgStr" "3" "3" 
-        Sbr_Str2DevTrm "$lcMsgStr" "2" "2" 
-        Sbr_Str2DevTrm "$lcMsgStr" "1" "1" 
-        Sbr_Str2DevTrm "$lcMsgStr" "2" "2" 
-        Sbr_Str2DevTrm "$lcMsgStr" "3" "3" 
-        Sbr_Str2DevTrm "$lcMsgStr" "4" "4" 
-        Sbr_Str2DevTrm "$lcMsgStr" "5" "5" 
-        Sbr_Str2DevTrm "$lcMsgStr" "6" "6" 
-        Sbr_Str2DevTrm "$lcMsgStr" "7" "7" 
-        echo 
-        if [  -f   ${gcEmGaImgFnTrgTxtMaster} ] ; then 	# build EGI files in /tmp
-            n=0   
-            echo    # ShowBanner
-            lcMsgStr="===... clearing EmGrImg ...==="
-            Sbr_Splash_Banner "$lcMsgStr" "32m" "35m" #& sleep .5
-            Sbr_Splash_Banner "$lcMsgStr" "33m" "33m" #& sleep .5
-            Sbr_Splash_Banner "$lcMsgStr" "35m" "35m" #& sleep .5
-            echo
-            rm ${gcEmGaImgFnTrgTxtMaster}
-            sleep .1
-        fi
-         #! colorful rainbow splash for FALL-THRU trap for 'loose' code.  Str, Mgn, Color
-         lcMsgStr="======================================= "  &&     Sbr_Str2DevTrm "$lcMsgStr" "3" "5"
-        DISTRO_NAME_Z="Alpha:"$(echo $DISTRO_NAME | tr -dc 'A-z')
-        lcMsgStr="=== Orig ${DISTRO_NAME_Z} "  &&     Sbr_Str2DevTrm "$lcMsgStr" "3" "7"
-        DISTRO_NAME_Z="Numbers:"$(echo $DISTRO_NAME | tr -dc '0-9')
-        lcMsgStr="=== Orig ${DISTRO_NAME_Z} "  &&     Sbr_Str2DevTrm "$lcMsgStr" "3" "7"
-        lcMsgStr="  " && Sbr_Str2DevTrm "$lcMsgStr" "2" "5"
-         lcMsgStr="======================================= "  &&     Sbr_Str2DevTrm "$lcMsgStr" "3" "5"
-} # end
-export -f Sbr_Splash_Quit
 #!
-#!
-#!
-#! ######################################################
-#! ######################################################
-#! ######################################################
-#!
-#!  ## all function ( ) moved to top of code
-#(: ## all GUI EXIT to "IF/fi" Selection are moved to bottom of code, "Fall-Thru" method
-#(:
-#! ######################################################
-#! ######################################################
-#! ######################################################
-#!
-#!
-#!
-#!
-#! ######################################################
-#! ######################################################
-#! ######   start  M.A.I.N.(.).  #####################################
-#! ######################################################
-#! ######################################################
-#!
-#!
-#(: ======================================================
-#(: fx(MGR_Main)    # main()
-#(: called by:
-#(: param:
-#(: purpose:
-#(: calls:
-#(: method:
-#(: sends:
-#(: rationale:
-#(: note :
-#(:
-#=== MAIN ====================================================
-
-#! Terminal Screen Only.
-lcMsgStr=". . . . . . .  `date +%y-%m-%d--%H%M-%S`. . . . . . . ."  
-Sbr_Str2DevTrm "${lcMsgStr}" "1" "0" 
-lcMsgStr="       :main === RUNNING === main:"
-Sbr_Str2DevTrm "${lcMsgStr}" "2" "4" "1"
-lcMsgStr="     ###  ${0} main() begins   ### "
-Sbr_Str2DevTrm "${lcMsgStr}" "5" "0" "1"
-
-#! =======================================================================
-#! =======================================================================
-#! Check If for installed System Mode
-#(: function if [ "$MODE" = "12" ] || [ "$MODE" = "13" ]; then # frugal install
-MODE="`grep PUPMODE /etc/rc.d/PUPSTATE | cut -f 2 -d "="`"
-if [ "$MODE" = "12" ] || [ "$MODE" = "13" ]; then
-    n=0
-else 
-    lcMsgStr="MODE is not FRUGAL mode '12' or '13' " 
-    lcDialogColor="  -fg black -bg red  "
-    Sbr_Splash_It " $lcMsgStr " "black" "red" "5"   #! -D---
-    exit 1
-fi
-#: end: fi [ "$MODE" = "12" ] || [ "$MODE" = "13" ]; then
-
-#!
-touch /0-MGR-LogIn-DTS  # this call should be first  / in main ( ) 
-#!
-Sbr_Sys_SetVerDts # this call should be first  / in main ( ) 
-#!
-Sbr_CDW_Embedded_Dialog_Colors		# setup color constants
-#!
-Sbr_CDW_EGI_CheckIF		# Check Graphic Images 
-#!
-#! Sbr_Page_Init    # check / control the Paged GUI ,   was for V.6  page system.   V.7 has Indepdent Floating pages.
-#!
-#;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-#(: ARB_init  : 
-#(: purpose:config controls  menu.lst # during main run ( )
-#(: method:
-#(:    (1) read existing config for OS "Idd",
-#(:    (2) install generic "full enough" "SHORT" MENU.lst
-#(:         with default "0,1,2,3,4" matching config "Idd"
-#!
-Sbr_ARB_Init   # # # must be in main ( ) # read config init for "ARB" config
-#!
-lcMsgStr="=== PupState === " && Sbr_Str2DevTrm "$lcMsgStr" "2" "3"
-Sbr_Sys_PupState   ### Gather the "state" variables from OS
-#!
-#!
+function Sbr_Sys_LockFile() {
 #(: ======================================================
 #(: begin LOCK-FILE
 #(: Rationale: Lock-File "Soft" Version
 #(: MGR is a Master Conrol program.
 #(: MGR must have a 'LockFile' to control for "Run-Twice".
 #(: ======================================================
-#(: ft("LockFile") not written as a "funxtion" LockFile subroutine
+#(: fx "LockFile" not written as a "function" LockFile subroutine
 #(: called by: main () as "in-line code" ,
-#(:		so that "exit 0" is immediate, from top of "0" empty stack.
-#(: param:
+#(:     so that "exit 0" is immediate, from top of "0" empty stack.
 #(: purpose: provides a "Soft-Lock" method.  IF error, THEN continue .
-#(: calls:
-#(: method:
-#(: sends:
-#(: rationale:
-#(: note :
 #(:
 #! begin lock-file section ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
     #(: generate the name of the 'lock-file' in 'export' section.
-    lcMsgStr="=== Lock-File === " && Sbr_Str2DevTrm "$lcMsgStr" "2" "3"
-	#(: begin Lock-File Section =======================================
-	#(: if previous lockfile is found, then throw a flag, cleanup, possibly exit '1'.
-	#(: remember, we have written a "Soft-Lock"
-	if [ -f ${MGR_LockFile} ]; then      #: this is Main () lockfile
-		lcMsgStr=" Error: Soft LockFile Control
-  		  !!! MGR_Running_Already !!!
-	  	  ... (1) Quit MGR program
-		  ... (2) Clear Running MGR window
-		  ... (3) Re-Start MGR program
-		  ... (4) however, always, MGR program will continue (Soft Lock)
-		#(: IF Hard-Lock code, THEN  ${MGR_LockFile} can prevent re-running program.
-		#(: IF Soft-Lock  code, THEN  program allows Continue through a non-fatal error. 
+    #(: begin Lock-File Section =======================================
+    #(: if previous lockfile is found, then throw a flag, cleanup, possibly exit '1'.
+    #(: remember, we have written a "Soft-Lock"
+    #! ##############################################################
+    n=0
+    if [ -f ${MGR_LockFile} ]; then      #: this is Main () lockfile
+        lcMsgStr=" Error: Soft LockFile Control
+          !!! MGR_Running_Already !!!
+          ... (1) Quit MGR program
+          ... (2) Clear Running MGR window
+          ... (3) Re-Start MGR program
+          ... (4) however, always, MGR program will continue (Soft Lock)
+        #(: IF Hard-Lock code, THEN  ${MGR_LockFile} can prevent re-running program.
+        #(: IF Soft-Lock  code, THEN  program allows Continue through a non-fatal error. 
         #(: ideally,
         #(: user will clear lingering lockfile, manually, immediately, 
         #(: then restart program."
-		xmessage  -name 'MGR_Soft-Lock-'  -timeout 1  -center   -fg yellow  -bg brown  "${lcMsgStr}"
-		#(: Note on "Lock-File" method at end of source code.
-		#(:
-	else
-		lcMsgStr=" =  Config File Not Found  :[ -f ${MGR_LockFile} ]: " && Sbr_Str2DevTrm "$lcMsgStr" "3" "3"
-	fi
-	#!
+        xmessage  -name 'MGR_Soft-Lock-'  -timeout 1  -center   -fg yellow  -bg brown  "${lcMsgStr}"
+        #(: Note on "Lock-File" method at end of source code.
+        #(:
+    else
+        n=0
+        #! lcMsgStr=" =  Lock File Not Found  :[ -f ${MGR_LockFile} ]: " && Sbr_Str2DevTrm "$lcMsgStr" "3" "3"
+    fi
+    #!
     #(: ->->-> begin set lock-file
-	#(: Always !
+    #(: Always !
     #(: so Otherwise , SET the lock-file, during this program run.
     touch "${MGR_LockFile}"   # Always ! for "Soft Lock" 
     #(: remove this lockfile at end of "QUIT", bottom of code.
     #!
+    #! end: Sbr_LockFile
     #(:
     #(: 
     #! #####################################################
@@ -5970,57 +6774,51 @@ Sbr_Sys_PupState   ### Gather the "state" variables from OS
     #(:    and will not exit program. 
     #(: THEREFORE must pass back a RETVAL flag of '1' to trigger another 'exit'
     #(: Note: This is a BASH system stack '0' concern,
-    #(:		Controlled by manually placing 'Check Lock-Flag' at stack base level '0'.
+    #(:     Controlled by manually placing 'Check Lock-Flag' at stack base level '0'.
     #(:
-#(: end LOCK-FILE section
+} # end Sbr_Sys_LockFile
+export -f Sbr_Sys_LockFile
 #! ######################################################
+#(: ======================================================
+#(: fx Sbr_Sys_CheckMode
+#(: called by:  main ()
+#(: param:
+#(: purpose:  
+#(: Check for installed System Mode
+#(:      if [ "$MODE" = "12" ] || [ "$MODE" = "13" ]; then # frugal install
+#(: calls:
+#(: method:
+#(: sends:
+#(: rationale:
+#(: note :
+#(:
+#!
+function Sbr_Sys_CheckMode() {
+#!
+n=0
+#! Check for installed System Mode
+#(: function if [ "$MODE" = "12" ] || [ "$MODE" = "13" ]; then # frugal install
+        MODE="`grep PUPMODE /etc/rc.d/PUPSTATE | cut -f 2 -d "="`"
+            if [ "$MODE" = "12" ] || [ "$MODE" = "13" ]; then
+                n=0 #! initial "Running" splash, yellow/black, quick  !
+            else 
+                lcMsgStr="ERROR:    MODE is not FRUGAL mode '12' or '13' " 
+                lcDialogColor="  -fg black -bg red  "
+                #! rolling splash "ERROR"
+                Sbr_Splash_It " $lcMsgStr " "red" "blue" "2"   #! -D---
+                Sbr_Splash_It " $lcMsgStr " "orange" "green" "3"   #! -D---
+                Sbr_Splash_It " $lcMsgStr " "yellow" "red" "5"   #! -D---
+                exit 1
+            fi
+return
+} # end Sbr_Sys_CheckMode() 
+export -f Sbr_Sys_CheckMode
 #!
 #!
-#!
-#!=====================================================
-#! ### begin Fall-Thru  "initz" 
-#!=====================================================
-#!
-#! MGR_CBXstatus for status of ComboBox column "1"
-if [ -f "${MGR_CBXstatus}" ]; then
-    rm -f "${MGR_CBXstatus}"
-    export lcCBXstatus="   ...Applied..."
-else
-    export lcCBXstatus="   ,,,,,,ready,,,,,,   "
-fi
-#
-#
-#
-#! Test IF  "C3M CONFIG ARB" ,  under development
-#! working C3M CONFIG ARB
-if [ -f ${gcMgrArbCfgFn} ] ; then
-    n=0
-    gcMgrArbCfgFn="/root/my-applications/bin/C3M_Config_Arb"   # ASSIGNED fx(Sbr_Sys_PupState)
-    gcMGRConfigArbIdd=`cat ${gcMgrArbCfgFn}`   #  extract and export Idd
-    echo "gcMGRConfigArbIdd:${gcMGRConfigArbIdd}:"
-    #! Sbr_Splash_It "${gcMgrArbCfgFn}:${gcMGRConfigArbIdd} Found---" "orange" "purple" "1"   #! -D---
-else    #  NO Config value
-    n=0
-    touch ${gcMgrArbCfgFn}
-	gcMGRConfigArbIdd="---"
-    Sbr_Splash_It "${gcMgrArbCfgFn}:${gcMGRConfigArbIdd} Config File NOT Found---" "orange" "purple" "3"   #! -D---
-fi	#
-#! working C3M CONFIG ARB
-# working test
-	#~ echo "ID: gcMGRConfigArbIdd : ${gcMGRConfigArbIdd}:"
-	#~ echo "FN: ${gcMgrArbCfgFn} : "
-#! exit
-#!
-#!=====================================================
-#! ### end: Fall-Thru  "initz" 
-#!=====================================================
-#!
-#!
-#!
-    #! ------------------------------------------------------------------------------
+    #! function Sbr_Sys_ImgMaster----------------------------
     #! ------------------------------------------------------------------
     #!=====================================================
-    #(: fg(MGR_Master_GUI=)   #: A
+    #(: fx(MGR_Master_GUI=)   #: A
     #(: called by: main program via fall-thru
     #(: param: only the Fall-Thru <ACTION> sub-name .
     #(: purpose: Master gtkdialog XML Menu structure.
@@ -6035,37 +6833,37 @@ fi	#
     #(: sends: "EXIT" = choice
     #(: rationale:
     #(: note :
-    #(: 	this width=1500 works good on UpupBB. Other Distro may require adjustment or default theme.
+    #(:     this width=1500 works good on UpupBB. Other Distro may require adjustment or default theme.
     #(:
     #(: note:
     #(: Standard Gui Button Call Method is TWO-STEP:
-    #(:  (1) gui-Buttons "call" to a "Fall-Thru funxtion written as ft("IF/FI") (in lower part of source).
-    #(:  (2) "IF/FI" funxtions then call regular subroutine funxtion() (at top of code).
+    #(:  (1) gui-Buttons "call" to a "Fall-Thru function written as ft("IF/FI") (in lower part of source).
+    #(:  (2) "IF/FI" functions then call regular subroutine function() (at top of code).
     #(: EXAMPLE:  button "MntAll" is <action>'EXIT:MNT+'</action>
     #(: which will exit and fall-thru to "ft( 'EXIT:MNT+' )"
-    #(: which will then call "funxtion Sys_MGR_pMount()" (written in top part of source).
+    #(: which will then call "function Sbr_MGR_pMount()" (written in top part of source).
     #(: This is the Standard Method written into this Main Gui,
     #(:   which allows parameters to be sent to complex sub-routines .
     #(:   which avoids lack of parameter passing in the gui Button gtkdialog process.
     #(:
+    
 #! begin: Test before possible ReStart so MGR is initialized without duplicate loading of images to /tmp .
-if [ ! -f ${gcEmGaImgFnTrgTxtMaster} ] ; then   # this is a First-Time-Run  and  Requires ReStart.
+if [ ! -f ${gcEmGaImgFnTrgTxtMaster} ] ; then   # NO flag " gcEmGaImgFnTrgTxtMaster " 
+    #!      so, this is a First-Time-Run  and  Requires TOUCH Flag and ReStart.
     lcMsgStr="->->->=== First Time Run ==="     # && Sbr_Str2DevTrm "$lcMsgStr" "5" "4"
     #! Sbr_Splash_It ${lcMsgStr} "orange" "purple" "1"    #! -D---
-    # Given: not file, Then: touch one. 
-    # Generate a ReStart Message for First Time Run .  ??? MGR_ReStart_flg ???
+    #! Given: not file, Then: touch one. 
+    #! Generate a ReStart Message for First Time Run .  ??? MGR_ReStart_flg ???
+    #! TOUCH EmGaImg FnTrgTxt Master
     touch ${gcEmGaImgFnTrgTxtMaster}  # make one, so gui lcGuiFrameTitle can test .
-    Sbr_Cbx_ReStart  1  # no wait # ReStart so GEANY is initialized proper.
-else    # this is NOT a First-Time-Run, therefore Do Not ReStart.
-    # simple background message
+    Sbr_Cbx_ReStart 1  # no wait # ReStart so GEANY is initialized proper.
+else    # this is NOT a First-Time-Run, we have flag " gcEmGaImgFnTrgTxtMaster "  therefore Do Not ReStart.
     lcMsgStr="->->->=== No ReStart Required ==="
     #! Sbr_Splash_It ${lcMsgStr} "orange" "purple" "1"    #! -D---
     #! sleep .3
 fi #
 #! end: Test before possible ReStart so MGR is initialized without duplication of images to /tmp
-###
-### MGR 
-###
+#! export -f Sbr_Sys_ImgMaster
 ########################################################
 #!
 #! problem: in some Puppy OS, 
@@ -6077,683 +6875,1455 @@ fi #
 #!      run gui test on each OS:__________Menu # __Distro Sub Name  
 #!
 #! GTK main XML gui is dependent on system screen-size, theme , font size. 
-#!Generally, the"default" theme, and the "default" character size works,
+#!Generally, the"default" theme, and the "default" character size works OK.
 ########################################################
-#! run gui test on each OS:__________Menu # __Distro Sub Name  
-#! export lcGuiWidthRequest="1730"		# 2 "upupKK" Raleigh theme
-#! export lcGuiWidthRequest="1730"		# 1 "upupBB" K:4 Rustic theme
-#! export lcGuiWidthRequest="1380"		# 1 "upupBB" K:5 Rustic theme
-#! export lcGuiWidthRequest="1730"		# 2 "upupJJ" ? theme
-#! export lcGuiWidthRequest="1630"		# 3 "upupFF"
-#! export lcGuiWidthRequest="1630"		# 4 "slacko14.2"  "S7" 
-#! export lcGuiWidthRequest="1650"		# 5 "tahr"  tahr-6.0.6
-#! export lcGuiWidthRequest="1700"		# 6 "xenial64"   "Xenial-64-750"  X64-750
-#! export lcGuiWidthRequest="1870"		# 7 "upupii+d"   "UpupII" ImpishIndra
-#! export lcGuiWidthRequest="1680"		# 8 "slacko1564.0 K:5"
-#! export lcGuiWidthRequest="1870"		# 9 "slacko14.2"
-#! export lcGuiWidthRequest="1880"		# 10 "xenial"
-#! export lcGuiWidthRequest="1830"		# 11 "slacko14.2"	Slacko-LxSc-20.01
-#! export lcGuiWidthRequest="1830"		# 12 "april" buggy  XXX
-########################################################
-
-#! ## top MAINGUI  ### INIT ####################################
-#! ${gcMgrDistroName}  
-#! Primary "Window" title
-#! Secondary "Frame" title 
-export lcGuiSplT0="${gcMgrDevId}"
-export lcGuiSplT1="<span color='"'$lcGuiColorred'"'><b>'"{${gcMgrDevId}"'}</b></span>"	# not used 
-export lcGuiSplT2="<span color='"'$lcGuiColorgrn'"'><b>'"${gcSysSave}"'}</b></span>"	# not used 
-export lcGuiSplT3="<span color='"'$lcGuiColorgrn'"'><b>'"${gcSysSaveFn}"'}</b></span>"	# not used 
-export lcGuiSplT4="<span color='"'$lcGuiColorgrn'"'></b></span>"	# not used 
-
-#! === Pre-Set =====================================================
-    #! <window dimensions must be hard-code.
-    #! <window dimensions must be hard-code.
-    #! <window dimensions must be hard-code.
-#~ export      lcGuiWidth="1450"
-#~ export      lcGuiHeight="900"
-#~ export      lcGuiTheme="default"
-#~ export      lcGuiChar="128"
-#~ export      lcGuiVert="1"  # control number of vertical bars / spacers / vseperators to match OS settings. 
-
 #!
-#! Test Setup, to control GTK XML screen size. 
-#! Here, test methods to control different OS setups on screen size and font size and theme .
+#(: ================================================================
+#(: fx PXB_Splash_It    # ACTIVE  #  copy from "CTB" "MCI" "MGR" 
+#! Standard PXB_Splash_It : param "Str" "fg" "bg" "sleep" "opt"
+#(: called by:  
+#(: param:  "Str" "fg" "bg" "sleep" "opt"
+#(: purpose: Standard MGR PXB_Splash_It
+#(: method:  /usr/lib/gtkdialog/box_splash
+#(: sends:
+#(: rationale:
+#(: note : 
+#(: ================================================================
+#(: inside of Sbr_PXB_INT
+#=======================================================================
+function PXB_Splash_It() {   # ACTIVE  copy from MGR : auth : gae 
+    #!  Standard Sbr_Splash_It : param "Str" "fg" "bg" "sleep" "opt"
+        n=0 
+    lcMsgStr="$1"
+    lcMsgColorFg="$2"   # ForeGround
+    if [ ! $2  ] ; then lcMsgColorFg="yellow" ; fi  # good default 
+    #!
+    lcMsgColorBg="$3"   # BackGround
+    if [ ! $3  ] ; then lcMsgColorBg="blue"  ; fi  # good default
+    #!
+    #! gather "sleep" param 
+    lcMsgSlp="$4"       
+    if [ ! $4 ] ; then  lcMsgSlp="1" ; fi   #!  < 1  usually does not make it to the screen, timing issues. 
+    if [ "0" -eq $4 ] ; then  lcMsgSlp=".5"  ; fi  #! < .5  usually does not make it to the screen, timing issues. 
+    #! else keep the sleep param as sent originally 
+        #! -D---
+    /usr/lib/gtkdialog/box_splash -fg ${lcMsgColorFg} -bg ${lcMsgColorBg} -border true  -close never -text "${lcMsgStr}     " &
+        RETVAL=$?
+        GTKPID_Splash_It=$!
+        sleep ${lcMsgSlp}
+    if [ ! $5 ] ; then  #! IF   " No Option #5 " ;   THEN   kill pid now. 
+        kill ${GTKPID_Splash_It}   2> /dev/null   
+    fi    
+    } #
+    export -f PXB_Splash_It
+    #!
+    #(: inside of Sbr_PXB_INT
+    #!
+#=======================================================================
+function PXB_Splash_Wait() {   # ACTIVE : thanks to author: mow 
+    #!   : generates RunTime BIG Splash, with lingering-time  splash. 
+#! PXB_Splash_Wait "${lcMsgStr}"    2> /dev/null   #  will kill ${GcPidSplashWait}  later
+#!
+    /usr/lib/gtkdialog/box_splash -fg yellow -bg purple -border true -close never \
+    -text "  ${1}   
+    .                          " &
+#! will wait for TarOpt RunTime process, then kill. 
+export GcPidSplashWait=$!
+echo "=== (_Splash_Wait_)_${GcPidSplashWait}_===" #! terminal trace
+} # end: PXB_Splash_Wait
+export -f PXB_Splash_Wait
+#!
+#=======================================================================
+#(: inside of Sbr_PXB_INT
+function PXB_CleanUp() {    # ACTIVE    #! dupe of Clear_Flag_System ?
+    n=0 # 2> /dev/null 
+    rm -f /tmp/gtkdialog_splash_border.svg 2> /dev/null 
+    rm -f /tmp/gtkdialog_splash_bg.svg 2> /dev/null 
+    rm -f /tmp/gtkdialog_splash_bg.svg 2> /dev/null 
+    rm -f /tmp/snapmergepuppy-error 2> /dev/null 
+    rm -f /tmp/flagnextpassthru 2> /dev/null 
+} # end: fx(PXB_CleanUp)
+export -f PXB_CleanUp
+#!
+#;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+#;;; TarGzBackIt ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+#;;; TarGzBackIt ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+#;;; TarGzBackIt ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+#! REQUIRED: === PXB_TarGzBackIt ========================================================
+#(: inside of Sbr_PXB_INT
+#;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+function PXB_TarGzBackIt() {   # PXB_TarGzBackIt  # $PBKP_PUPSAVE_PATH $PXB_BackUp_PATH
+#;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+    n=0
+    #! lcParam1="$PBKP_PUPSAVE_PATH"
+    #! lcParam2="$PXB_BackUp_PATH"
+    #! sequence of these modules is critical in order to provide req var for splash !
+    echo ""
+    echo "(TarGz)" && echo ""
+    echo "( PXB_INT ) ==="  # > /dev/console
+    #! original PHB Calc PBKP_MBrequired()  # saveDATA fileSIZE  via $1 [$PBKP_PUPSAVE_PATH]
+    pxba=$(du -c -m -s "$1")   
+    #! -c = --total, -m = --block-size=1m, -s = --summarize
+    read -r pxbab pxba <<< "$pxba"
+    #! RAM space required is size of Src_DATA  entity. 
+    lcMBreq="${pxbab}"
+    #! === PCB Time Length of TarGz process === at 2.8 GHz === "
+    let  lcTimeReq32="${lcMBreq} / 3"  
+    let  lcTimeReq64="${lcMBreq} / 6"  
+    #!
+    #! orig: destfile=".${2}"/"`expr "${1}" | awk -F / '{print $NF}'`".${gcPXBBackUpId}-`date +%Y.%m.%d_%H%M.%S`
+    #! destfile is the 'base' of the SaveFILE name   "$PBKP_PUPSAVE_PATH"  / "$PXB_BackUp_PATH"
+    #! awk $NF prints only the last column in a record
+    destfile=".${2}"/"`expr "${1}" | awk -F / '{print $NF}'`"-${gcPXBBackUpId}-`date +%y%m%d_%H%M.%S`
+    #! $NF refers to the last field in a given record
+    echo  "=== $destfile ==="
+        CWDIR=$PWD      # save "P"rocess "W"orking "D"irectory /root  (optional)
+        echo "### (TarGz) save 'home dir' PWD is ${PWD} === "   && echo "" #! 
+        sync    # now run sync
+        #!
+        #! >>> CD === 
+        cd ${1%/*}  
+        echo "###_CD_### (TarGz) running on /saveDATA  ${1%/*} === "  && echo ""  #! change dir to  "/saveDATA"  
+        #! PHB_Tar-Var-Set loading 
+        TAROPT="-z"
+        TAREXT='.tar.gz'
+        TAROPT="-c -z --checkpoint=1000" 
+        destfile=${destfile}${TAREXT} 
+        echo ": PXB_Splash_Wait (${gcPXBRunId}) :  "
+#! sequence of these modules is critical in order to provide req var for splash !
+#! Splash_Wait is from "mow", thank you !
+#! his "Splash-Wait" stays on screen until Tar.Gz is done. 
+        PXB_Splash_Wait "(${gcPXBRunId}__${gcPXBDevDob}) 
+  .
+  .      PXB_Internal_ 
+  .    ' ionice -c 1 tar -c -z  '   
+  .
+  .   --- Creating   Tar.Gz  ---
+  .   --- SaveDATA size: ${lcMBreq} MB
+  .   --- Please Wait ---
+  .   --- ... ${lcTimeReq32} seconds on 32bit
+  .   --- ... ${lcTimeReq64} seconds on 64bit
+  .
+  . Source: 
+  ${gcPXBSave} 
+  .  
+  . Target: (into same subdir as Source)
+        ${destfile##*/}
+  .  "
+        destfile=${destfile}  
+        sourcefile=${1##*/}
+#;;; ionnice -c 1  realtime     
+#;;; ionnice -c 2  best effort  
+#=== nice TarGz ======================================================================
+   ionice -c 1 tar ${TAROPT} -f  ${destfile##*/}  ${1##*/}/   --checkpoint=1000
+#=== nice TarGz ======================================================================
+#;;; ionnice -c 1  realtime      
+#;;; ionnice -c 2  best effort  
+        cd "$CWDIR"  # change dir back to original   (optional) 
+        echo "###_CD_### (TarGz) restore 'home dir' $CWDIR ===" && echo ""
+        RETVAL=$?
+        sleep 3
+        kill ${GcPidSplashWait}     2> /dev/null    # Big Red Background Splash   
+} #
+export -f PXB_TarGzBackIt
+#;;; end TarGzBackIt ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+#;;; end TarGzBackIt ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+#;;; end TarGzBackIt ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+############################## Primary Call ###############################
+
+
+
+############################## PCB EXTernal ###############################
+#(: ========================================================
+#(: fx IF EXIT:guiSbr_PCB       #! Not Called !!! 
+#(: called by: Page "UTIL" for external "/initrd/mnt/dev_save/MY_/usr-share/My_Dev_/Edit_PCB/rc.z_PCB-ion.sh"
+#(: param:
+##(: purpose: Backup/Archive with DTS, PupColdBackup ionice -c 1 
+#(: calls:
+#(: method:
+#(: sends:
+#(: rationale:
+#(: note :
+#(:
+#! ##############################################################################
+#(: fx Sbr_PCB_ion    External Program           #! Not Called !!! 
+function Sbr_PCB_ion() {   #! Not Called !!! 
+    n=0
+    Sbr_Splash_It "---!!! calling  Sbr_PCB_ion EXTernal + ReStart  !!!---" "yellow" "green" "2"       #! -D---
+     /mnt/home/MY_/usr-share/My_Dev_/Edit_PCB/rc.z_PCB-ion.sh
+    #! direct call to EXTernal prg 
+    Sbr_Cbx_ReStart 1    # display and no wait
+}  # end: 
+export -f Sbr_PCB_ion
+#!    
+#!
+############################## PXB INTernal ###############################
+############################## PXB INTernal ###############################
+############################## PXB INTernal ###############################
+#(: inside of Sbr_PCB_PXB
+#(: inside of Sbr_PCB_PXB
+#(: inside of Sbr_PCB_PXB
+#! #########################################################
+#! #########################################################
+#! #########################################################
+#! ### incorporates the entire PCB-ion.sh program #################################
+#! function Sbr_PXB_INT  called by Sbr_PXB_INT_RS   via <button> EXIT:guiPXB_ion_RS  
+function Sbr_PXB_INT() {        #!  ACTIVE
+    n=0
+#! ##############################################################################################
+#! Function.....: create a TarGz backup of the current saveDATA entity  ( /saveDATA or save.4fs )
+#! Author.......: GlenE77is, @ ResearchGate.net.
+#! Disclaimer...: The author makes no guarantees about the compatibility of this software with your system, 
+#! and accepts no responsibility for negative impact which may ocurr on your system, or your data.
+#! ===========================================================
+#! Note:  Generates a BackUp of saveDIRECTORY or saveFILE.4fs 
+#!     System info is from system "PUPSTATE",  no choice required nor allowed. 
+#!     Must be Frugal #13 or #12, as suggested by B.Kauler in Install.sh
+#! ===========================================================
+#! NOTE: 
+#!  PCB.sh began as a simple rewrite from PupHotBackup 1.3.1 
+#!     in order to correct code and aim at universal Frugal Backup.
+#!  aimed at /saveDIRectory and /file.4fs "FRUGAL" install. 
+#!     deprecated all code for original method of exporting/e2fsck/restore.
+#!  Now calling "ionice -c 1"   (realtime)  to prioritize PCB higher than any other processes. 
+#!
+echo "(=== running:  $0   Puppy-Linux  Pup-Cold-Bakup === ionice -c 1 ===)"
+#! ===========================================================
+. /etc/rc.d/PUPSTATE
+export gcPXBDevDob=${gcMgrSysDob}  # "241204-0536"  ${gcPXBDevDob}
+#==============
+export gcPXBId="pxb"     # used to build "destfile" 
+export gcPXBBackUpId="PXBion" # label/Tag the TarGz Output File 
+export gcPXBRunId="PXB-ion"     # Label the Project as "Xnternal" 
+#==============
+#! export gcPXBRunVer="-ion"     #  may update this "version label"                 # Not Used
+#! export gcPXBRunFn="PXB-${gcPXBRunVer}"     # ${gcPXBRunFn}  used in main gui     # Not Used
+#==============
+export gcPXBSave="`echo -n "$PUPSAVE" | cut -f 3 -d ','`"   #! from PUPSTATE !
+#==============
+#! expand PATH
+#! PATH=$PATH:/usr/lib/gtkdialog/:/root/my-applications/ 
+#==============
+echo "( main PCB_INTernal_PXB ) ==="  # > /dev/console
+lcMsgStr="(=== running: main PCB_INTernal_PXB === )"
+PXB_Splash_It "${lcMsgStr}" "yellow" "green" "1" ""
+    #(: inside of Sbr_PCB_PXB
+echo "(Main) ==="  # > /dev/console
+#!
+#! subroutine "PCB_Back_It" RUNs on SaveDATA DIRECTORY and saveFile.4fx  
+            #! if [ "$EXIT" = "PCB_Back_It" ] ; then   #! standard "Fall-Thru" subroutine. 
+    n=0
+    echo "(M1)"  # > /dev/console
+#=== Splash ======================================================
+#! Splash 
+lcMsgStr="(${gcPXBRunId}__${gcPXBDevDob})
+ionice -c 1 snapmergepuppy  ()
+PUPMODE -eq 13 "
+#! to change to PXB_Splash_It  ### GTKPID_Splash_It
+#! Standard Splash_It : param "Msg" "yellow" "blue" "3" ""
+PXB_Splash_It "${lcMsgStr}" "yellow" "blue" "3" "0"
+#!
+#! ========================
+ionice -c 1 snapmergepuppy    
+#! ionice -c 1 snapmergepuppy   : best realtime "first access" to hard-drive , shared local.     
+#! ionice -c 2 snapmergepuppy   : "shared access" with any higher priority   from a network. 
+#! ========================
+kill ${GTKPID_Splash_It}    2> /dev/null   #! after snapmergepupp
+#=================================================================
+#! author's system note:
+#!  snapmergepuppy usual parameters:  "/initrd/pup_ro1"  into  "/initrd/pup_rw"     2>/dev/null 
+#!  snapmergepuppy message output to terminal is:
+#!   "Merging  /initrd/mnt/tmpfs/pup_rw  onto  /initrd/mnt/dev_save/pup_UpupB5B-SDA/upupbbsave-B5B-iso602-b"
+#!  description:
+#!    * Where "/initrd/mnt/tmpfs/pup_rw" is the current Read/Write layer.
+#!    * Where "/initrd/mnt/dev_save/pup_UpupB5B-SDA/upupbbsave-B5B-iso602-b" is the "saveDATA" entity. 
+#=================================================================
+#!
+#! === call Pup Cold BackUp =================================================
+PXB_TarGzBackIt "$PBKP_PUPSAVE_PATH" "$PCB-BackUp_Path" 
+#! === call Pup Cold BackUp =================================================
+    n=0
+    #!
+    cd "$CWDIR"  # change dir back to original   (not required) 
+    echo "###_CD_### (TarGz) restore original CWDIR ===" && echo ""
+    #! =====================================
+    #! Fall-Thru is a "Trapped EXIT"
+    #(: inside of Sbr_PXB
+    PXB_CleanUp
+    #! but two sbr call Sbr_PXB_INT, so must handle ReStart here. 
+    #! PXB should return to caller. 
+    #! xxx Sbr_Cbx_Clear_Restart
+    #! ####################################################################
+}  # end: 
+    #(: inside of Sbr_PXB_INT
+### END PCB_INT_PXB #################################################
+### END PCB_INT_PXB #################################################
+### END PCB_INT_PXB #################################################
+#!
+function Sbr_Sample_Not_Used() { 
+    gxmessage -bo -c -tim 5 -fn 'bold 10' -bg '#285577' -fg '#FFF' -bu '' $'\n\n  A buttonless gxmessage  \n\n'
+    #! gxmessage special
+    lcMsgStr="=== ${gcMgrKey}==="
+    gxmessage -bo -c -tim 3 -fn 'bold 10' -bg '#285577' -fg '#FFF' -bu '' $'\n\n  "'${lcMsgStr}'"  '
+    lcMsgStr="=== PID: ${gcMgrBashPid}==="
+    gxmessage -bo -c -tim 3 -fn 'bold 10' -bg '#285577' -fg '#FFF' -bu '' $'\n\n  "'${lcMsgStr}'"  '
+    lcMsgStr="=== ${LOGNAME}==="
+    gxmessage -bo -c -tim 3 -fn 'bold 10' -bg '#285577' -fg '#FFF' -bu '' $'\n\n  "'${lcMsgStr}'"  '
+} # end
+export -f Sbr_Sample_Not_Used
+#!
+#!
+#
+#!##################################
+#! function fx Sbr_Ask4Word ()
+#Barry Kauler 2011, GPL3 (/usr/share/doc/legal)
+#specified in /etc/sudoers or /etc/sudo.conf, gui-helper for sudo. (path compiled-in to my sudo PET)
 #! 
-#! case ${gcSysDistroName} = based on /DISTRO_SPECS  "DISTRO_NAME" from Puppy Distro OS.
-#! case GTK theme = "default" and CharSize = "128" 
-#! # lcGuiVert="1" is "Visible"
-#! # lcGuiVert="0" is "Not Visible"
-#!  case "${gcSysDistroName}" in   
-    #!  "BookwormPup32") lcGuiVert="0" ;; 
-    #!  "KineticPup32")  lcGuiVert="1" & lcGuiWidth="1650" & lcGuiHeight="750" & lcGuiTheme="default" & lcGuiChar="126";;
-    #!  "BionicPup32")   lcGuiVert="1" & lcGuiWidth="1650" & lcGuiHeight="750" & lcGuiTheme="default" & lcGuiChar="126";;
-    #!  "JammyPup32")    lcGuiVert="1" & lcGuiWidth="1650" & lcGuiHeight="750" & lcGuiTheme="default" & lcGuiChar="126";;
-    #!  "S15Pup64")      lcGuiVert="1" & lcGuiWidth="1650" & lcGuiHeight="750" & lcGuiTheme="default" & lcGuiChar="126";;
-    #!  "ManticPup32")   lcGuiVert="1" & lcGuiWidth="1650" & lcGuiHeight="760" & lcGuiTheme="default" & lcGuiChar="126";;
-    #!  "tahrpup")       lcGuiVert="1" & lcGuiWidth="1600" & lcGuiHeight="750" & lcGuiTheme="default" & lcGuiChar="126";;
-    #!  "BookwormPup32") lcGuiVert="1" & lcGuiWidth="1650" & lcGuiHeight="750" & lcGuiTheme="default" & lcGuiChar="126";;
-    #!  "xenialpup64")   lcGuiVert="1" & lcGuiWidth="1600" & lcGuiHeight="750" & lcGuiTheme="default" & lcGuiChar="126";;
-    #!  "XXXXXXXXXXX")   lcGuiVert="1" & lcGuiWidth="1650" & lcGuiHeight="750" & lcGuiTheme="default" & lcGuiChar="126";;
-    #!  *)  lcGuiVert="1" ;;	       # "1" is Visible
-#!  esac
+### END ### Bottom of "function" SubRoutines ()  
+###
 #!
-#! Note: all above were developed and tested in V.6, very wide main gui. Some Adjustments were needed. 
-#! Note: all were tested again in V.7, MGR main gui is compact/consolidated main gui.  Minimal Adjustments needed.
 #!
-#! ========================================================
-#! Note: for V.6 wide main Gui.
-#! <window dimentions depend on specific Puppy Distro, and user selected GTK Theme, and selected CharSize. 
-#! These data are with theme="default", charsize="128", as supplied with each Puppy Distro OS "original". 
-#! # for "default" theme, w="1650" is ok for some.
-#! # for "default" theme, w="1380" is ok for some.
 #!
-#! # for most themes, w="1380" is appropriate. 
-#! # for most Puppy Distro, theme="default" or "Polished Blue" works OK. 
 #!
-#!  K-K   = w="1650", h="750"  
-#!  B5B   = w="1380", h="750"  
-#!  J-J   = w="1650", h="750"  
-#!  S1564 = w="1650", h="750"  
-#!  uMM   = w="1600", h="750" 
-#!  T-6   = w="1600", h="750"
-#!  DBK   = w="1650", h="750"
-#!  X64   = w="1400", h="750"
-#!  B4B   = w="1380", h="750"  
+#! ############################################################################################################
+#! ############################################################################################################
+#! ######   start  M.A.I.N.(.).  main() system() ##############################################################
+#! ############################################################################################################
+#! ############################################################################################################
 #!
-#! Note: Version_6.  all above were developed and tested in V.6, very wide main gui. Some Adjustments were needed. 
-#! Note: Version_7.  all were tested again in V.7, compact/consolidated main gui, much better.  
-#! Note: Version_8.  all were tested again in V.8, compact/consolidated main gui, passed OK.  
 #!
-#! <window dimensions must be hard-code.
-#! width-request="1400" is important issue.
-#! Theme and Alpha-Size and Screen-size are controlling variables. 
-#! <window dimensions must be hard-code >.
-#! below, the export var cannot be inserted in the <window line, it will not "expand" . 
-#! export lcGuiWindowTitleMain='"${lcGuiWindowTitle}" 
-    #! window-position="1" 
-    #! width-request="1380"
-    #! height-request="750" 
-	#! space-expand="true" 
- 	#! border-width="3"
-	#! resizable="true" '
+#! #########################################################################
+#! #########################################################################
 #!
+#!  ## all "function ( )"  are  moved to top of code
+#!
+#(: ## all "GTK EXIT:" to "if/fi" Selection  are  moved to bottom of code
+#(: 
+#(: ## this enables the  "Fall-Thru" / "Bounce-Up"  method .
+#(:
+#! #########################################################################
+#! #########################################################################
+#!
+#!
+#!
+#!
+#(: ======================================================
+#(: fx MGR_Main    #!  main()  main()  main()
+#(: called by:
+#(: param:
+#(: purpose:
+#(: calls:
+#(: method:
+#(: sends:
+#(: rationale:
+#(: note :
+#(:
+#=== MAIN( ) === SYSTEM( )=================================================
+#!
+#!=====================================================
+#! ### begin: main () : Fall-Thru  "initz" 
+#!=====================================================
 
+#! CLEAR all Xterm trace / history
+clear
+clear
+#!
+    #! here:  setup/prep System values.  
+    #! This is prep for  "Sbr_Dump_Sys()" , requires system command "declare" . 
+    #! Some Puppy Distro Do Not Have a System Command "declare" ! 
+    #!~ echo "ls -lah /dev/console" > /sys-lah.txt
+    #!~ ls -lah /dev/console >> /sys-lah.txt
+    #!~ # utilities - get list of all processes, except transport (ntfs-3g, nbd-client)
+    #!~ all_processes_except_transport() {
+        #!~ $BB ps | $BB sed -e '/ntfs-3g/ d; /nbd-client/ d; /posixovl/ d; s/^ *//; s/ .*//' | $BB sort -rn
+    #!~ echo $BB
+    #!~ }
+	#!~ for PID in $*; do
+		#!~ case $PID in
+			#!~ 1|$$) ;; # echo , but do not kill init or own process 
+			#!~ *) $BB  ;;
+		#!~ esac
+	#!~ done
+#!
+#! === Terminal Screen Only === MAIN () RUNNING Terminal Quick Splash/NoWait ===. 
+/bin/echo -e "\\033[5G\\033[1;31m"***"\\033[1;33m"=== ${gcMgrKey}==="\\033[1;31m"***"\\033[0;39m" #! terminal 
+/bin/echo -e "\\033[20G\\033[1;32m"***"\\033[1;32m"=== ${gcMgrBashPid}==="\\033[1;32m"***"\\033[0;39m" #! terminal 
+/bin/echo -e "\\033[20G\\033[1;33m"***"\\033[1;31m"=== ${LOGNAME}==="\\033[1;33m"***"\\033[0;39m" #! terminal 
+echo " "
+#!
+Sbr_Sys_CheckMode
+#!
+touch /0-MGR-LogIn-DTS  # this call should be first  / in main ( ) 
+#!
+rm -f ${gcEmGaImgFnTrgTxtMaster}    #! trigger "reload" of images by culling master from /tmp  
+#! 
+#! Sbr_CDW_Embedded_Dialog_Colors      # setup color constants / in Main  #! Not Called 
+Sbr_CDW_EGI_CheckIF     # Check Graphic Images " gcEmGaImgFnTrgTxtMaster "   / in Main 
+#!
+Sbr_Sys_SetVerDts # this call should be first  / in main 
+#!
+#! Sbr_Page_Init    
+#! check / control the Paged GUI ,   was for V.6  page system.   V.7/8 have Independent Floating pages.
+#!
+#;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+#(: ARB_init  : Not Used Yet. Developmental. 
+#(: purpose:config controls  menu.lst # during main run ( )
+#(: method:
+#(:    (1) read existing config for OS "Idd",
+#(:    (2) install generic "full enough" "SHORT" MENU.lst
+#(:         with default "0,1,2,3,4" matching config "Idd"
+#(: DEV: IF  "C3M CONFIG ARB" ,  under development, not useful yet.
+#(: DEV: Not Used "Sbr_ARB_Init"   # # # must be in main ( ) # ? to read config init for "ARB" config
+#!
+Sbr_Sys_PupState   ### Gather the "state" variables from OS
+#!
+Sbr_Sys_LockFile    ### install "Soft" lock, "notify" but allow user to "continue" . 
+#!
+#!
+#!
+#!=====================================================
+#! ### begin Fall-Thru  "initz" 
+#!=====================================================
+#!
+#!
+if [ -f ${gcMgrArbCfgFn} ] ; then
+    n=0
+    gcMgrArbCfgFn="/root/my-applications/bin/C3M_Config_Arb"   # ASSIGNED fx(Sbr_Sys_PupState)
+    gcMGRConfigArbIdd=`cat ${gcMgrArbCfgFn}`   #  extract and export Idd
+else    #  NO Config value
+    n=0
+    touch ${gcMgrArbCfgFn}
+    gcMGRConfigArbIdd="---"
+fi  #
+#! 
+#!
+#!
+#! --- MAIN () 
+. /etc/rc.d/PUPSTATE
+export PUPMODE
+#!
+#! --- MAIN () 
+#! --- Frugal only --- first possible check
+case $PUPMODE in
+    12|13) ok=1 ;;  
+    *) ERRORMSG="only (12|13)" 
+        sleep 3
+        exit 1
+        ;;
+esac
+#~ case "11" in
+    #~ $zero )  ;;
+    #~ *) ERRORMSG="only (11)" 
+        #~ sleep 3
+        #~ exit 1
+        #~ ;;
+    
 
+#! --- MAIN () 
+#! Find and verify path of currently mounted saveDATA entity. Could be "/saveDATA" or "saveDATA.4fs" . 
+export gcSaveDataName="`echo $PUPSAVE | cut -f 3 -d ","`"    
+if [ ! -e "/mnt/home${gcSaveDataName}" ]; then   # Error Trapped 
+    /usr/lib/gtkdialog/box_ok "Pupsave Backup" error "'/mnt/home${gcSaveDataName}' does not exist!"   ### ShowError
+    sleep 5
+    Sbr_ClearFlagsSystem 0      ### clear lockfile so that ReStart can run.
+    exit 1
+fi
+#! --- MAIN () 
+#! Case ERRORMSG catch-all
+if [ "$ERRORMSG" ] ; then
+    Sbr_ClearFlagsSystem 0      ### clear lockfile so that ReStart can run.
+    echo "$ERRORMSG"
+    ERRORMSG="<b><span foreground='"'red'"'>${ERRORMSG}</span></b>"
+    exit 1
+fi # end: if [ "$ERRORMSG" ] 
+#--------------------------------------------------------------------
+export PBKP_PUPSAVE_PATH="/mnt/home${gcSaveDataName}"
+#!
+#!=====================================================
+#! ### end: Fall-Thru  "initz" 
+#!=====================================================
+#! ====================================================================
+#! FALL-THRU ;;; STANDARD RUN
+#! ====================================================================
+#!  MAIN GUI was originally in this code paragraph  
+#! as if a Gui <button> Selection had been made ! 
+#! ====================================================================
+#! FALL-THRU ;;; STANDARD RUN
+#! ====================================================================
+#! ###########################################################################
+#! ## top SystemGui  ### MainInit ### INIT Start  #############################
+#! ###########################################################################
+
+            #! NOTES:  about  System GUI dimensions:
+            #! assumes this default setting at Main Gui : which must be set "literally" ( not ${var} ) !
+            #! assumes     width-request="980"
+            #! assumes     height-request="750"
+            #! === Pre-Set =====================================================
+            #! <window dimensions depend on specific Puppy Distro, and user selected GTK Theme, and selected CharSize. 
+            #! These data are with theme="default", charsize="128", as supplied with each Puppy Distro OS "original". 
+            #!
+            #! Note: Version_6.  all above were developed and tested in V.6, very wide System Gui. Adjustments were needed. 
+            #! Note: Version_7.  all were tested again in V.7, compact/consolidated System Gui, much better.  
+            #! Note: Version_8.  all were tested again in V.8, compact/consolidated System Gui, passed OK.  
+            #! Note: Version_9.  all were tested again in V.9,  compact/Toggled  GTK System Gui, passed OK.  
+            #! Note: Version_10. all were tested again in V.10, compact/NoteBook GTK System Gui, passed OK.  
+            #! Note: Version_11. all were tested again in V.11, NoteBook+BASH System Gui, passed OK.  
+            #!
+            #! Theme and Alpha-Size and Screen-size are controlling variables. 
+            #! <window dimensions must be coded as: >
+            #! export lcGuiWindowTitleMain="'${lcGuiWindowTitle}'" 
+            #!
+#!
+#!
 ### MGR
-export lcBSS_TrgSubDir="TrgSubDir"			# File Select # Not Used 
-export gcPBKP_BACKUP_PATH="BACKUP_PATH"		# File Select # Not Used 
 #!
-#! Primary "Window" title  # NOT ACTIVE
-export lcGuiWindowTitle="_X_MGR_${gcSysDistroLoc}::${lcGuiSplT0}::${lcGuiSplT3}::${gcSysSave}::${gcSysIdFull}::${gcSysKernName}::${gcSysDevHw}::${gcSysDevDob}::${gcMgrVerExt}"
+#! 
+#! ###########################################################################
+#! ## MainGui ### Dialog BEGIN ### NoteBook SystemGui ### 
+#! ###########################################################################
+#! Primary "Window" title                   # Active    gui frame inner-title
+#! export lcGuiWindowTitle="?:${gcMgrDistroSymbol}:_:MGR:_::${lcGuiSplT3}::${gcSysIdFull}::${gcSysKernName}::${gcSysDevHw}::${gcMgrSysDob}::${gcMgrVerExt}"
 #! Secondary "Frame" title embeds OK.
-export lcGuiFrameTitle="  ${gcMgrDevName}  "    # ACTIVE
-# :${gcSysDistroLoc}_${gcMgrDistroName}_${gcSysIdFull}_v:${gcMgrVerExt}_${gcSysSaveFn}_Dob:${gcSysDevDob}-:"
+export lcGuiFrameTitle="  ${gcMgrDevName} : v: ${gcMgrSysDob}:"    
 #!
+#! standard width-request : aprox.  
+#!      v9:     B4B="1150"     B64B="1400"
+#!      v10:    B4B="1250"     B64B="1250"
+#! each Distro may have a special width-request for main dialog window "width" . 
 #!
-#! ## MAIN GUI MGR ### Dialog BEGIN ###############################
-#! ## MAIN GUI MGR ### Dialog BEGIN ###############################
-#! ## MAIN GUI MGR ### Dialog BEGIN ###############################
+#! Puppy Linux GTK assumes these screen setting at Main Gui via CASE... 
+#! testing / assigning done beginning near top of Source arox Line 286 
+#!      "Sbr_Case_Distro_Name"
+#!      "Sbr_Match_NoteBook_Gui_Position"
+#!
+#!   gcMrg adjust may not be used as dev continues. 
+#!
+#!   width is ACTIVE with extra quote marks:
+#!      Set this way:     width-request="'${gcMrgGuiWid}'"
+#!
+#! special <window dimension code notes: 
+#! each Distro GTK may have a special width-request for main dialog <window 
+#!      and dependent on user installed/selected GTK theme. 
+#!    width-request="'${gcMrgGuiWid}'"	#! Slacko-64 has no control.
+#!    height-request="'${gcMrgGuiHgt}'"	#! Slacko-64 has no control.
+#!	  window-position="1"  #! middle of screen #! except Slacko-64. 
+#!
+#!  These are previous 'normal' settings for the GTK window.  Not Active. 
+    #! width-request="'${gcMrgGuiWid}'"     #! Active in <window main gui. 
+    #! height-request="'${gcMrgGuiHgt}'"    #! Not Used #! <vseparator is sufficient 
+    #! window-position="1" 
+    #! space-expand="false" 
+    #! border-width="3"
+    #! resizable="true" 
 
-export  MGR_Master_GUI_Dialog='
-<window  title="MGR_Master_GUI_Dialog"
+#! used for Mgr-10, Mgr-11 NoteBook method. 
+export  System_GUI_Dialog='
+<window  title="_'${gcMgrNameBase_All}...${gcMgrSysDob}...Primary-GTK-GUI...'"
     window-position="1" 
-    width-request="850"
-    height-request="800" 
-	space-expand="true" 
- 	border-width="3"
-	resizable="true" 
+    space-expand="false" 
+    border-width="3"
+    resizable="true" 
 >  
-
 <vbox>
-    <text visible="false" editable="false" use-markup="true" xalign=".5">
-        <label>"'============================='"</label> </text>
-    <button visible="1"   tooltip-text="top of System page__width-162-space>" <height-request="15">
-		<label>"'!____!!!!!!!!_____!_________!_________!________!__'"</label>
-			<action>lcEXIT:spacer</action> </button>
+    <text visible="0" editable="false" use-markup="true" xalign=".5"  <height-request="13" >
+            <label>"'^^^_'${lcGuiWindowTitle}'^^^'"</label> </text>
+                    
+<button visible="1"   tooltip-text="\
+#. - - - - - - - - - - - - - - - - - - -
+      Manager  =   ReStart
+*.
+*.  This is LINUX, 
+*.     this is a Free OPEN SOURCE SYSTEM, 
+*.     so READ the code and Learn !
+" <height-request="27">
+    <label>"'_!__!_'"</label>
+        <action function="'launch'">msg_DC_Quick_window</action>
+        <action function="'closewindow'">msg_DC_Quick_window</action>
+        <action>'EXIT:guiSimReStart'</action>   </button>
+<button visible="1"   width-request="45" height-request="45"  size="medium"  weight="bold" 
+   tooltip-text="" 
+    has-focus="false"  xalign=".5" >
+    <input file>"'/tmp/EmGr-img-hash-grn.xpm'"</input><width>45</width><height>45</height>
+        <label> "'${lcGuiFrameTitle}'"  </label> 
+        <action function="'launch'">msg_DC_Quick_window</action> <action function="'closewindow'">msg_DC_Quick_window</action>
+        <action>'0-EXIT:guiSimReStart'</action>   </button>
+    <hseparator width-request="1"></hseparator>
+    <hseparator width-request="10"></hseparator>
+    <vseparator height-request="1" > </vseparator>
 
-          <button  height-request="35"  size="large"  weight="bold" 
-          tooltip-text=" Manager ReStart
-*.                       This is LINUX, 
-*.                       this is a Free OPEN SOURCE SYSTEM, 
-*.                       so READ the code and Learn !
-*.                       #: Main Screen has tabs for 
-*.                                THREE Page-Book windows and 
-*.                                Three Vertical pages and
-*.                                One Logo Screen plus page.       "
-            has-focus="false"  xalign=".5" >
-            <input file>"'/tmp/EmGr-img-hash-grn.xpm'"</input><width>50</width><height>50</height>
-                <label> "'${lcGuiFrameTitle}'"  </label> 
-            <action>'EXIT:guiTopReStart'</action> </button>
-
-	<vseparator height-request="3" > </vseparator>
- 
-   <hbox visible="1" homogenous="true">
-            <hseparator width-request="50"></hseparator>
-
-            <button   visible="1" has-focus="false" height-request="33"  xalign=".5"  
-                tooltip-text="'-Special_PageBook_Main_page1-top_P1_'" >
-                <input file>"'/tmp/EmGr-img-apple-redgrn.svg'"</input><width>35</width><height>25</height>
-                <label>"'{-MAIN-}'"</label>
-                    <action function="'launch'">msg_DC_LxgenMain_window</action> <action function="'closewindow'">msg_DC_LxgenMain_window</action>
-                    </button>
-
-            <button   visible="1" has-focus="false" height-request="33"  xalign=".5"
-                tooltip-text="'-Special_PageBook_Help-Doxuments_page2-top_P2_'" >
-                <input file>"'/tmp/EmGr-img-apple-redgrn.svg'"</input><width>35</width><height>25</height>
-                <label>"'{-HELP-}'"</label>
-                    <action>'EXIT:guiDumpHLP'</action> </button>
-
-
-            <button   visible="1" has-focus="false" height-request="33"  xalign=".5"
-                tooltip-text="'-Special_PageBook_Help-Doxuments_page3-top_P3_'" >
-                <input file>"'/tmp/EmGr-img-apple-redgrn.svg'"</input><width>35</width><height>25</height>
-                <label>"'{-DOX-}'"</label>
-                    <action function="'launch'">msg_DC_LxgenHelp_window</action> <action function="'closewindow'">msg_DC_LxgenHelp_window</action>
-                    </button>
-
-            <button   visible="1" has-focus="false" height-request="33"  xalign=".5" 
-                tooltip-text="'-Special_PageBook_Utility_page4-top_P4_'" >
-                <input file>"'/tmp/EmGr-img-apple-redgrn.svg'"</input><width>35</width><height>25</height>
-                <label>"'{-UTIL-}'"</label>
-                   <action function="'launch'">msg_DC_LxgenUtil_window</action> <action function="'closewindow'">msg_DC_LxgenUtil_window</action>
-                   </button>
-
-            <button   visible="1" has-focus="false" height-request="33"  xalign=".5" 
-                tooltip-text="'-Special_PageBook_VMB_page5-top_P5_'" >
-                <input file>"'/tmp/EmGr-img-apple-redgrn.svg'"</input><width>35</width><height>25</height>
-                <label>"'{-VMB-}'"</label>
-                   <action function="'launch'">msg_DC_LxgenVmb_window</action> <action function="'closewindow'">msg_DC_LxgenVmb_window</action>
-                   </button>
-
-            <button   visible="1" has-focus="false" height-request="33"  xalign=".5"  tooltip-text="'-TABs_for_PageBook__'" >
-                <input file>"'/tmp/EmGr-img-jug-redxblu.svg'"</input><width>35</width><height>25</height>
-                <label>"'Pages'"</label> <action> "0"</action></button>
-
-             <hseparator width-request="66"></hseparator>
-    </hbox>
-
-    <vbox>
-        <vseparator height-request="1"> </vseparator>
-    </vbox>
-
-    <hbox>
-
-    <text visible="false" editable="false" use-markup="true" xalign=".5">
-        <label>"'==============================================='" </label> </text>
-    <button  tooltip-text="'Margin-C0vert'" width-request="3"> <action>lxAction:mC0</action> </button>
-    <button  tooltip-text="'Margin-C0vert'" width-request="3"> <action>lxAction:mC0</action> </button>
-
-
-
-    <text visible="false" editable="false" use-markup="true" xalign=".5">
-        <label> "=============================================== " </label> </text>
-    <button  tooltip-text="'Margin-C0vert'" width-request="3"> <action>lxAction:mC0</action> </button>
-    <button visible="0" tooltip-text="'Margin-C0vert'" > <label> "''" </label><action>lxAction:botC0</action> </button>
-    <button  tooltip-text="'Margin-C0vert'" width-request="3"> <action>lxAction:mC0</action> </button>
-
-<vbox>
-<vbox>
-
-                        <button   visible="0" has-focus="false" height-request="30"  xalign=".5"  tooltip-text="'top---page4-page-System---${gcP4_ctl}'" >
-                            <input file>"'/tmp/EmGr-img-jug-grnxred.svg'"</input><width>25</width><height>15</height>
-                            <label> "'---System---'" </label><action>'lxEXIT:guiP4_X_ctl'</action> </button>
-
-        <button visible="1"   tooltip-text="width-80-space>'================================================'" <height-request="1">
-			<label>"'!________!________!________!________!________!_________!_________!_________!xx'"</label>
-            <action>lcEXIT:spacer</action> </button>
-
-                        <button visible="0"has-focus="false" width-request="111" height-request="10"  xalign=".5"  tooltip-text=",,," >
-                                <label> "'---*---'" </label><action>lxAction:C4-s</action></button>
-                
-            <text visible="1"   editable="false" use-markup="true" xalign=".5"> <label> 
-            "<span  color='"'green'"' font-family='"'Comic'"' weight='"'bold'"' ><b>'"ooo-"'</b></span><span color='"'red'"' font-family='"'Comic'"' weight='"'bold'"' size='"'xx-large'"' ><b>'"MANAGER-8"'</b></span><span color='"'blue'"' font-family='"'Comic'"' weight='"'bold'"' >'-ooo'</span>" 
-              </label> </text>
-
-        <hbox homogenous="0">
-              <hseparator width-request="90"></hseparator>
-            <text  visible="1" editable="false" use-markup="true" xalign=".5">
-                <label> "<span color='"'$lcGuiColorred'"'  font-family='"'Comic'"' weight='"'bold'"' >  <b>'${DISTRO_NAME}_${gcSysDistroVersion}'</b> </span>" </label> </text>
-            <text  visible="1" editable="false" use-markup="true" xalign=".5">
-                <label> "<span color='"'$lcGuiColorgrn'"'> <b>'K:${gcMGRKernVer}'</b> </span>" </label> </text>
-            <text  visible="1" editable="false" use-markup="true" xalign=".5">
-                <label> "<span color='"'$lcGuiColorblu'"'> <b>'${lcPupRamObjMsg}'</b> </span>" </label></text>
-               <hseparator width-request="100"></hseparator>
-        </hbox>
-      
-        <hbox homogeneous="true">
-           <button has-focus="false" height-request="13"  xalign=".5"  tooltip-text="P4-/tmp/EmGr-img-apple-redyel.svg" >
-                <input file>"'/tmp/EmGr-img-apple-redyel.svg'"</input><width>25</width>  <height>25</height>
-                <label> "" </label><action>0</action></button>
-           <button has-focus="false" height-request="13"  xalign=".5"  tooltip-text="P4-/tmp/EmGr-img-apple-redgrn.svg" >
-                <input file>"'/tmp/EmGr-img-apple-redgrn.svg'"</input><width>25</width>  <height>25</height>
-                <label> "" </label><action>0</action></button>
-           <button has-focus="false" height-request="13"  xalign=".5"  tooltip-text="P4-/tmp/EmGr-img-apple-redblu.svg" >
-                <input file>"'/tmp/EmGr-img-apple-redblu.svg'"</input><width>25</width>  <height>25</height>
-                <label> "" </label><action>0</action></button>
-           <button has-focus="false" height-request="13"  xalign=".5"  tooltip-text="P4-/tmp/EmGr-img-apple-redyel.svg" >
-                <input file>"'/tmp/EmGr-img-apple-redyel.svg'"</input><width>25</width>  <height>25</height>
-                <label> "" </label><action>0</action></button>
-           <button has-focus="false" height-request="13"  xalign=".5"  tooltip-text="P4-/tmp/EmGr-img-apple-redgrn.svg" >
-                <input file>"'/tmp/EmGr-img-apple-redgrn.svg'"</input><width>25</width>  <height>25</height>
-                <label> "" </label><action>0</action></button>
-           <button has-focus="false" height-request="13"  xalign=".5"  tooltip-text="P4-/tmp/EmGr-img-apple-redblu.svg" >
-                <input file>"'/tmp/EmGr-img-apple-redblu.svg'"</input><width>25</width>  <height>25</height>
-                <label> "" </label><action>0</action></button>
-           <button has-focus="false" height-request="13"  xalign=".5"  tooltip-text="P4-/tmp/EmGr-img-apple-redyel.svg" >
-                <input file>"'/tmp/EmGr-img-apple-redyel.svg'"</input><width>25</width>  <height>25</height>
-                <label> "" </label><action>0</action></button>
-           <button has-focus="false" height-request="13"  xalign=".5"  tooltip-text="P4-/tmp/EmGr-img-apple-redgrn.svg" >
-                <input file>"'/tmp/EmGr-img-apple-redgrn.svg'"</input><width>25</width>  <height>25</height>
-                <label> "" </label><action>0</action></button>
-           <button has-focus="false" height-request="15"  xalign=".5"  tooltip-text="P4-/tmp/EmGr-img-apple-redblu.svg" >
-                <input file>"'/tmp/EmGr-img-apple-redblu.svg'"</input><width>25</width>  <height>25</height>
-                <label> "" </label><action>0</action></button>
-        </hbox>
-    </vbox>
-
-	<vseparator  visible="1" height-request="0"> </vseparator>
-    <vbox  visable="1">
-
-            <button  visible="0"  has-focus="false" width-request="55"  height-request="7"  xalign=".5"  tooltip-text="Top-Sp" >
-                <label>"'---!!!---'"</label> <action>'0'</action></button>
-
-                <hbox  visible="0">
-
-                                        <hseparator  visible="1" width-request="80"></hseparator>
-                                        
-                                       <button visible="true" has-focus="false" height-request="20"  xalign=".5">  
-                                            <input file>"'/tmp/EmGr-img-hash-grn.xpm'" </input><width>10</width><height>10</height>
-                                            <label>"''"</label><action>'0'</action> </button>
-
-                                          <button visible="1"    tooltip-text="'Select_Page_Book'"   has-focus="false">
-                                                <input file>"'/tmp/EmGr-img-Check-bluXred.svg'"</input><width>42</width><height>22</height>
-                                                <label>"'_Page-Book_'"</label>	
-                                                <action>'xEXIT:guiSelectPage'</action>                    </button>
-
-                                            <button  visible="1"  tooltip-text="'#1:msg_DC_LxgenMain_window'"   has-focus="false">
-                                                    <input file>"'/root/my-applications/Lxgen_.jpg'"</input><width>42</width><height>22</height>
-                                                    <label>"'Main-'"</label>	
-                                                <action function="'launch'">msg_DC_LxgenMain_window</action> <action function="'closewindow'">msg_DC_LxgenMain_window</action>
-                                                </button>
-
-                                            <button visible="1"   tooltip-text="'#2:msg_DC_LxgenDox_window'"   has-focus="false">
-                                                    <input file>"'/root/my-applications/Lxgen_.jpg'"</input><width>32</width><height>18</height>
-                                                    <label>"'Dox-'"</label>	
-                                                <action function="'launch'">msg_DC_LxgenDox_window</action> <action function="'closewindow'">msg_DC_LxgenDox_window</action>
-                                                </button>
-
-                                            <button visible="1"   tooltip-text="'#3:msg_DC_LxgenUtil_window'"   has-focus="false">
-                                                    <input file>"'/root/my-applications/Lxgen_.jpg'"</input><width>22</width><height>14</height>
-                                                    <label>"'Util-'"</label>	
-                                                <action function="'launch'">msg_DC_LxgenUtil_window</action> <action function="'closewindow'">msg_DC_LxgenUtil_window</action>
-                                                </button>
-
-                                            <button visible="1"   tooltip-text="'#4:msg_DC_LxgenUtil_window'"   has-focus="false">
-                                                    <input file>"'/root/my-applications/Lxgen_.jpg'"</input><width>22</width><height>14</height>
-                                                    <label>"'VMB-'"</label>	
-                                                <action function="'launch'">msg_DC_LxgenUtil_window</action> <action function="'closewindow'">msg_DC_LxgenUtil_window</action>
-                                                </button>
-
-                                          <button visible="1" tooltip-text="'_Page-Book_'"   has-focus="false">
-                                               <label>"'_Page_'"</label>	
-                                               <action> n=0</action>
-                                               </button>
-
-                                           <button visible="true" has-focus="false" height-request="20"  xalign=".5">  
-                                                <input file>"'/tmp/EmGr-img-hash-grn.xpm'" </input><width>10</width><height>10</height>
-                                                <label>"''"</label><action>'0'</action> </button>
-
-                                        <hseparator  visible="1" width-request="140"></hseparator>
-
-                </hbox>
+    <text visible="1" height-request="3" xalign=".5">
+    <label>"'========================================================'"</label></text>
 
 <vbox visible="1">
 
-           <button  visible="1"  has-focus="false"   height-request="5"  xalign=".5"  tooltip-text="" >
-                <label> "------" </label> <action>0</action></button>
 
-    <hbox>
-
-<button  visible="0"  has-focus="false" width-request="95"  height-request="7"  xalign=".5"  tooltip-text="Top-Sp" >
-    <label> "'notebook'" </label> <action>"0"</action></button>
-<button visible="true" has-focus="false" height-request="20"  xalign=".5">  
-    <input file>"'/tmp/EmGr-img-hash-grn.xpm'" </input><width>10</width><height>10</height>
-    <label>"''"</label><action>'0'</action> </button>
-<notebook labels="_{Main}_|_{Dox}_|_{Util}">
-              <vbox>
-                         <button tooltip-text="_NB_Main_">
-                            <input file>"'/tmp/EmGr-img-Check-grnXgrn.svg'"</input><width> "25" </width> <height> "25" </height>
-                            <label>'-NoteBook-Main_'</label>
-                                    <action function="'launch'">msg_DC_LxgenMain_window</action> <action function="'closewindow'">msg_DC_LxgenUtil_window</action>
-                           </button>
-              </vbox>
-              <vbox>
-                         <button tooltip-text="_NB_DOX_">
-                            <input file>"'/tmp/EmGr-img-Check-grnXgrn.svg'"</input><width> "25" </width> <height> "25" </height>
-                            <label>'-NoteBook-Dox_'</label>
-                                    <action function="'launch'">msg_DC_LxgenDox_window</action> <action function="'closewindow'">msg_DC_LxgenDox_window</action>
-                            </button>
-              </vbox>
-              <vbox>
-                       <button tooltip-text="_NB_UTL_">
-                            <input file>"'/tmp/EmGr-img-Check-grnXgrn.svg'"</input><width> "25" </width> <height> "25" </height>
-                            <label>'-NoteBook-Util_'</label>
-                                    <action function="'launch'">msg_DC_LxgenUtil_window</action> <action function="'closewindow'">msg_DC_LxgenUtil_window</action>
-                            </button>
-             </vbox>
-</notebook>
-<button visible="true" has-focus="false" height-request="20"  xalign=".5">  
-    <input file>"'/tmp/EmGr-img-hash-grn.xpm'" </input><width>10</width><height>10</height>
-    <label>"''"</label><action>'0'</action> </button>
-<button  visible="0"  has-focus="false" width-request="95"  height-request="7"  xalign=".5"  tooltip-text="Top-Sp" >
-    <label> "'/notebook'" </label> <action>"0"</action></button>
-
-         <hseparator width-request="260"></hseparator>
-
-    </hbox>
-</vbox>
-
-
-           <button  visible="1"  has-focus="false" width-request="55"  height-request="7"  xalign=".5"  tooltip-text="Top-Sp" >
-                <label> "'---*---'" </label> <action>lxAction=Top-Sp</action></button>
-
-            <hbox homogeneous="false">
-                <hseparator width-request="160"></hseparator>
-                <text  visible="'1'" editable="false" use-markup="true" xalign="0.5">
-                   <label> "<span color='"'$lcGuiColorblu'"'><b>'{_PreSet__1-of-20_PuppyOS__menu.lst_}'</b></span>"</label> </text>
-                <hseparator width-request="200"></hseparator>
-            </hbox>
-
-    </vbox>
-
-    <vbox>
-        <hbox homogeneous="1">
-            <hseparator width-request="220"></hseparator>
-            <button has-focus="false"  xalign=".5"  
-                tooltip-text="''">
-                <input file>"'/tmp/EmGr-img-jug-grnxred.svg'"</input><width>25</width><height>25</height>
-                <label>"'Build-Generic-Menu.lst'"</label> 
-                 <action>'EXIT:ARB_ORG'</action> </button>
-            <hseparator width-request="270"></hseparator>
-        </hbox>    <variable>vWindow</variable>
-    <input>fnEchoDateTime</input>
-    <action this-is-window="escape" signal="key-press-event" condition="command_is_true( [[ \$KEY_RAW = 0x9 ]] && echo true )">EXIT:exit</action>
-
-    </vbox>
-		<vseparator  visible="1" height-request="5"> </vseparator>
-
-    <vbox>
-        <hbox homogeneous="0">
-           <hseparator  width-request="140"></hseparator>
-           <button visible="true" has-focus="false" height-request="20"  xalign=".5">  
-                <input file>"'/tmp/EmGr-img-hash-grn.xpm'" </input><width>10</width><height>10</height>
-                <label>"''"</label><action>'0'</action> </button>
-           <text editable="false" use-markup="true" xalign="0.5">
-                <label> "<span color='"'$lcGuiColorgrn'"'><b>{'_Write_New_Menu.lst_for_ReBoot_'}</b></span>"</label> </text>
-           <button visible="true" has-focus="false" height-request="30"  xalign=".5">  
-                <input file>"'/tmp/EmGr-img-hash-grn.xpm'" </input><width>10</width><height>10</height>
-                <label>"''"</label><action>'0'</action> </button>
-           <hseparator   width-request="160"></hseparator>
-        </hbox>
         <hbox>
-            <hseparator width-request="10"></hseparator>
+        <hseparator width-request="1"></hseparator> 
 
-           <button has-focus="false" height-request="22"  xalign=".5">  
-                <input file>"'/tmp/EmGr-img-hash-grn.xpm'" </input><width>15</width><height>15</height>
-                <label>"''"</label><action>'left-smo'</action> </button>
-            <button label="'_K-K_'" tooltip-text="'[]_KineticKudu-Pup_EXIT:ARB_K-K'  
-                Build Menu.lst + ReStart  " has-focus="false" height-request="15"> 
-                    <action>'EXIT:ARB_KK'</action>  </button>
-            <button label="'{-B5B-}'"   tooltip-text="'[]_BionicBeaver:K5:_EXIT:ARB_B5B'   
-                Build Menu.lst + ReStart  " has-focus="false" height-request="15"> 
-                    <action>'EXIT:ARB_B5B'</action>  </button>
-            <button label="'_J-J_'"    tooltip-text="'[]_JammyJellyfish_EXIT:ARB_J-J'   
-                Build Menu.lst + ReStart  " has-focus="false" height-request="15"> 
-                    <action>'EXIT:ARB_JJ'</action>  </button>
-            <button label="'_S1564_'"  tooltip-text="'[]_S15pupSlacko64-K:5_FF_EXIT:ARB_S1564'   
-                Build Menu.lst + ReStart  " has-focus="false" height-request="15"> 
-                    <action>'EXIT:ARB_S1564'</action>  </button>
-            <button label="'{-uMM-}'"    tooltip-text="'[]_UpupMM_Mantic-Minotaur:_EXIT:ARB_MM'   
-                Build Menu.lst + ReStart  " has-focus="false" height-request="15"> 
-                    <action>'EXIT:ARB_UMM'</action>  </button>
-            <button label="'{-T-6-}'"     tooltip-text="'[]_Tahr_EXIT:ARB_T-6'   
-                Build Menu.lst + ReStart  " has-focus="false" height-request="15"> 
-                    <action>'EXIT:ARB_T6'</action>  </button>
-            <button label="'_X64_'"    tooltip-text="'[]_UpupXenial64_FF_EXIT:ARB_X64'   
-                Build Menu.lst + ReStart  " has-focus="false" height-request="15"> 
-                    <action>'EXIT:ARB_X64'</action>  </button>
-            <button label="'_DBW_'"   tooltip-text="'[]_DpupBW_BookWormDebian:_EXIT:ARB_BW'   
-                Build Menu.lst + ReStart  " has-focus="false" height-request="15"> 
-                    <action>'EXIT:ARB_DBW'</action>  </button>
-           <button has-focus="false" height-request="22"  xalign=".5">  
-                <input file>"'/tmp/EmGr-img-hash-grn.xpm'" </input><width>15</width><height>15</height>
-                <label>"''"</label><action>'left-smo'</action> </button>
+<notebook labels="|{System}|{Menu}|{BackUp}|{Dox}|{Util}" >
+<text visible="false"> 
+<label>"'####################_NoteBook_############################'"</label> </text> 
 
-            <hseparator width-request="50"></hseparator>
-        </hbox>
-        <hbox homogeneous="false">
-            <hseparator width-request="10"></hseparator>
-
-           <button has-focus="false" height-request="22"  xalign=".5">  
-                <input file>"'/tmp/EmGr-img-hash-grn.xpm'" </input><width>15</width><height>15</height>
-                <label>"''"</label><action>'left-smo'</action> </button>
-            <button label="'_S-7_'"    tooltip-text="'[]_Slacko7-Alternate_EXIT:ARB_S-7'   
-                Build Menu.lst + ReStart  " has-focus="false" height-request="25"> 
-                    <action>'EXIT:ARB_S7'</action>  </button>
-            <button label="'_uIMP_'"    tooltip-text="'[]_UpupIMP_EXIT:ARB_UIMP'   
-                Build Menu.lst + ReStart  " has-focus="false" height-request="25"> 
-                    <action>'EXIT:ARB_UIMP'</action>  </button>
-             <button label="'_S64_'"    tooltip-text="'[]_Slack64-Kern:4_EXIT:ARB_S64'   
-                Build Menu.lst + ReStart  " has-focus="false" height-request="25"> 
-                    <action>'EXIT:ARB_S64'</action>  </button>
-            <button label="'_F-F_'"    tooltip-text="'[]_FocalFossa_EXIT:ARB_F-F'   
-                Build Menu.lst + ReStart  " has-focus="false" height-request="25"> 
-                    <action>'EXIT:ARB_FF'</action>  </button>
-            <button label="'_X708_'"   tooltip-text="'[]_Xenial708_EXIT:ARB_X708'   
-                Build Menu.lst + ReStart  " has-focus="false" height-request="25"> 
-                    <action>'EXIT:ARB_X708'</action>  </button>
-            <button label="'_SLXSC_'"  tooltip-text="'[]_Slacko-LxSc_EXIT:ARB_SLXSC'   
-                Build Menu.lst + ReStart  " has-focus="false" height-request="25"> 
-                    <action>'EXIT:ARB_SLXSC'</action>  </button>
-            <button label="'_Q-7_'" tooltip-text="'[]_Quirky-7-April_EXIT:ARB_Q7'   
-                Build Menu.lst + ReStart  " has-focus="false" height-request="25"> 
-                    <action>'EXIT:ARB_Q7'</action>  </button>
-            <button label="'_B4B_'"   tooltip-text="'[]_BionicBeaver:K4:_EXIT:ARB_B4B'   
-                Build Menu.lst + ReStart  " has-focus="false" height-request="25"> 
-                    <action>'EXIT:ARB_B4B'</action>  </button>
-           <button has-focus="false" height-request="22"  xalign=".5">  
-                <input file>"'/tmp/EmGr-img-hash-grn.xpm'" </input><width>15</width><height>15</height>
-                <label>"''"</label><action>'left-smo'</action> </button>
-
-                <hseparator width-request="70"></hseparator>
-        </hbox>
-    </vbox>    
-
-    <hbox homogeneous="true">
-        <hseparator width-request="170"></hseparator>
-        <button  visible="1" tooltip-text="'!!!---Change-Menu-then-call-this---!!!' 
-        EXIT:guiBakAllCRB " >
-                <input file>"/tmp/EmGr-img-jug-redxyel.svg"</input><width>23</width><height>23</height>
-                <label>'_ReBoot_Selected_Menu_'</label>
-                    <action function="'launch'">msg_DC_Quick_window</action><action function="'closewindow'">msg_DC_Quick_window</action>
-                    <action>'EXIT:guiBakAllCRB'</action>            </button>
-       <hseparator width-request="170"></hseparator>
-    </hbox>
+    <vbox visible="1">
     
-        <vseparator  visible="'${lcGuiVert}'" height-request="3" > </vseparator>
-        <button  visible="'${lcGuiVert}'" has-focus="false" height-request="7"  xalign=".5"  tooltip-text="C4-/tmp/EmGr-img-apple-redblu.svg" >
-			<input file>"'/tmp/EmGr-img-apple-redgrn.svg'"</input><width>25</width>  <height>25</height>
-            <label> "" </label><action>lxAction:C4</action></button>
-        <vseparator  visible="'${lcGuiVert}'" height-request="5" > </vseparator>
+        <text visible="0"> <label>"'#######_NoteBook_System-##################'"</label> </text> 
+        <vseparator height-request="22"></vseparator>
+        <button  use-markup="true" has-focus="false" height-request="55" width-request="50" xalign=".5"  
+            tooltip-text="''" >
+            <input file>"'/tmp/EmGr-img-button-system.svg'"</input>
+            <label> "" </label><action>'0---button-system'</action>  </button>
+        <vseparator height-request="22"></vseparator>
+        <button visible="1"   tooltip-text="''" >
+            <input file>"'/tmp/EmGr-img-jug-blu0yel.svg'"</input><width>30</width><height>30</height>
+            <label> "  '===!-MGR-11-Tool-Tip-!==='  " </label> 
+            <action function="'launch'">msg_DC_M11_window</action>
+            <action>'-MGR-11-Tool-Tip'</action> </button>
+    
+        <hseparator width-request="1"></hseparator> 
 
+        <vseparator height-request="15"></vseparator>
+            <text visible="1"   editable="false" use-markup="true" xalign=".5"> 
+        <label> "<span  color='"'blue'"' font-family='"'Comic'"' weight='"'bold'"'>'"ooo-"'</span><span color='"'red'"' font-family='"'Comic'"' weight='"'bold'"' size='"'xx-large'"' ><b>'"  ${gcMgrVerTitle} "'</b></span><span color='"'blue'"' font-family='"'Comic'"' weight='"'bold'"'>'-ooo'</span>" 
+            </label> </text>
+          <hseparator width-request="22"></hseparator>
+        <vseparator height-request="11"></vseparator>
+        <hbox visible="1">
+          <hseparator width-request="14"></hseparator>
+        <text use-markup="true" xalign=".5">
+            <label> "<span color='"'$lcGuiColorbrn'"'> <b>':${gcMgrDistroSymbol}:'</b> </span>" </label> </text>
+        <text use-markup="true" xalign=".5">
+            <label> "<span color='"'$lcGuiColorbrn'"'> <b>'"''"'</b></span>"</label></text>
+        <text use-markup="true" xalign=".5">
+            <label> "<span color='"'$lcGuiColorred'"'> <b>'${DISTRO_NAME}'</b> </span>" </label> </text>
+        <text use-markup="true" xalign=".5">
+            <label> "<span color='"'$lcGuiColorblu'"'> <b>'${gcSysDistroVersion}'</b> </span>" </label> </text>
+        <text use-markup="true" xalign=".5">
+            <label> "<span color='"'$lcGuiColorbrn'"'> <b>'"''"'</b></span>"</label></text>
+        <text use-markup="true" xalign=".5">
+            <label> "<span color='"'$lcGuiColorgrn'"'> <b>'K:${gcMGRKernVer}'</b> </span>" </label> </text>
+        <text use-markup="true" xalign=".5">
+            <label> "<span color='"'$lcGuiColorbrn'"'> <b>'"''"'</b></span>"</label></text>
+        <text use-markup="true" xalign=".5">
+            <label> "<span color='"'$lcGuiColorbrn'"'> <b>'Data:'</b></span>"</label></text>
+        <text use-markup="true" xalign=".5">
+            <label> "<span color='"'$lcGuiColorbrn'"'> <b>'${lcPupRamObjMsg}'</b> </span>" </label></text>
+        <hseparator width-request="10"></hseparator>
+         <text  visible="0" editable="false" use-markup="true" xalign=".5">
+            <label> "After-Big-Title-Frame" </label></text>
+            <hseparator height-request="6" width-request="55"></hseparator>
+        <hbox visible="'${gcMrgAdjOut}'">
+            <hseparator height-request="3" width-request="80"></hseparator>
+        </hbox>
+          
+        </hbox>
+          <vseparator height-request="33"></vseparator>
+           <hbox space="2" homogeneous="true">
+               <hseparator height-request="3" width-request="40"></hseparator>
+            <button has-focus="false" height-request="13"  xalign=".5"  tooltip-text="" >
+                <input file>"'/tmp/EmGr-img-apple-redgrn.svg'"</input><width>25</width>  <height>25</height>
+                <label> "" </label><action>0</action> </button>
+            <button has-focus="false" height-request="13"  xalign=".5"  tooltip-text="" >
+                <input file>"'/tmp/EmGr-img-apple-redblu.svg'"</input><width>25</width>  <height>25</height>
+                <label> "" </label><action>0</action> </button>
+            <button has-focus="false" height-request="13"  xalign=".5"  tooltip-text="" >
+                <input file>"'/tmp/EmGr-img-apple-redyel.svg'"</input><width>25</width>  <height>25</height>
+                <label> "" </label><action>0</action> </button>
+            <button has-focus="false" height-request="13"  xalign=".5"  tooltip-text="" >
+                <input file>"'/tmp/EmGr-img-apple-redgrn.svg'"</input><width>25</width>  <height>25</height>
+                <label> "" </label><action>0</action> </button>
+            <button has-focus="false" height-request="13"  xalign=".5"  tooltip-text="" >
+                <input file>"'/tmp/EmGr-img-apple-redblu.svg'"</input><width>25</width>  <height>25</height>
+                <label> "" </label><action>0</action> </button>
+            <button has-focus="false" height-request="13"  xalign=".5"  tooltip-text="" >
+                <input file>"'/tmp/EmGr-img-apple-redyel.svg'"</input><width>25</width>  <height>25</height>
+                <label> "" </label><action>0</action> </button>
+            <button has-focus="false" height-request="13"  xalign=".5"  tooltip-text="" >
+                <input file>"'/tmp/EmGr-img-apple-redgrn.svg'"</input><width>25</width>  <height>25</height>
+                <label> "" </label><action>0</action> </button>
+            <button has-focus="false" height-request="15"  xalign=".5"  tooltip-text="" >
+                <input file>"'/tmp/EmGr-img-apple-redblu.svg'"</input><width>25</width>  <height>25</height>
+                <label> "" </label><action>0</action></button>
+            <button has-focus="false" height-request="13"  xalign=".5"  tooltip-text="" >
+                <input file>"'/tmp/EmGr-img-apple-redyel.svg'"</input><width>25</width>  <height>25</height>
+                <label> "" </label><action>0</action></button>
+           <hseparator height-request="3" width-request="88"></hseparator>
+        </hbox>
+            <vseparator height-request="33" > </vseparator>
         <hbox homogeneous="true">
-            <button label="'===-BakAll-Tool-Tip-==='"
-            visible="true" 	has-focus="false" >
-            <action function="'launch'">msg_DC_BakAll_window</action><action function="'closewindow'">msg_DC_BakAll_window</action>
-            </button>
+        <button   visible="1"    height-request="25"> <label> "Archive+ReStart" </label> 
+                       <action>'Archive+ReStart'</action>       </button>
         </hbox>
+        
+        <hbox homogeneous="1">
+            <hseparator width-request="22"></hseparator>
+            <button has-focus="false" height-request="22"  xalign=".5"> 
+                 <input file>"'/tmp/EmGr-img-Check-redXred.svg'"</input><width>"35"</width><height>"35"</height>
+               <label>"''"</label><action>'0'</action> </button>
+           <button has-focus="false" height-request="22"  xalign=".5">   
+               <input file>"'/tmp/EmGr-img-apple-redyel.svg'"</input><width>"15"</width><height>"15"</height>
+                    <action function="'launch'">msg_DC_Quick_windowS</action><action function="'closewindow'">msg_DC_Quick_windowS</action>
+                <label>"''"</label><action>'0'</action>   </button>
+            <button  visible="1"   tooltip-text="''"  
+                gtk-apply="true" has-focus="false" >  
+                <label> "{{=== ONE-" </label>
+                        <action function="'launch'">msg_DC_Quick_window</action>  <action function="'closewindow'">msg_DC_Quick_window</action>
+                <action>'EXIT:guiMgrOneArcDts'</action>         </button>
+            <button visible="1" has-focus="false" height-request="13"  xalign=".5"  tooltip-text="" > 
+                <input file>"'/tmp/EmGr-img-apple-redyel.svg'"</input><width>25</width>  <height>25</height>
+                        <action function="'launch'">msg_DC_Quick_window</action><action function="'closewindow'">msg_DC_Quick_window</action>
+                <label> "{{-PXB-}}" </label><action>'EXIT:guiPXB_ion_RS'</action>   </button>
+            <button  visible="1"   tooltip-text="''" 
+                gtk-apply="true" has-focus="false" >
+                <label> "-ALL-===}}" </label>
+                         <action function="'launch'">msg_DC_Quick_window</action>  <action function="'closewindow'">msg_DC_Quick_window</action>
+               <action>'EXIT:guiMgrAllArcDts'</action>   </button>
+            <button has-focus="false" height-request="22"  xalign=".5">
+               <input file>"'/tmp/EmGr-img-apple-redyel.svg'"</input><width>"15"</width><height>"15"</height>
+                    <action function="'launch'">msg_DC_Quick_windowS</action><action function="'closewindow'">msg_DC_Quick_windowS</action>
+                <label>"''"</label><action>'0'</action>   </button>
+           <button has-focus="false" height-request="22"  xalign=".5">
+               <input file>"'/tmp/EmGr-img-Check-redXred.svg'"</input><width>"35"</width><height>"35"</height>
+                <label>"''"</label><action>'0'</action>   </button>
+            <hseparator width-request="230"></hseparator>
+        </hbox>
+        <vseparator  visible="1" height-request="11" > </vseparator>
 
+    </vbox>  
     <vbox>
-		<hbox homogeneous="false">
-            <hseparator width-request="15"></hseparator>
 
-                <button  visible="1" tooltip-text="'!---EXIT:guiBakAllRS---!'
-                    BakAll to 'RA'+'MH' then 'ReSTART' program {!}" >
-                            <input file>"/tmp/EmGr-img-Check-redred.svg"</input><width>23</width><height>23</height>
-                            <label>'BakAll-RS'</label>
-                                <action function="'launch'">msg_DC_Quick_window</action><action function="'closewindow'">msg_DC_Quick_window</action>
-                                <action>'EXIT:guiBakAllRS'</action>
-                            </button>
-                            <hseparator width-request="15"></hseparator>
+        <text visible="0"> 
+            <label>"'#################_NoteBook_Menu-############################'"</label> </text> 
+        <vseparator height-request="7"></vseparator>
+        <button use-markup="true" has-focus="false" height-request="55" width-request="50" xalign=".5"  
+            tooltip-text="''" >
+            <input file>"'/tmp/EmGr-img-button-menu.svg'"</input>
+            <label> "" </label><action>'0---button-menu'</action>  </button>
 
-                <button  visible="1" tooltip-text="'!!---EXIT:guiBakAllRB---!!'
-                    BakAll to 'RA'+'MH' then 'ReBOOT' system {!}" >
-                            <input file>"/tmp/EmGr-img-Check-grnXgrn.svg"</input><width>23</width><height>23</height>
-                            <label>'BakAll-RB'</label>
-                                <action function="'launch'">msg_DC_Quick_window</action><action function="'closewindow'">msg_DC_Quick_window</action>
-                                <action>'EXIT:guiBakAllRB'</action>
-                            </button>
-                            <hseparator width-request="15"></hseparator>
+        <button visible="1"  height-request="33" xalign=".5"  
+            tooltip-text="''" >
+            <label> "'---_"'"MENU"'"_Will_Over-Write_Existing_System_Menu_---'" </label>
+            <action>'0---Over-Write-menu'</action>  </button>
 
-                <button visible="1"  tooltip-text="'!!!---EXIT:guiBakAllCRB---!!!'
-                    BakAll_CTA_'ReBoot' system">
-                            <input file>"/tmp/EmGr-img-Check-bluXred.svg"</input><width>23</width><height>23</height>
-                            <label>'{_BakAll-C-RB_}'</label>
-                                <action function="'launch'">msg_DC_Quick_window</action><action function="'closewindow'">msg_DC_Quick_window</action>
-                                <action>'EXIT:guiBakAllCRB'</action>
-                            </button>
-                            <hseparator width-request="15"></hseparator>
+        <vbox  visible="1" homogeneous="true">
 
-                <button visible="1"  tooltip-text="'!!!!---EXIT:guiBakAllCRQ---!!!!'
-                    BakAll_CTA_'PowerOff' system">
-                            <input file>"/tmp/EmGr-img-Check-blublu.svg"</input><width>23</width><height>23</height>
-                            <label>'BakAll-C-RQ'</label>
-                                <action function="'launch'">msg_DC_Quick_window</action><action function="'closewindow'">msg_DC_Quick_window</action>
-                                <action>'EXIT:guiBakAllCRQ'</action>
-                            </button>
-
-            <hseparator width-request="85"></hseparator>
-		</hbox>
-    </vbox>
-    
-    <hbox homogeneous="true">
-        <vbox>
-            <vseparator  visible="'0'" height-request="7"></vseparator>
-
-            <button  visible="'1'" has-focus="false" height-request="7"  xalign=".5"   tooltip-text="before-QUIT" >
-                    <label> "'...'" </label> <action>lxAction:Before-Quit</action></button>
+            <vseparator visible="1" height-request="1" ></vseparator>
 
             <hbox homogeneous="true">
-                <button tooltip-text="'Double-Click-Program_Quit_'" >
-                    <input file>"'/tmp/EmGr-img-quit-rednnn.svg'"</input><width>33</width>  <height>33</height>
-                    <label>'!!!_QUIT-MGR_PROGRAM_!!!'</label> 
-                        <action function="'launch'">msg_DC_Quick_window</action>
-                        <action function="'closewindow'">msg_DC_Quick_window</action>
-                    <action>'EXIT:guiMainQUIT'</action>
-                </button>
-            </hbox>
-            <vseparator height-request="1" > </vseparator>
-        </vbox>
-    </hbox>
-    <vseparator  visible="'1'" height-request="1" > </vseparator>
 
-    <vbox> 
- 
-         <button  visible="'1'" has-focus="false" height-request="7"  xalign=".5"  tooltip-text="C4-/tmp/EmGr-img-apple-redblu.svg" >
-			<input file>"'/tmp/EmGr-img-apple-redgrn.svg'"</input><width>15</width>  <height>15</height>
-            <label> "..." </label><action>lxAction:C4</action></button>
+                <button visible="1" tooltip-text="'check-Big_90'" >
+                <input file>"'/tmp/EmGr-img-Check-90-redXyel.svg'"</input><width>33</width><height>33</height>
+                        <label>"''"</label> <action>'select-Big_90'</action>
+                    <action function="'launch'">     msg_DC_Check_90_Big_redXyel_window</action>
+                    <action function="'closewindow'">msg_DC_Check_90_Big_redXyel_window</action>    </button>
+
+                <button> <label>"'B4B'"</label>
+                        <input file> "'/tmp/EmGr-img-jug-redxyel.svg'"</input><width>17</width><height>17</height>
+                    <action function="'launch'">msg_DC_Quick_window</action><action function="'closewindow'">msg_DC_Quick_window</action>
+                    <action>'EXIT:ARB_B4B'</action>  </button>
+
+                <button> <label>"'B5B'"</label>
+                        <input file> "'/tmp/EmGr-img-jug-redxyel.svg'"</input><width>15</width><height>15</height>
+                    <action function="'launch'">msg_DC_Quick_window</action><action function="'closewindow'">msg_DC_Quick_window</action>
+                    <action>'EXIT:ARB_B5B'</action>  </button>
+
+                <button> <label>"'B64B'"</label>
+                        <input file> "'/tmp/EmGr-img-jug-redxyel.svg'"</input><width>15</width><height>15</height>
+                    <action function="'launch'">msg_DC_Quick_windowS</action><action function="'closewindow'">msg_DC_Quick_windowS</action>
+                    <action>'EXIT:ARB_B64B'</action>  </button>
+
+                <button> <label>"'N8N'" </label>
+                        <input file stock="gtk-yes"></input><width>7</width><height>7</height>   
+                    <action function="'launch'">msg_DC_Quick_windowS</action><action function="'closewindow'">msg_DC_Quick_windowS</action>
+                    <action>'EXIT:ARB_N8N'</action>  </button>
+
+                <button> <label>"'S1564'" </label>
+                        <input file stock="gtk-yes"></input><width>11</width><height>11</height>   
+                    <action function="'launch'">msg_DC_Quick_window</action><action function="'closewindow'">msg_DC_Quick_window</action>
+                    <action>'EXIT:ARB_S1564'</action>  </button>
+
+                <button> <label>"'DBW32'" </label>
+                        <input file stock="gtk-yes"></input><width>7</width><height>7</height>   
+                    <action function="'launch'">msg_DC_Quick_window</action><action function="'closewindow'">msg_DC_Quick_window</action>
+                    <action>'EXIT:ARB_DBW32'</action>  </button>
+
+
+                <button visible="1" tooltip-text="'check-Big_90'" >
+                <input file>"'/tmp/EmGr-img-Check-90-redXyel.svg'"</input><width>33</width><height>33</height>
+                        <label>"''"</label> <action>'select-Big_90'</action>
+                    <action function="'launch'">     msg_DC_Check_90_Big_redXyel_window</action>
+                    <action function="'closewindow'">msg_DC_Check_90_Big_redXyel_window</action>    </button>
+
+            </hbox>
+
+            <vseparator  visible="" height-request="3" > </vseparator>
+
+            <hbox homogeneous="true">
+
+                <button visible="1" tooltip-text="'check-Big_90'" >
+                <input file>"'/tmp/EmGr-img-Check-90-redXblu.svg'"</input><width>30</width><height>30</height>
+                        <label>"''"</label> <action>'select-Big_90'</action>
+                    <action function="'launch'">     msg_DC_Check_90_Big_redXblu_window</action>
+                    <action function="'closewindow'">msg_DC_Check_90_Big_redXblu_window</action>    </button>
+
+                <button>  <label>"'T-6'"</label>
+                        <input file> "'/tmp/EmGr-img-jug-redxyel.svg'"</input><width>15</width><height>15</height>
+                    <action function="'launch'">msg_DC_Quick_window</action><action function="'closewindow'">msg_DC_Quick_window</action>
+                    <action>'EXIT:ARB_T-6'</action>  </button>
+                <button> <label>"'K-K_'"</label>
+                        <input file stock="gtk-yes"></input><width>11</width><height>11</height>   
+                    <action function="'launch'">msg_DC_Quick_windowS</action><action function="'closewindow'">msg_DC_Quick_windowS</action>
+                    <action>'EXIT:ARB_K-K'</action>  </button>
+
+                <button> <label>"'I-I_'" </label>
+                        <input file stock="gtk-yes"></input><width>11</width><height>11</height>   
+                    <action function="'launch'">msg_DC_Quick_windowS</action><action function="'closewindow'">msg_DC_Quick_windowS</action>
+                    <action>'EXIT:ARB_I-I'</action>  </button>
+
+                <button> <label>"'F-F_'"</label>
+                        <input file stock="gtk-yes"></input><width>11</width><height>11</height>   
+                    <action function="'launch'">msg_DC_Quick_window</action><action function="'closewindow'">msg_DC_Quick_window</action>
+                    <action>'EXIT:ARB_F-F'</action>  </button>
+
+                <button> <label>"'X708_'"</label>
+                        <input file stock="gtk-yes"></input><width>11</width><height>11</height>   
+                    <action function="'launch'">msg_DC_Quick_window</action><action function="'closewindow'">msg_DC_Quick_window</action>
+                    <action>'EXIT:ARB_X708'</action>  </button>
+
+                <button visible="1" tooltip-text="'check-Big_90'" ><input file>"'/tmp/EmGr-img-Check-90-redXblu.svg'"</input><width>33</width><height>33</height>
+                        <label>"''"</label> <action>'select-Big_90'</action> 
+                    <action function="'launch'">     msg_DC_Check_90_Big_redXblu_window</action>
+                    <action function="'closewindow'">msg_DC_Check_90_Big_redXblu_window</action>    </button>
+
+            </hbox>
+
+            <vseparator  visible="0" height-request="3" > </vseparator>
+
+            <hbox homogeneous="true">
+
+                <button visible="1" tooltip-text="'check-Big_90'" >
+                <input file>"'/tmp/EmGr-img-Check-90-redXgrn.svg'"</input><width>30</width><height>30</height>
+                        <label>"''"</label> <action>'select-Big_90'</action>  
+                    <action function="'launch'">     msg_DC_Check_90_Big_redXgrn_window</action>
+                    <action function="'closewindow'">msg_DC_Check_90_Big_redXgrn_window</action>    </button>
+
+                <button> <label>"'X64_'"</label>
+                        <input file stock="gtk-yes"></input><width>11</width><height>11</height>   
+                    <action function="'launch'">msg_DC_Quick_window</action><action function="'closewindow'">msg_DC_Quick_window</action>
+                    <action>'EXIT:ARB_X64'</action>  </button>
+
+                <button> <label>"'S-7_'"</label>
+                        <input file stock="gtk-yes"></input><width>11</width><height>11</height>   
+                    <action function="'launch'">msg_DC_Quick_window</action><action function="'closewindow'">msg_DC_Quick_window</action>
+                    <action>'EXIT:ARB_S-7'</action>  </button>
+
+                <button> <label>"'S64_'" </label>
+                        <input file stock="gtk-yes"></input><width>11</width><height>11</height>   
+                    <action function="'launch'">msg_DC_Quick_window</action><action function="'closewindow'">msg_DC_Quick_window</action>
+                    <action>'EXIT:ARB_S64'</action>  </button>
+
+                <button> <label>"'SLXSC_'"</label>
+                         <input file stock="gtk-yes"></input><width>11</width><height>11</height>   
+                    <action function="'launch'">msg_DC_Quick_window</action><action function="'closewindow'">msg_DC_Quick_window</action>
+                    <action>'EXIT:ARB_SLXSC'</action>  </button>
+
+                <button visible="0"> <label>"'SLK64_'" </label>
+                        <input file stock="gtk-yes"></input><width>11</width><height>11</height>
+                    <action function="'launch'">msg_DC_Quick_window</action><action function="'closewindow'">msg_DC_Quick_window</action>
+                    <action>'EXIT:ARB_SLK64'</action>  </button>
+
+                <button tooltip-text="Generic"> <label>"'genORG'" </label>
+                        <input file stock="gtk-no"></input><width>11</width><height>11</height>   
+                    <action function="'launch'">msg_DC_Quick_window</action><action function="'closewindow'">msg_DC_Quick_window</action>
+                    <action>'EXIT:ARB_ORG'</action>  </button>
+
+                <button visible="1" tooltip-text="'check-Big_90'" ><input file>"'/tmp/EmGr-img-Check-90-redXgrn.svg'"</input><width>33</width><height>33</height>
+                        <label>"''"</label> <action>'select-Big_90'</action>  
+                    <action function="'launch'">     msg_DC_Check_90_Big_redXgrn_window</action>
+                    <action function="'closewindow'">msg_DC_Check_90_Big_redXgrn_window</action>    </button>
+
+            </hbox>
+
+            <vseparator  visible="0" height-request="1" > </vseparator>
+
+            <hbox homogeneous="true">
+
+                <button visible="1" tooltip-text="'check-Big_90'" >
+                <input file>"'/tmp/EmGr-img-Check-90-redXblu.svg'"</input><width>30</width><height>30</height>
+                        <label>"''"</label> <action>'select-Big_90'</action>  
+                    <action function="'launch'">     msg_DC_Check_90_Big_redXblu_window</action>
+                    <action function="'closewindow'">msg_DC_Check_90_Big_redXblu_window</action>    </button>
+
+                <button> <label>"'Qk7_'" </label>
+                        <input file stock="gtk-yes"></input><width>9</width><height>9</height>   
+                    <action function="'launch'">msg_DC_Quick_window</action><action function="'closewindow'">msg_DC_Quick_window</action>
+                    <action>'EXIT:ARB_Qk7'</action>  </button>
+
+                <button visible="1"> <label>"'EOS_'" </label>
+                        <input file stock="gtk-yes"></input><width>9</width><height>9</height>
+                    <action function="'launch'">msg_DC_Quick_window</action><action function="'closewindow'">msg_DC_Quick_window</action>
+                    <action>'EXIT:ARB_EOS'</action>  </button>
+
+                <button> <label>"'S-7_'"</label>
+                        <input file stock="gtk-yes"></input><width>9</width><height>9</height>   
+                    <action function="'launch'">msg_DC_Quick_window</action><action function="'closewindow'">msg_DC_Quick_window</action>
+                    <action>'EXIT:ARB_S-7'</action>  </button>
+
+                <button> <label>"'S64_'" </label>
+                        <input file stock="gtk-yes"></input><width>9</width><height>9</height>   
+                    <action function="'launch'">msg_DC_Quick_window</action><action function="'closewindow'">msg_DC_Quick_window</action>
+                    <action>'EXIT:ARB_S64'</action>  </button>
+
+                <button> <label>"'SLXSC_'"</label>
+                         <input file stock="gtk-yes"></input><width>9</width><height>9</height>   
+                    <action function="'launch'">msg_DC_Quick_window</action><action function="'closewindow'">msg_DC_Quick_window</action>
+                    <action>'EXIT:ARB_SLXSC'</action>  </button>
+
+                <button visible="0"> <label>"'SLK64_'" </label>
+                        <input file stock="gtk-yes"></input><width>9</width><height>9</height>
+                    <action function="'launch'">msg_DC_Quick_window</action><action function="'closewindow'">msg_DC_Quick_window</action>
+                    <action>'EXIT:ARB_SLK64'</action>  </button>
+
+                <button visible="1" tooltip-text="'check-Big_90'" >
+                <input file>"'/tmp/EmGr-img-Check-90-redXblu.svg'"</input><width>30</width><height>30</height>
+                        <label>"''"</label> <action>'select-Big_90'</action>  
+                    <action function="'launch'">     msg_DC_Check_90_Big_redXblu_window</action>
+                    <action function="'closewindow'">msg_DC_Check_90_Big_redXblu_window</action>    </button>
+
+            </hbox>
+
+            <hbox homogeneous="true">
+
+                <button visible="1" tooltip-text="'check-Big_90'" >
+                <input file>"'/tmp/EmGr-img-Check-90-redXgrn.svg'"</input><width>33</width><height>33</height>
+                        <label>"''"</label> <action>'select-Big_90'</action>  
+                    <action function="'launch'">     msg_DC_Check_90_Big_redXgrn_window</action>
+                    <action function="'closewindow'">msg_DC_Check_90_Big_redXgrn_window</action>    </button>
+
+                <button> <label>"'N8N_'" </label>
+                        <input file stock="gtk-yes"></input><width>7</width><height>7</height>   
+                    <action function="'launch'">msg_DC_Quick_windowS</action><action function="'closewindow'">msg_DC_Quick_windowS</action>
+                    <action>'EXIT:ARB_N8N'</action>  </button>
+
+                <button>  <label>"'M6M_'"</label>
+                        <input file stock="gtk-yes"></input><width>11</width><height>11</height>   
+                    <action function="'launch'">msg_DC_Quick_window</action><action function="'closewindow'">msg_DC_Quick_window</action>
+                    <action>'EXIT:ARB_M6M'</action>  </button>
+
+                <button> <label>"'DBW64_'" </label>
+                        <input file stock="gtk-yes"></input><width>7</width><height>7</height>   
+                    <action function="'launch'">msg_DC_Quick_window</action><action function="'closewindow'">msg_DC_Quick_window</action>
+                    <action>'EXIT:ARB_DBW64'</action>  </button>
+
+                <button> <label>"'DVN9_'" </label>
+                        <input file stock="gtk-yes"></input><width>7</width><height>7</height>   
+                    <action function="'launch'">msg_DC_Quick_window</action><action function="'closewindow'">msg_DC_Quick_window</action>
+                    <action>'EXIT:ARB_DVN9'</action>  </button>
+
+                <button  tooltip-text="'Build+ReStart'">
+                    <label>"'-'" </label>
+                        <input file stock="gtk-no"></input><width>7</width><height>7</height>   
+                    <action function="'launch'">msg_DC_Quick_window</action><action function="'closewindow'">msg_DC_Quick_window</action>
+                    <action>'EXIT=ARB_ORG'</action>  </button>
+
+                <button visible="1" tooltip-text="'check-Big_90'" >
+                <input file>"'/tmp/EmGr-img-Check-90-redXgrn.svg'"</input><width>33</width><height>33</height>
+                        <label>"''"</label> <action>'select-Big_90'</action>  
+                    <action function="'launch'">     msg_DC_Check_90_Big_redXgrn_window</action>
+                    <action function="'closewindow'">msg_DC_Check_90_Big_redXgrn_window</action>    </button>
+
+            </hbox>
+
+            </vbox>
 
     </vbox>
+    <vbox>
+    
+        <text visible="false"> 
+        <label>"'#################_NoteBook_Back-Up_###########################'"</label> </text> 
 
+            <vseparator height-request="3"></vseparator>
+            <button visible="0" use-markup="true" has-focus="false" height-request="55" width-request="50" xalign=".5"  
+                tooltip-text="''" >
+                <input file>"'/tmp/EmGr-img-button-back.svg'"</input>
+                <label> "" </label><action>'0---button-back'</action>  </button>
+            <vseparator height-request="3"></vseparator>
+
+            <button visible="1"   tooltip-text="''" >
+                <input file>"'/tmp/EmGr-img-jug-blu0yel.svg'"</input><width>15</width><height>15</height>
+                <label> "  '===!-_BakOne-BakAll-Tool-Tip_-!==='  " </label> 
+                <action function="'launch'">msg_DC_MainBakOneAll_window</action>
+                <action>'0-Main_BackOne-BackAll-Tool-Tip'</action> </button>
+
+            <button visible="1"  tooltip-text=""  
+                has-focus="true" width-request="35" height-request="35" >
+                <input file> "'/tmp/EmGr-img-jug-redxyel.svg'"</input><width>33</width><height>33</height>
+                <label>"'*_BakOne_BakAll_CTX_ReSTART_*'"</label>
+                <action function="'launch'">     msg_DC_Quick_window</action> 
+                <action function="'closewindow'">msg_DC_Quick_window</action>
+                    <action>'EXIT:guiCTB-SLX-RS'</action>   </button>
+            <vseparator height-request="3"></vseparator>
+            <button visible="1"  tooltip-text=""  
+                has-focus="true" width-request="55" height-request="35" >
+                <input file> "'/tmp/EmGr-img-hash-red.xpm'"</input><width>33</width><height>33</height>
+                <label>"'*_Master_BakOne_BakAll_CTX_PowerOFF_*'"</label>
+                <action function="'launch'">     msg_DC_Quick_window</action> 
+                <action function="'closewindow'">msg_DC_Quick_window</action>
+                    <action>'EXIT:guiCTB-SLX-RQ'</action>   </button>
+            <vseparator height-request="3"></vseparator>
+            <button visible="1"  tooltip-text=""  
+                has-focus="true" width-request="55" height-request="35" >
+                <input file> "'/tmp/EmGr-img-jug-redxgrn.svg'"</input><width>33</width><height>33</height>
+                <label>"'*_Master_BakOne_BakAll_CTX_ReBoot_*'"</label>
+                <action function="'launch'">msg_DC_Quick_window</action> 
+                <action function="'closewindow'">msg_DC_Quick_window</action>
+                    <action>'EXIT:guiCTB-SLX-RB'</action>   </button>
+            <vseparator height-request="3"></vseparator>
+            <hseparator width-request="15"></hseparator>            
+            <button   visible="0"   tooltip-text="''"  width-request="25"  height-request="25"> <label> "" </label> 
+                        <input file stock="gtk-ok"></input><width>11</width><height>11</height>   
+                       <action>'0-top-XXX'</action>       </button>
+            <button visible="1" tooltip-text=""  width-request="55" height-request="35" > 
+                <input file>"'/tmp/EmGr-img-quit-rednnn.svg'"</input><width>33</width><height>33</height>   
+                <label>"'{{_BackOne_BakAll_CTB-SLX_PO_PowerOff_}}'"</label>
+                <action>echo '/root/my-applications/rc.z_CTB-SLX.sh' > /0-MGR_MB_RetVal.cfg </action>  
+            <action function="'launch'">msg_DC_Quick_window</action> 
+            <action function="'closewindow'">msg_DC_Quick_window</action>
+                    <action>'EXIT:guiCTB-SLX-PO'</action>   </button>
+            <vseparator height-request="3"></vseparator>
+            <vseparator  visible="1" height-request="3" > </vseparator>
+            <button   visible="0"   tooltip-text="''"  width-request="55"  height-request="15"> <label> "" </label> 
+                        <input file stock="gtk-ok"></input><width>11</width><height>11</height>   
+                       <action>'0-top-C3C'</action>       </button>
+            <hbox visible="1" homogeneous="false">
+            <hbox homogeneous="0">
+                <hseparator width-request="110"></hseparator>
+                    <checkbox  active="'$CbxB1'">  <label>'BakOne'</label>   </checkbox>
+                    <checkbox  active="'$CbxPxb'">  <label>'{PXB}'</label>   </checkbox>
+                    <checkbox  active="'$CbxB2'">  <label>'BakAll'</label>   </checkbox>
+                    <checkbox  active="'$CbxRs'">  <label>'ReStart'</label>  </checkbox>
+                    <checkbox  active="'$CbxRb'">  <label>'ReBoot'</label>   </checkbox>  
+                    <checkbox  active="'$CbxRq'">  <label>'ReQuit'</label>   </checkbox>
+                <hseparator width-request="60"></hseparator>
+            </hbox>
+                <hseparator width-request="170"></hseparator>
+            </hbox>
+            <vseparator  visible="1" height-request="3" > </vseparator>
+            <hbox homogeneous="true">
+                <button visible="1" tooltip-text="EXIT:CbxApply_ComboBoxes_Developmental_" >
+                   <input file>"'/tmp/EmGr-img-apple-redblu.svg'"</input><width>"15"</width><height>"15"</height>
+                   <label> '_Execute-Combo-Boxes'  </label>
+                   <action>'EXIT=CbxApply'</action>
+                    </button>
+            </hbox>
+            <vseparator visible="1" height-request="3"></vseparator>
+            <button   visible="0"   tooltip-text="''"  width-request="55"  height-request="11"> <label> "" </label> 
+                        <input file stock="gtk-ok"></input><width>11</width><height>11</height>   
+                       <action>'0-top-C3C'</action>       </button>
+            <vseparator height-request="3"></vseparator>
+            <hbox homogeneous="true">
+                <button visible="1"   tooltip-text="''" >
+                <input file>"'/tmp/EmGr-img-jug-blu0yel.svg'"</input><width>30</width><height>30</height>
+                <label> "  '===!-C3C-Tool-Tip-!==='  " </label> 
+                <action function="'launch'">msg_DC_C3C_window</action>
+                <action>'0-C3C-Tool-Tip'</action> </button>
+            </hbox>
+            <hbox homogeneous="true">
+                <button tooltip-text="EXIT:C3CS2F:ReStart" >
+                   <input file>"'/tmp/EmGr-img-quit-rednnn.svg'"</input><width>"25"</width><height>"25"</height>
+                   <label> "'_Clear_C3C+S2F+ReStart'"  </label>
+                   <action function="'launch'">msg_DC_Quick_window</action>
+                   <action function="'closewindow'">msg_DC_Quick_window</action>
+                   <action>'EXIT:C3CS2F'</action> </button>
+            </hbox>
+           <vseparator visible="1" height-request="3"></vseparator>
+
+    </vbox>
+    <vbox>
+
+        <text visible="false"> 
+        <label>"'####################_NoteBook_Dox_############################'"</label> </text> 
+        <vseparator height-request="22"></vseparator>
+        <button use-markup="true" has-focus="false" height-request="55" width-request="50" xalign=".5"  
+            tooltip-text="''" >
+            <input file>"'/tmp/EmGr-img-button-dox.svg'"</input>
+            <label> "" </label><action>'0---button-dox'</action>  </button>
+        <vseparator height-request="22"></vseparator>
+            <hbox homogeneous="true">
+                <button visible="1" tooltip-text="'===-EXIT:guiDumpHLP-==='  <HELP dump>"  has-focus="false">
+                    <input file>"'/tmp/EmGr-img-Check-90-redXblu.svg'"</input><width>45</width><height>35</height>
+                    <label>"'HELP'  " </label>
+                    <action>'Sbr_Dump_HLP'</action> </button>
+                <button visible="1"  tooltip-text="'===-EXIT:guiDumpProc-==='  <Process_dump>"  has-focus="false">
+                    <input file>"'/tmp/EmGr-img-Check-90-redXgrn.svg'"</input><width>45</width><height>35</height>
+                    <label> "'Process'  " </label>
+                    <action>'Sbr_Dump_Proc'</action> </button>
+                <button visible="1"  tooltip-text="'===-EXIT:guiDumpFAQ-==='  <FAQ dump>" has-focus="false">
+                    <input file>"'/tmp/EmGr-img-Check-90-redXyel.svg'"</input><width>45</width><height>35</height>
+                    <label> "'Faq'  " </label>
+                    <action>'Sbr_Dump_FAQ'</action> </button>
+            </hbox>
+
+            <hbox homogeneous="true">
+               <button visible="1" tooltip-text="'EXIT:guiDumpSrc'  < Display Devloper Source >"   has-focus="false">
+                    <input file>"'/tmp/EmGr-img-Check-grnXgrn.svg'"</input><width>37</width><height>37</height>
+                    <label>"'Dump_Source_Code_' "</label>
+                    <action>'EXIT:guiDumpSrc'</action> </button>
+               <button visible="1" tooltip-text="'EXIT:guiDumpImg'  < Display Devloper Source >"   has-focus="false">
+                    <input file>"'/tmp/EmGr-img-Check-grnXgrn.svg'"</input><width>37</width><height>37</height>
+                    <label>"'Dump_Source_Image_' "</label>
+                    <action>'EXIT:guiDumpImg'</action> </button>
+               <button visible="1" tooltip-text="'EXIT:guiDumpSys'  < Display Devloper SysProc >"   has-focus="false">
+                    <input file>"'/tmp/EmGr-img-Check-grnXgrn.svg'"</input><width>27</width><height>27</height>
+                    <label> "  'Dump_Sys'  " </label>
+                    <action>'EXIT:guiDumpSys'</action> </button>
+            </hbox>
+
+            <button><input file>"'/tmp/EmGr-img-jug-grnxred.svg'"</input><width>15</width><height>5</height><action>"P3-spacer"</action> </button>
+            <vseparator height-request="3" > </vseparator>
+            <vbox>
+            <hbox homogeneous="true">
+                <button visible="1" tooltip-text="'===-EXIT:guiDumpUPL-==='  < Phil PeaBee : UpPopLegal_Flg >"  has-focus="false">
+                    <input file>"'/tmp/EmGr-img-Check-grnXgrn.svg'"</input><width>27</width><height>27</height>
+                    <label> "  'Dump_UPL'    " </label>
+                    <action>'EXIT:guiDumpUPL'</action>   </button>
+                <button visible="1" tooltip-text="'===-EXIT:guiDumpGXM-==='  < Phil PeaBee : UpPopLegal_Flg >"  has-focus="false">
+                    <input file>"'/tmp/EmGr-img-Check-grnXgrn.svg'"</input><width>27</width><height>27</height>
+                    <label> "  'Dump_GXM'    " </label>
+                    <action>'EXIT:guiDumpGXM'</action>   </button>
+                <button visible="1" tooltip-text="'===-EXIT:guiDumpPUP-==='  < PupState >"  has-focus="false">
+                    <input file>"'/tmp/EmGr-img-Check-grnXgrn.svg'"</input><width>27</width><height>27</height>
+                    <label> "  'Dump_PUP'    " </label>
+                    <action>'EXIT:guiDumpPUP'</action>   </button>
+            </hbox>
+            </vbox>
+            <hbox homogeneous="true">
+                <button  tooltip-text="'=-EXIT:guiDumpPath='"   has-focus="false">
+                    <input file>"'/tmp/EmGr-img-Check-grnXgrn.svg'"</input><width>27</width><height>27</height>
+                    <label>" 'Dump_Path'   "</label>	
+                    <action>'EXIT:guiDumpPath'</action> </button>
+                <button    tooltip-text="'===-EXIT:guiBase64__Sbr_Base64-==='"   has-focus="false">
+                    <input file>"'/tmp/EmGr-img-Check-bluXred.svg'"</input><width>27</width><height>27</height>
+                    <label> "'Dump_Source-to-Base64'  " </label>    
+                    <action>'EXIT:guiSrcBase64'</action> </button>
+                <button visible="1" tooltip-text="'===-EXIT:guiDumpDeclare-==='  < Phil PeaBee : UpPopLegal_Flg >"  has-focus="false">
+                    <input file>"'/tmp/EmGr-img-Check-grnXgrn.svg'"</input><width>27</width><height>27</height>
+                    <label> " 'Dump_Declare'   " </label>
+                    <action>'EXIT:guiDumpDeclare'</action>   </button>
+            </hbox>    
+            <hbox homogeneous="true">
+              <button visible="1"    tooltip-text="'===-EXIT:guiMandelbrot-==='   "   has-focus="false">
+                    <input file>"'/tmp/EmGr-img-Check-bluXred.svg'"</input><width>22</width><height>22</height>
+                    <label>"'Mandelbrot'  "</label>  
+                    <action>'EXIT:guiMandelbrot'</action> </button>
+            <button  tooltip-text="'=-EXIT:_DISTRO_guiBackGround-=':only-launch, only PageDOX, 250"   has-focus="false">
+                    <input file>"'/tmp/EmGr-img-Check-bluXred.svg'"</input><width>22</width><height>22</height>
+            <label>"'Distro-List'   "</label>	
+                    <action>'EXIT:gui_Dxstro_Window'</action> </button>
+            <button visible="1" tooltip-text="'=-EXIT:guiAudio_for_StartUpSound+LogInDts-='"   has-focus="false">
+                    <input file>"'/tmp/EmGr-img-Check-bluXred.svg'"</input><width>22</width><height>22</height>
+<label>
+"'Start'
+'Audio'
+'Sound_' "
+</label>    
+                    <action>'EXIT:guiAudio'</action> 
+                    </button>
+                </hbox>
         <hbox homogeneous="true">
-           <hseparator width-request="7"></hseparator>
+            <button>  <label>" 'https://github.com' "</label>
+                <input file>"'/tmp/EmGr-img-Check-grnXgrn.svg'"</input><width>27</width><height>27</height>
+                <action function="closewindow">msg_DC_LxgenDox_window_0</action>    </button>
+            <button visible="0">  <label>" 'https://github.com' "</label>
+                <action function="closewindow">msg_DC_LxgenDox_window_0</action>    </button>
+            </hbox>
+        <button><input file>"'/tmp/EmGr-img-jug-grnxred.svg'"</input><width>15</width><height>5</height>
+            <action>"'P3-spacer'"</action> </button>
+        <hseparator width-request="20"></hseparator>
+
+    </vbox>
+    <vbox> 
+
+            <text visible="false"> 
+            <label>"'####################_NoteBook_Util_############################'"</label> </text> 
+            <vseparator height-request="3"></vseparator>
+            <button visible="0" use-markup="true" has-focus="false" height-request="55" width-request="50" xalign=".5"  
+                tooltip-text="''" >
+                <input file>"'/tmp/EmGr-img-button-util.svg'"</input>
+                <label> "" </label><action>'0---button-util'</action>  </button>
+            <vseparator height-request="3"></vseparator>
+            <hbox homogeneous="false" visible="1">
+                <hseparator width-request="37"></hseparator>
+                <button    tooltip-text="">
+                    <input file>"'/tmp/EmGr-img-Check-90-redXblu.svg'"</input><width>35</width><height>35</height>   
+                    <label>'{-S2F1-internal}'</label>
+                    <action function="'launch'">msg_DC_Quick_window</action><action function="'closewindow'">msg_DC_Quick_window</action>
+                    <action>'EXIT:guiS2F1_MI'</action>  </button>
+                <hseparator width-request="22"></hseparator>
+                <button    tooltip-text="" >
+                    <input file>"'/tmp/EmGr-img-Check-90-redXyel.svg'"</input><width>35</width>  <height>35</height>
+                    <label> "'{-PXB-RS-Internal}'" </label>
+                    <action function="'launch'">msg_DC_Quick_window</action><action function="'closewindow'">msg_DC_Quick_window</action>
+                    <action>'EXIT:guiPXB_ion_RS'</action></button>
+                <hseparator width-request="22"></hseparator>
+                <button  tooltip-text="">
+                    <input file>"'/tmp/EmGr-img-Check-90-redXgrn.svg'"</input><width>35</width><height>35</height>   
+                        <label>'{-S2F3-internal}'</label>
+                    <action function="'launch'">msg_DC_Quick_window</action><action function="'closewindow'">msg_DC_Quick_window</action>
+                    <action>'EXIT:guiS2F3_MI'</action>  </button>
+                <hseparator width-request="177"></hseparator>
+            </hbox>
+        
+            <hbox visible="1">
+                    <hseparator width-request="3"></hseparator>
+                     <button    tooltip-text="">
+                            <input file>"'/tmp/EmGr-img-Check-90-redXblu.svg'"</input><width>35</width><height>35</height>   
+                            <label>'{-PnMount-}'</label>
+                        <action function="'launch'">msg_DC_Quick_window</action><action function="'closewindow'">msg_DC_Quick_window</action>
+                            <action>'Sbr_MGR_pMount_All'</action>  </button>
+                    <hseparator width-request="22"></hseparator>
+                    <button    tooltip-text="">
+                            <input file>"'/tmp/EmGr-img-Check-90-redXgrn.svg'"</input><width>35</width><height>35</height>   
+                            <label>'{-UnMount-}'</label>
+                        <action function="'launch'">msg_DC_Quick_window</action><action function="'closewindow'">msg_DC_Quick_window</action>
+                            <action>'Sbr_Sys_uMount_All'</action>  </button>
+                    <hseparator width-request="280"></hseparator>
+            </hbox>
+
+           <vseparator  visible="1" height-request="3" > </vseparator>
+            <button visible="0" label="" has-focus="false" height-request="11"> 
+                <action>'0-top-CTX-external'</action> </button>
+            <vbox>
+                <button visible="1" label="'{_Dependencies_/root/my-applications_}'" has-focus="false" width-request="100" height-request="35"> 
+                    <action>'0_Dependencies_'</action> </button>
+            </vbox>
+          
+           <vseparator  visible="0" height-request="3" > </vseparator>
+                <hbox visible="1" homogeneous="0">
+                    <hseparator width-request="15"></hseparator>
+                    <button visible="1" tooltip-text="''">
+                        <input file>"'/tmp/EmGr-img-jug-grnxred.svg'"</input><width>12</width><height>12</height>   
+                        <label>'={_CTB-5.2_}='</label>
+                        <action function="'launch'">msg_DC_Quick_window</action><action function="'closewindow'">msg_DC_Quick_window</action>
+                            <action>'EXIT:guiCTB52'</action>  </button>
      
-            <button tooltip-text="Simple_guiSimReStart">
-                <input file>"'/tmp/EmGr-img-Check-grnXgrn.svg'"</input><width> "35" </width> <height> "25" </height>
-                <label>'_ReStart__'</label>
+                    <hseparator width-request="115"></hseparator>
+     
+                    <button visible="1" tooltip-text="''"  > 
+                        <input file>"'/tmp/EmGr-img-quit-rednnn.svg'"</input> <width>12</width> <height>12</height>   
+                        <label>"'_BakAll_CTB-SLX_PO_powerOff_'"</label>
+                        <action function="'launch'">msg_DC_Quick_window</action><action function="'closewindow'">msg_DC_Quick_window</action>
+                             <action>'EXIT:guiCTB-SLX-PO'</action>   </button>
+     
+                    <hseparator width-request="195"></hseparator>
+                </hbox>
+
+                <vseparator visible="1" height-request="3" > </vseparator>
+                         
+                <button   visible="0"   tooltip-text="'EXIT:guiMCI' < MCI > Instructional 
+                    Embedded Graphics Sample Project  "has-focus="false" height-request="11"> <label> "" </label> 
+                            <input file icon="gtk-select-color" ></input>   
+                           <action>'top-guiMCI'</action>       </button>
+                <hbox homogeneous="false">
+                <hseparator width-request="44"></hseparator>
+                <button  visible="1"   gtk-apply="true" has-focus="false" > 
+                    <input file>"'/tmp/EmGr-img-Check-bluXblu.svg'"</input><width>"35"</width><height>"35"</height>
+                    <label> " { 'MCI_Project_Instructional-Ext' }  " </label>
+                    <action>'EXIT:guiMCI'</action>      </button>
+                <hseparator width-request="44"></hseparator>
+     
+                <button  visible="0"   gtk-apply="true" has-focus="false" > 
+                    <input file>"'/tmp/EmGr-img-Check-bluXblu.svg'"</input><width>"35"</width><height>"35"</height>
+                    <label> " { 'MGS-8_Project_Simple-Ext' }  " </label>
+                    <action>'EXIT:guiMGS-8'</action>      </button>
+                <hseparator width-request="277"></hseparator>
+            </hbox>
+            <vseparator  visible="1" height-request="3" > </vseparator>
+            <button visible="0" label="" has-focus="false" height-request="11"> 
+                <action>'top-image-lib'</action> </button>
+            <hbox>
+                <button label="'-Image-Library-'" visible="1" height-request="1"> <action>lxAction:spacer</action> </button>
+                <hseparator width-request="57" > </hseparator>
+                <button label="'-QuitExit-'" has-focus="false" height-request="25"> <action>lxAction:spacer</action> </button>
+                <button     tooltip-text="'Quit-Red'" >   <input file>"'/tmp/EmGr-img-quit-rednnn.svg'"</input><width>25</width><height>25</height>
+                    <label> "''" </label> <action>"'apple:0'"</action> </button>
+                <button     tooltip-text="'Quit-grnnnn'" ><input file>"'/tmp/EmGr-img-quit-grnnnn.svg'"</input><width>25</width><height>25</height>
+                    <label> "''" </label><action>"'apple:1'"</action> </button>
+                <button     tooltip-text="'Quit-yelnnn'" ><input file>"'/tmp/EmGr-img-quit-yelnnn.svg'"</input><width>25</width><height>25</height>
+                    <label> "''" </label><action>"'apple:2'"</action> </button>
+                <hseparator width-request="27" > </hseparator>
+                <button label="'-Apples-'" has-focus="false" height-request="25"> <action>lxAction:spacer</action> </button>
+                <button     tooltip-text="'apple-redred'" ><input file>"'/tmp/EmGr-img-apple-redred.svg'"</input><width>25</width><height>25</height>
+                    <label> "''" </label><action>"'apple:3'"</action> </button>
+                <button     tooltip-text="'apple-redblu'" ><input file>"'/tmp/EmGr-img-apple-redblu.svg'"</input><width>25</width><height>25</height>
+                    <label> "''" </label><action>"'apple:4'"</action> </button>
+                <button     tooltip-text="'apple-redyel'" ><input file>"'/tmp/EmGr-img-apple-redyel.svg'"</input><width>25</width><height>25</height>
+                    <label> "''" </label><action>"'apple:5'"</action> </button>
+                <button     tooltip-text="'apple-redgrn'" ><input file>"'/tmp/EmGr-img-apple-redgrn.svg'"</input><width>25</width><height>25</height>
+                    <label> "''" </label><action>"'apple:6'"</action> </button>
+                <hseparator width-request="117" > </hseparator>
+            </hbox>
+            <hbox>
+                <hseparator width-request="7" > </hseparator>
+                <button label="'-Hash-'" has-focus="false" height-request="5"> <action>"'Hash:0'"</action> </button>
+                <button     tooltip-text="'hash-red'" ><input file>"'/tmp/EmGr-img-hash-red.xpm'"</input><width>25</width><height>25</height>
+                    <label> "''" </label>
+                    <action>"'Hash:1'"</action> </button>
+                <button     tooltip-text="'hash-grn'" ><input file>"'/tmp/EmGr-img-hash-grn.xpm'"</input><width>25</width><height>25</height>
+                    <label> "''" </label>
+                    <action>"'Hash:2'"</action> </button>
+                <button     tooltip-text="'hash-blu'" ><input file>"'/tmp/EmGr-img-hash-blu.xpm'"</input><width>25</width><height>25</height>
+                    <label> "''" </label>
+                    <action>"'Hash:3'"</action> </button>
+                <hseparator width-request="67" > </hseparator>
+                <button label="'-Jugs-'" has-focus="false" height-request="25"> <action>lxAction:spacer</action> </button>
+                <button     tooltip-text="'jug-blu0yel'" >   <input file>"'/tmp/EmGr-img-jug-blu0yel.svg'"</input><width>25</width><height>25</height>
+                    <label> "''" </label> <action>"'jug:1'"</action> </button>
+                <button     tooltip-text="'jug-grnxorange'" ><input file>"'/tmp/EmGr-img-jug-grnxorange.svg'"</input><width>25</width><height>25</height>
+                    <label> "''" </label><action>"'jug:2'"</action> </button>
+                <button     tooltip-text="'jug-redxyel'" >   <input file>"'/tmp/EmGr-img-jug-redxyel.svg'"</input><width>25</width><height>25</height>
+                    <label> "''" </label><action>"'jug:3'"</action> </button>
+                <button     tooltip-text="'jug-redxgrn'" >   <input file>"'/tmp/EmGr-img-jug-redxgrn.svg'"</input><width>25</width><height>25</height>
+                    <label> "''" </label><action>"'jug:4'"</action> </button>
+                <button     tooltip-text="'jug-grnxred'" >   <input file>"'/tmp/EmGr-img-jug-grnxred.svg'"</input><width>25</width><height>25</height>
+                    <label> "''" </label><action>"'jug:5'"</action> </button>
+                <button     tooltip-text="'jug-redxyel'" >   <input file>"'/tmp/EmGr-img-jug-redxyel.svg'"</input><width>25</width><height>25</height>
+                    <label> "''" </label><action>"'jug:6'"</action> </button>
+                <button     tooltip-text="'jug-redxblu'" >   <input file>"'/tmp/EmGr-img-jug-redxblu.svg'"</input><width>25</width><height>25</height>
+                    <label> "''" </label><action>"'jug:7'"</action> </button>
+                <hseparator width-request="127" > </hseparator>
+            </hbox>
+            <hbox>
+                <hseparator width-request="7" > </hseparator>
+                <button label="'-Check-90-'" has-focus="false" height-request="15"> <action>"'Check:90:0'"</action> </button>
+                <button visible="1" tooltip-text="'check-Big_90'" ><input file>"'/tmp/EmGr-img-Check-90-redXyel.svg'"</input><width>55</width><height>55</height>
+                        <label>"''"</label> <action>'0-check-90-redXyel'</action> 
+                   <action function="'launch'">     msg_DC_Check_Big_90_window</action><action function="'closewindow'">msg_DC_Check_Big_90_window</action>    </button>
+                <button visible="1" tooltip-text="'check-90-redXblu'" ><input file>"'/tmp/EmGr-img-Check-90-redXblu.svg'"</input><width>55</width><height>55</height>
+                        <label>"''"</label> <action>'0-select-Check-90'</action> 
+                   <action function="'launch'">     msg_DC_Check_90_Big_redXblu_window</action><action function="'closewindow'">msg_DC_Check_90_Big_redXblu_window</action>    </button>
+                <button visible="1" tooltip-text="'check-90-redXgrn'" ><input file>"'/tmp/EmGr-img-Check-90-redXgrn.svg'"</input><width>55</width><height>55</height>
+                        <label>"''"</label> <action>'0-select-Check-90'</action> 
+                   <action function="'launch'">     msg_DC_Check_90_Big_redXgrn_window</action><action function="'closewindow'">msg_DC_Check_90_Big_redXgrn_window</action>    </button>
+              <hseparator width-request="22" > </hseparator>
+                <button label="'-Check-Mark-'" has-focus="false" height-request="15"> <action>'0-Check-Mark-B'</action> </button>
+                <button     tooltip-text="'Check-111-redXblu'" ><input file>"'/tmp/EmGr-img-Check-111-bluXred.svg'"</input><width>55</width><height>63</height>
+                    <label> "''" </label> <action>"'0-Check-B81'"</action> </button>
+                 <button    tooltip-text="'Check-111-redXgrn'" ><input file>"'/tmp/EmGr-img-Check-111-grnXred.svg'"</input><width>55</width><height>63</height>
+                    <label> "''" </label> <action>"'0-Check-B82'"</action> </button>
+                <button     tooltip-text="'Check-111redXyel'" ><input file>"'/tmp/EmGr-img-Check-111-yelXred.svg'"</input><width>55</width><height>63</height>
+                    <label> "''" </label> <action>"'0-Check-B83'"</action> </button>
+                <hseparator width-request="13" > </hseparator>
+                <button label="'-Check-'" has-focus="false" height-request="15"> <action>'0-Check-Mark-S'</action> </button>
+                 <button     tooltip-text="'Check-redred'" ><input file>"'/tmp/EmGr-img-Check-redred.svg'"</input><width>33</width><height>33</height>
+                    <label> "''" </label><action>"'0-Check-S13'"</action> </button>
+                <button     tooltip-text="'Check-grngrn'" ><input file>"'/tmp/EmGr-img-Check-grngrn.svg'"</input><width>33</width><height>33</height>
+                    <label> "''" </label><action>"'0-Check-S14'"</action> </button>
+                <button     tooltip-text="'Check-yelyel'" ><input file>"'/tmp/EmGr-img-Check-yelyel.svg'"</input><width>33</width><height>33</height>
+                    <label> "''" </label><action>"'0-Check-S15'"</action> </button>
+                <hseparator width-request="30" > </hseparator>
+            </hbox>
+           <vseparator  visible="1" height-request="3" > </vseparator>
+
+</vbox>
+</'notebook'>
+<text visible="false"> 
+<label>"'####################_NoteBook_############################'"</label> </text> 
+    </hbox>
+    </vbox>
+        <hseparator width-request="3"></hseparator> 
+
+        <button  visible="0" has-focus="false" height-request="3"  xalign=".5"  tooltip-text="" >
+			<input file>"'/tmp/EmGr-img-apple-redgrn.svg'"</input><width>3</width>  <height>3</height>
+            <label> "" </label><action>0:bot</action></button>
+
+    <vseparator height-request="3"></vseparator>
+	<vbox>
+    	<vseparator  visible="1" height-request="1"> </vseparator>
+        <hbox visible="0">   <text> <label>"'########################'"</label> </text>   </hbox>
+        <hbox visible="0">   <text> <label>"'---_SIMPLE_---'"</label> </text>   </hbox>
+        <vseparator  visible="1" height-request="3" > </vseparator>
+
+<hbox homogeneous="false">
+<hbox>
+             <hseparator width-request="77"></hseparator>
+            <button tooltip-text="S.I.M.P.L.E._guiSimReStart"> 
+                <input file>"'/tmp/EmGr-img-quit-rednnn.svg'"</input><width>15</width>  <height>15</height>
+                <label>'_ReStart_'</label>
                 <action function="'launch'">msg_DC_Quick_window</action><action function="'closewindow'">msg_DC_Quick_window</action>
-                <action>'EXIT:guiSimReStart'</action>	</button>
-            <button tooltip-text="Simple_guiSimReBoot">
-                <input file>"'/tmp/EmGr-img-Check-bluXblu.svg'"</input><width> "35" </width> <height> "25" </height>
-                <label>'_ReBoot__'</label>
+                <action>'EXIT:guiSimReStart'</action>   </button>
+                <hseparator width-request="11"></hseparator>
+    
+            <button tooltip-text="S.I.M.P.L.E.__guiSimReBoot">    
+                <input file>"'/tmp/EmGr-img-quit-rednnn.svg'"</input><width>15</width>  <height>15</height>
+                <label>'_ReBoot_'</label>
                 <action function="'launch'">msg_DC_Quick_window</action><action function="'closewindow'">msg_DC_Quick_window</action>
                 <action>'EXIT:guiSimReBoot'</action> </button>
-            <button tooltip-text="Simple_guiSimPowerOff">
-                <input file>"'/tmp/EmGr-img-Check-redXred.svg'"</input><width> "35" </width> <height> "25" </height>
-                <label>'_PwrOff__'</label>
+                <hseparator width-request="21"></hseparator>
+</hbox>
+             <hseparator width-request="13"></hseparator>
+
+<hbox> 
+            <button tooltip-text="'Double-Click-Program_EXIT_'" > 
+                <input file>"'/tmp/EmGr-img-quit-grnnnn.svg'"</input><width>55</width>  <height>55</height>
+                <label>'!_EXIT_!'</label> 
+                    <action function="'launch'">msg_DC_Quick_window</action>  <action function="'closewindow'">msg_DC_Quick_window</action>
+                <action>'EXIT:guiMainQUIT'</action>    </button>
+                <hseparator width-request="21"></hseparator>
+
+            <button visible="1" tooltip-text="'Enable_BASH_It_'" has-focus="false" width-request="0"  height-request="0" xalign=".5"  >
+                <input file>"'/tmp/EmGr-img-hash-blu.xpm'"</input><width>555</width><height>55</height>   
+                <label>'_Bash_It_'</label>
+                <action function="'launch'">msg_DC_Quick_window</action><action function="'closewindow'">msg_DC_Quick_window</action>
+                <action function="'launch'">     msg_DC_LxgenBASH_window_0</action> <action function="'closewindow'">msg_DC_LxgenBASH_window_0</action>
+                <action>'EXIT:guiSimReStart'</action> </button>
+                <hseparator width-request="21"></hseparator>
+
+</hbox>
+             <hseparator width-request="13"></hseparator>
+<hbox> 
+            <button tooltip-text="S.I.M.P.L.E.__guiSimPowerOff">  
+                <input file>"'/tmp/EmGr-img-quit-rednnn.svg'"</input><width>15</width>  <height>15</height>
+                <label>'_PwrOff_'</label>
                 <action function="'launch'">msg_DC_Quick_window</action><action function="'closewindow'">msg_DC_Quick_window</action>
                 <action>'EXIT:guiSimPowerOff'</action> </button>
-            <hseparator width-request="7"></hseparator>
-        </hbox>
-        <button  visible="'${lcGuiVert}'" has-focus="false" height-request="7"  xalign=".5"  tooltip-text="C4-/tmp/EmGr-img-apple-redblu.svg" >
-			<input file>"'/tmp/EmGr-img-apple-redgrn.svg'"</input><width>25</width>  <height>25</height>
-            <label> "..." </label>
-            <action>lxAction:C4</action></button>
- 
-    <text  visible="'0'"  editable="false" use-markup="true" xalign=".5">
-        <label> "=============================================== " </label> </text>
-	</vbox>
+                <hseparator width-request="11"></hseparator>
 
+           <button tooltip-text="S.I.M.P.L.E.__guiSimHalt">       
+                <input file>"'/tmp/EmGr-img-quit-rednnn.svg'"</input><width>15</width>  <height>15</height>
+                <label>'_Halt_'</label>
+                <action function="'launch'">msg_DC_Quick_window</action><action function="'closewindow'">msg_DC_Quick_window</action>
+                <action>'EXIT:guiSimHalt'</action> </button>
+             <hseparator width-request="33"></hseparator>
 
+             <hseparator width-request="73"></hseparator>
+</hbox>
+</hbox>
 
-    </hbox>
+     </vbox>
+       <vseparator  visible="1" height-request="17" > </vseparator>
+
+    
 </vbox>
+       <vseparator  visible="1" height-request="37" > </vseparator>
 </window>'
 #!
-#! ## Master MAIN GUI MGR ### Dialog END ###############################
-#! ## Master MAIN GUI MGR ### Dialog END ###############################
-#! ## Master MAIN GUI MGR ### Dialog END ###############################
-
+#! ###########################################################################
+#! ## bot SystemGui  ### MainGUI ### Dialog END  #############################
+#! ###########################################################################
 #!
 lcEmGrGuiFnTrg="/tmp/EmGa-Master-GUI.txt"   # BUILD master GUI IMG.txt, for "DUMP" .
 echo "${MGR_Master_MAIN_GUI_Dialog}" >> ${lcEmGrGuiFnTrg}
 echo "###_end_of_Master_Main_XML_Graphical_User_Interface_Code ############ " >> ${lcEmGrGuiFnTrg}   # title for "Dump" to screen
 #
-
-    #~ <variable>vWindow</variable>
-    #~ <input>fnEchoDateTime</input>
-    #~ <action this-is-window="escape" signal="key-press-event" condition="command_is_true( [[ \$KEY_RAW = 0x9 ]] && echo true )">EXIT:exit</action>
-
-#!  example of "DC" "Double-Click" method, by <action on two <windows . 
-#!                  <action function="'launch'">msg_DC_Quick_window</action>
-#!                  <action function="'closewindow'">msg_DC_Quick_window</action>
-
-          #(: ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-            #(: fg(MGR_Main_Gui=eval)
-            #(: called by: SYS
-            #(: param: MGR Gui  has been exported
-            #(: purpose: gtkdialog will evaluate the "MGR_Master_GUI"
-            #(: calls:
-            #(: method:
-            #(:    'eval'  Execute arguments as a shell command, "Fall-Thru" method.
-            #(: sends:
-            #(: rationale:
-            #(: note :
-            #(:    ??? same as eval "`gtkdialog --center -p Box_MessageXML`"
-            #(:    gtkdialog --center  -p MGR_Master_GUI`" ;;
-            #(:
-            #
-            #! case $EXIT in
-                #! "DUMP" ) echo "$MGR_Master_GUI" ;;
-                #! *) eval "`gtkdialog --center -p MGR_Master_GUI`" ;;
-            #! esac
-
- eval "`gtkdialog --center -p MGR_Master_GUI_Dialog`" 
-
-#(: end: Master Main Gui eval
-
-#! ## bot Master MAINGUI MGR ### INIT ####################################
-
-lcMsgStr="---MGR_Master_MAIN_GUI_Dialog---------------------------------" && Sbr_Str2DevTrm "$lcMsgStr" "1" "1"
-lcMsgStr="------  Main Gui   --- ${EXIT} ----------------Fall-Thru----" && Sbr_Str2DevTrm "$lcMsgStr" "3" "1"
-lcMsgStr="---------  Fall-Thru  --- ${EXIT} -------------Fall-Thru----" && Sbr_Str2DevTrm "$lcMsgStr" "3" "1"
-lcMsgStr="------------  Fall-Thru  --- ${EXIT} ----------Fall-Thru----" && Sbr_Str2DevTrm "$lcMsgStr" "3" "1"
-lcMsgStr="---------------  Fall-Thru  --- ${EXIT} -------Fall-Thru----" && Sbr_Str2DevTrm "$lcMsgStr" "3" "1"
+eval "`gtkdialog --center -p System_GUI_Dialog`" 
+#(: end: SystemGui eval ===========================================
+ 
+#! ##  bot SystemGui ### INIT ####################################
 lcMsgStr="------------------------------------------------------------" && Sbr_Str2DevTrm "$lcMsgStr" "1" "1"
-#!
-#! ## bot Master MAINGUI MGR ### DIALOG ####################################
-#!
+lcMsgStr="---------  Fall-Thru  --- ${EXIT} -------------Fall-Thru----" && Sbr_Str2DevTrm "$lcMsgStr" "1" "1"
+lcMsgStr="------------  Fall-Thru  --- ${EXIT} ----------Fall-Thru----" && Sbr_Str2DevTrm "$lcMsgStr" "1" "1"
+lcMsgStr="---------------  Fall-Thru  --- ${EXIT} -------Fall-Thru----" && Sbr_Str2DevTrm "$lcMsgStr" "1" "1"
+lcMsgStr="------------------------------------------------------------" && Sbr_Str2DevTrm "$lcMsgStr" "1" "1"
 #!
 #!
 #!
@@ -6773,8 +8343,7 @@ lcMsgStr="------------------------------------------------------------" && Sbr_S
 #!
 #! begin: regular "function"
 #! Each "if" function has a header that begins with label like this:
-#!      function EXIT:??????????  
-#! to provice "find" link into MainGui XML 
+#!   function EXIT:??????????  
 #!
 #! begin: regular "function"
 #! Each regular "function" has a header that begins with label like this:
@@ -6786,20 +8355,13 @@ lcMsgStr="------------------------------------------------------------" && Sbr_S
 #!
 #!
 #!
-#!
-#!
-#!
-#!
 #! ###########################################################
-#! begin: # Page MAIN 
-#! ###########################################################
-#!
-#!
 #! Fall-Thru Method  ===> Local Fall Thru to Terminating Routines:
+#! ###########################################################
 #!
 #!
-#(: ========================================================
-#(: ft("EXIT":Check-Box)   # Active   Check-Box "CBX"  # External calls
+#(: ================================================================
+#(: fx EXIT:Check-Box   # Active   Check-Box "CBX"  # External calls
 #(: called by: gui CBX
 #(: param:
 #(: purpose:
@@ -6813,13 +8375,12 @@ lcMsgStr="------------------------------------------------------------" && Sbr_S
 ### Design Method : "FALL-THRU"
 ###
 ### "ALL" Check-Box will trigger running "ALL", regardless if 'checked' or not .
-### "CBXAPPLY+" triggers running all "checked" selections .
+### EXIT="CBXAPPLY+" triggers running all "checked" selections .
 ###
 #!
-#! Fall-Thru Method  ===> Local Fall Thru to Terminating Routines:
-#!
+#! Check-Box "CBX"  
 #(: ========================================================
-#(: ft(EXIT:Check-Box)       # Active   Check-Box "CBX"  # External calls
+#(: fx EXIT:C3CS2F       # Active   Check-Box "CBX"  # External calls
 #(: called by: gui CBX
 #(: param:
 #(: purpose:
@@ -6829,383 +8390,346 @@ lcMsgStr="------------------------------------------------------------" && Sbr_S
 #(: rationale:
 #(: note :
 #(:
-#! begin: ( EXIT:'CBX APPLY+')
-#(: begin: check for "APPLY Checks" command   Ch3ck-Box "CBX"  # External calls
-#(: fx(FT_EXIT='APPLY_Checks_All_')
-#(: fx(FT_EXIT='CBXARR')
-#(: fx(FT_EXIT='CBXARS')
-#(: fx(FT_EXIT='CBXARB')
-#(: fx(FT_EXIT='CBXAPO')
 #!
-#!
-#! Fall-Thru Method  ===> Local Fall Thru to Terminating Routines:
-#!
-#!
-#! function EXIT:CBXARS
-#! function EXIT:CBXARB
-#! function EXIT:CBXARQ
-#! ======================================================
-#! if [ "$EXIT" = "CBXARS" ] ; then ; n=0 ; fi   # CBX ARS, ARB, ARQ ComboBox
-if [ ${EXIT} == "CBXARS" ] || [ ${EXIT} == "CBXARB" ] || [ ${EXIT} == "CBXARQ" ] ; then
-#! function Sbr_CBXAR3() 
-#!
-#! Has Not Been Converted to function Sbr_CBXAR3 () format 
-#! Has Not Been Converted to function Sbr_CBXAR3 () format 
-#! Has Not Been Converted to function Sbr_CBXAR3 () format 
-#!
-#(: Apply button  COMBO BOX 
-#(: check for prior "APPLY Checks" commands
-#!
- 	#(: function  IF  CBXC3C  CBXS2F  CBXCTU
-    #! ======================================================
-	if  [ ${CBXC3C} = "true" ] || [ ${CBXS2F} = "true" ] || [ ${CBXCTA} = "true" ] ; then
-		n=0
-		CBXALL=""
-		#~ llCBMASTER="1"  # Not Used
-		lcMsgStr="->->-> if CheckApply" && Sbr_Str2DevTrm "$lcMsgStr" "6" "1"
-		Sbr_Sys_KillProc  "CBXALL CBXC3C CBXS2F CBXCTA" # check for KillProc flag up.
-		#!
-		#! 		#!		#!		#!
-		#(: ##=== CheckBox === C3C === Clear 3 Cache
+#! =========================================================
+if [ ${EXIT} = "C3CS2F" ]  ; then        #! 250714-1700, gae
+        #! function Sbr_CBXARB() 
+        #!
+        #! files/subdir to be C3C Cleaned Out will vary Distro-to-Distro .
+        #! files/subdir to be C3C Cleaned Out will vary Browser-to-Browser .
+        #!
+        #! Has Not Been Converted to function Sbr_CBXAR3 () format 
+        #!
+        #(: If COMBO "BOXApply" button 
+        #(: Then check for prior "APPLY Checks" commands
+        #!
+        #(: function  IF  CBXC3C  CBXS2F  CBXCTU  
+        #!  || [ ${CBXS2F} = "true" ]
+        #! ======================================================
+        Sbr_Splash_It "= begin CBXC3C =" "yellow" "blue" "3"        #! -D---
+        n=0
+        Sbr_Sys_KillProc   # check for KillProc flag up.
+        #!
+        #!      #!      #!      #!
+        #(: ##=== CheckBox === C3C === Clear 3 Cache
         #! purpose: Clear Large Cache data which lingers 
         #(: function IF CBXC3C
-		#!  ========================================
-		if [ ${CBXC3C} = "true" ] ; then
-			lcMsgStr="=== C3C" && Sbr_Str2DevTrm "$lcMsgStr" "5" "1"
-			n=0
-			CBXC3C=""
-			###	
-			echo "=== Begin === C3C ========================"
-			### Clear 3 Cache, Fast Direct Calls
-            Sbr_Splash_It "=Clear 3 Cache=" "orange" "purple" "2"        #! -D---
-			#!
-            #! Literal Spell-Out locations
-            #! purpose: Clear Large Cache data which lingers 
-            #!
-			#!==================================================
-			### Cache ### FireFox 
-			lcFileSrc="/root/.cache/mozilla/firefox/"
-			echo "===> execute: rm -fr  $lcFileSrc"
-            Sbr_Splash_It "= rm -fr  $lcFileSrc" "orange" "purple" "2"    #! -D---
-			sleep .1
-			rm -fr  $lcFileSrc
-			#!
-			### Cache ###
-			lcFileSrc="/root/.cache/event-sound/*"
-			echo "===> execute: rm -fr  $lcFileSrc"
-            Sbr_Splash_It "= rm -fr  $lcFileSrc" "orange" "purple" "2"    #! -D---
-			sleep .1
-			rm -fr  $lcFileSrc
-			#!
-			### Cache ###
-			lcFileSrc="/root/.cache/mesa_shader_cache/*"
-			echo "===> execute: rm -fr  $lcFileSrc"
-            Sbr_Splash_It "= rm -fr  $lcFileSrc" "orange" "purple" "2"    #! -D---
-			sleep .1
-			rm -fr  $lcFileSrc
-			#!
-			### Cache ###
-			lcFileSrc="/root/.cache/event-sound-cache*"
-			echo "===> execute: rm -fr  $lcFileSrc"
-            Sbr_Splash_It "= rm -fr  $lcFileSrc" "orange" "purple" "2"    #! -D---
-			sleep .1
-			rm -fr  $lcFileSrc
-            #!
-			#!==============================================
-			### Cache ### LIGHT
-			lcFileSrc="/root/.light/light/Light.default"
-			echo "===> execute: rm -fr  $lcFileSrc"
-            Sbr_Splash_It "= rm -fr  $lcFileSrc" "orange" "purple" "2"    #! -D---
-			sleep .1
-			rm -fr  $lcFileSrc
-            #!
-			#!==============================================
-			### CUPS ###
-			###  [06/Mar/2020:04:45:39 +0500] Cleaning out old files in "/var/spool/cups/tmp".
-			lcFileSrc="/var/spool/cups/tmp/*"
-			echo "===> execute: rm -fr  $lcFileSrc"
-            Sbr_Splash_It "= rm -fr  $lcFileSrc" "orange" "purple" "2"
-			sleep .1
-			rm -fr  $lcFileSrc
-			#!
-			### CUPS ###
-			###  [06/Mar/2020:04:45:39 +0500] Cleaning out old files in "/var/cache/cups".
-			lcFileSrc="/var/cache/cups/*"
-			echo "===> execute: rm -fr  $lcFileSrc"
-            Sbr_Splash_It "= rm -fr  $lcFileSrc" "orange" "purple" "2"    #! -D---
-			sleep .1
-			rm -fr  $lcFileSrc
-			#!
-			### CUPS ###
-			###  [06/Mar/2020:04:45:39 +0500] Cleaning out old files in "/var/spool/cups/tmp/*".
-			lcFileSrc="/var/spool/cups/tmp/*"
-			echo "===> execute: rm -fr  $lcFileSrc"
-            Sbr_Splash_It "= rm -fr  $lcFileSrc" "orange" "purple" "2"    #! -D---
-			sleep .1
-			rm -fr  $lcFileSrc
-			### CUPS ###
-			###  [06/Mar/2020:04:45:39 +0500] Cleaning out old files in "/var/spool/cups/*".
-			lcFileSrc="/var/spool/cups/*"
-			echo "===> execute: rm -fr  $lcFileSrc"
-            Sbr_Splash_It "= rm -fr  $lcFileSrc" "orange" "purple" "2"    #! -D---
-			sleep .1
-			rm -fr  $lcFileSrc
-			#!
-			echo "=== DONE === C3C ===================="
-            #~ kill ${GtkPid_CBX_C3C}  # now 
-			sleep 1
-		fi
-		#!
-		#!  Contue Fall Thru
-		#!
-		#(: ##=== CheckBox === S2F	=== no need to also call SMP inside of CTU
-        #(: function  EXIT:CBXS2F
-		#!  ##################################################
-		if [ ${CBXS2F} = "true" ] ; then
-			lcMsgStr="=== S2F" && Sbr_Str2DevTrm "$lcMsgStr" "5" "1"
-			n=0    
-            Sbr_Splash_It "Save to Flash" "yellow" "brown" "1"       #! -D---
-			#
-			CBXS2F=""
-			lcFnRun="${gcRootApps}rc.z_S2F.sh" # S2F
-			if [ -f "$lcFnRun" ] ; then		# S2F
-				[ -f "${lcFnRun}" ]  &&  ${lcFnRun}
-			else
-				n=0
-			    #! -D---
-				/usr/lib/gtkdialog/box_ok "ERROR" error " Dependencie File Not Found: ${lcFnRun}"
-			fi
-		fi
-		#!
-		#!  Continue Fall Thru
-		#!
-		#(: ##=== CheckBox === CTU-NSMP   # No SMP   ### handle everything in this block ###
-		#(: function EXIT:CBXCTU
-		#! ##################################################
-		if [ ${CBXCTA} = "true" ] ; then
-			n=0
-		    #! -D---
-			/usr/lib/gtkdialog/box_splash -fg yellow -bg darkred -border true -close never -text ".    Cold Tar Backup  !!!" &
-				RETVAL=$?
-				GtkPid_CBX_CTB=$!	# capture PID
-				sleep 1
-            lcFnRun="${gcMntHomeMyUsrDev}rc.z_CTA.sh"    #!  here, testing  for /Dev/Edit
-            if [ -f "$lcFnRun" ] ; then		# CTA    #! CTA has No-Scan-List, 
-                [ -f "${lcFnRun}" ]  &&  ${lcFnRun}
-            else
-                lcFnRun="${gcRootApps}rc.z_CTA.sh"  
-                if [ -f "$lcFnRun" ] ; then		# CTA
-                    [ -f "${lcFnRun}" ]  &&  ${lcFnRun}
-                else
-                    /usr/lib/gtkdialog/box_ok "ERROR" error "  Dependencie File Not Found: ${lcFnRun}"		#! -D---
-                fi
-            fi
-        fi
-		touch "${MGR_CBXstatus}"
-		lcMsgStr="<<< if any Check-Box" && Sbr_Str2DevTrm "$lcMsgStr" "6" "1"
-        kill ${GtkPid_CBX_CTB}		# now
-		#!  Contue Fall Thru
-		#!
-		#================================================
-		#(: fx(FT_EXIT='CBX APPLY')
-		lcMsgStr="->->-> if any CheckApply" && Sbr_Str2DevTrm "$lcMsgStr" "6" "1"
-		#!
-		#! ##################################################
-        #! function EXIT:CBXARS
-        if [ "$EXIT" = "CBXARS" ] ; then   # CBX ReStart
-			n=0
-			CBXARS=""
-			Sbr_ClearFlagsSystem 0   # CBXARS
-			Sbr_Cbx_ReStart 1   # no wait # CBXARS
-		fi
-		#! #############################################
-        #! function EXIT:CBXARB
-        if [ "$EXIT" = "CBXARB" ] ; then   # CBX ReBoot
-			n=0
-			CBXARB=""
-			Sbr_ClearFlagsSystem 0   # CBXARB
-			Sbr_Cbx_ReBoot
-		fi
-		#! #############################################
-        #! function EXIT:CBXARQ
-		if [ "$EXIT" = "CBXARQ" ] ; then   # CBX ReQuit
-			n=0
-			CBXARQ=""
-			Sbr_ClearFlagsSystem ""   # CBXARQ
-			Sbr_Cbx_ReQuit  1 # EXIT:CBXARQ
-		fi
-		#~ llCBMASTER="0"  # Not Used 
-		lcMsgStr="<<< if any Apply" && Sbr_Str2DevTrm "$lcMsgStr" "6" "1"
-    else
-    	### end: Activation buttons
-        #~ lcMsgStr="=== Bottom of Apply" && Sbr_Str2DevTrm "$lcMsgStr" "5" "1"
-        Sbr_Splash_It "\
-        '===      WARNING         ==='
-        '===  Bottom of CBX APPLY ==='
-        '=== No-Checkbox-Selected ==='" "yellow" "blue" "3" && 	kill ${GTKPIDShowSplash}
-        Sbr_Cbx_ReStart 1     # no wait # CBX APPLY+ in case something fails
-	fi	#
-fi	# end: check for "APPLY Checks" command
-#! end: ( EXIT:'CBX APPLY+')
-
-
-
+        #! === Clear 3 Cache === plus S2F1 ===
+        #!  ========================================
+        lcMsgStr="=== C3C" && Sbr_Str2DevTrm "$lcMsgStr" "5" "1"
+        n=0
+        ### 
+        echo "=== Begin === C3C ========================"
+        ### Clear 3 Cache, Fast Direct Calls
+        #!
+        #! Literal Spell-Out locations
+        #! purpose: Clear Large Cache data which lingers 
+        #!
+        #!=== Literal rm -fr  $lcFileSrc for each target ===============
+        ### Cache ### FireFox 
+        lcFileSrc="/root/.cache/mozilla/firefox/"
+        echo "===> execute: rm -fr  $lcFileSrc"
+        Sbr_Splash_It ".cache = rm -fr  $lcFileSrc" "yellow" "green" "2"    #! -D---
+        sleep .1
+        rm -fr  $lcFileSrc
+        #!
+        ### Cache ### FireFox 
+        lcFileSrc="/root/.cache/mozilla/firefox"
+        echo "===> execute: rm -fr  $lcFileSrc"
+        Sbr_Splash_It ".cache = rm -fr  $lcFileSrc" "yellow" "green" "2"    #! -D---
+        sleep .1
+        rm -fr  $lcFileSrc
+        #!
+        ### Cache ### Mozilla 
+        lcFileSrc="/root/.cache/mozilla"
+        echo "===> execute: rm -fr  $lcFileSrc"
+        Sbr_Splash_It ".cache = rm -fr  $lcFileSrc" "yellow" "green" "2"    #! -D---
+        sleep .1
+        rm -fr  $lcFileSrc
+        #!
+        #!==============================================
+        ### Cache ### LIGHT
+        lcFileSrc="/root/.light/light/Light.default"
+        lcFileSrc="/root/.cache/light/"
+        echo "===> execute: rm -fr  $lcFileSrc"
+        Sbr_Splash_It ".cache = rm -fr  $lcFileSrc" "yellow" "green" "2"    #! -D---
+        sleep .1
+        rm -fr  $lcFileSrc
+        #!
+        #!==============================================
+        ### Cache ### Moonchild Productions   Pale Moon     ## must insert "?" 
+        lcFileSrc="/root/.cache/moonchild?productions/pale?moon/"
+        echo "===> execute: rm -fr  $lcFileSrc"
+        Sbr_Splash_It ".cache = rm -fr  $lcFileSrc" "yellow" "green" "2"    #! -D---
+        sleep .1
+        rm -fr  ${lcFileSrc}
+        #!
+        #!==============================================
+        ### Cache ###
+        lcFileSrc="/root/.cache/event-sound/*"
+        echo "===> execute: rm -fr  $lcFileSrc"
+        Sbr_Splash_It "= rm -fr  $lcFileSrc" "orange" "purple" "2"    #! -D---
+        sleep .1
+        rm -fr  $lcFileSrc
+        #!
+        #!==============================================
+        ### Cache ###
+        lcFileSrc="/root/.cache/mesa_shader_cache/*"
+        echo "===> execute: rm -fr  $lcFileSrc"
+        Sbr_Splash_It "= rm -fr  $lcFileSrc" "orange" "purple" "2"    #! -D---
+        sleep .1
+        rm -fr  $lcFileSrc
+        #!
+        #!==============================================
+        ### Cache ###
+        lcFileSrc="/root/.cache/event-sound-cache*"
+        echo "===> execute: rm -fr  $lcFileSrc"
+        Sbr_Splash_It "= rm -fr  $lcFileSrc" "orange" "purple" "2"    #! -D---
+        sleep .1
+        rm -fr  $lcFileSrc
+        #!
+        #!==============================================
+        ### CUPS ###
+        ###  [06/Mar/2020:04:45:39 +0500] Cleaning out old files in "/var/spool/cups/tmp".
+        lcFileSrc="/var/spool/cups/tmp/*"
+        echo "===> execute: rm -fr  $lcFileSrc"
+        Sbr_Splash_It "= rm -fr  $lcFileSrc" "orange" "purple" "2"
+        sleep .1
+        rm -fr  $lcFileSrc
+        #!
+        #!==============================================
+        ### CUPS ###
+        ###  [06/Mar/2020:04:45:39 +0500] Cleaning out old files in "/var/cache/cups".
+        lcFileSrc="/var/cache/cups/*"
+        echo "===> execute: rm -fr  $lcFileSrc"
+        Sbr_Splash_It "= rm -fr  $lcFileSrc" "orange" "purple" "2"    #! -D---
+        sleep .1
+        rm -fr  $lcFileSrc
+        #!
+        #!==============================================
+        ### CUPS ###
+        ###  [06/Mar/2020:04:45:39 +0500] Cleaning out old files in "/var/spool/cups/tmp/*".
+        lcFileSrc="/var/spool/cups/tmp/*"
+        echo "===> execute: rm -fr  $lcFileSrc"
+        Sbr_Splash_It "= rm -fr  $lcFileSrc" "orange" "purple" "2"    #! -D---
+        sleep .1
+        rm -fr  $lcFileSrc
+        #!
+        #!==============================================
+        ### CUPS ###
+        ###  [06/Mar/2020:04:45:39 +0500] Cleaning out old files in "/var/spool/cups/*".
+        lcFileSrc="/var/spool/cups/*"
+        echo "===> execute: rm -fr  $lcFileSrc"
+        Sbr_Splash_It "= rm -fr  $lcFileSrc" "orange" "purple" "2"    #! -D---
+        sleep .1
+        rm -fr  $lcFileSrc
+        #!
+        Sbr_Splash_It "=== DONE === C3C ===================="  "yellow" "blue" "2"    #! -D---
+        Sbr_Splash_It "Save to Flash" "yellow" "blue" "2"       #! -D---
+        Sbr_S2F1_MI     # internal SMP  + ReStart
+        Sbr_Splash_It "ReStart" "yellow" "blue" "2"       #! -D---
+        Sbr_Cbx_ReStart 1     #! DONE === C3C #! 250714-1700, gae
+        #!    
+fi
+#!==============================================
 #!
 #!
 #! Below: Has Not Been Converted to function Sbr_CBXAR3 () format 
 #!
-#(: top: check for "APPLY Checks" command   Ch3ck-Box "CBX"  # External calls
-#(: function EXIT:APPLY_Checks_All
-#(: function EXIT:CBXARR
-#(: function EXIT:CBXARS
-#(: function EXIT:CBXARB
-#(: function EXIT:CBXAPO
-#(: function EXIT: CBX APPLY+
-#(: end:
-#!
-#!
 #!
 #! Fall-Thru Method  ===> Local Fall Thru to Terminating Routines:
 #!
 #!
-#(: ========================================================
-#(: ft(EXIT:guiBakAllAR...)        #	Active 
-#(: ft( [ "$EXIT" = "guiBakAllRS" ] ||  [ "$EXIT" = "guiBakAllRB" ] ||  [ "$EXIT" = "guiBakAllCRB" || [ "$EXIT" = "guiBakAllCRQ" ] )
-#(: called by: Main GUI Fall-Thru: EXIT:guiBakAllRS  EXIT:guiBakAllRB  EXIT:guiBakAllCRB EXIT:guiBakAllCRQ
-#(:
-#(: calls: E3R_Main_Int_Long_List, "CTA" , Sbr_Sys_pMount_All, E3R_ScanList, Sbr_Sys_uMount_All
-#(:
-#(: param:
-#(: purpose: control for "E3R"
-#(: calls: MNT internal code. pulled from rc.z_E3R.sh
-#(: method:
-#(: sends:
-#(: rationale:  E3R copy Edit Source to /root/applications/bin ( = saveDATA )
-#(:             Pmnt, CTA, Umnt,
-#(: note :
-#(: /initrd/mnt/dev_save/MY_/usr-share/My_Dev_/Edit_MNT/rc.z_MNT.sh
-#(: /root/Startup/my_mount_drv.sh
-#(: /initrd/mnt/dev_save/MY_/usr-share/My_Dev_/Edit_pMNT/rc.z_pMNT.sh
-#(: /initrd/mnt/dev_save/MY_/usr-share/My_Dev_/Edit_uMNT/rc.z_uMNT.sh
-#(:
-#(: export gcRootHomeMyUsrDev="/mnt/home/MY_/usr-share/My_Dev_/"
-#(: export gcRootAppsBin="/root/my-applications/bin/"
-#(: export gcRootApps="/root/my-applications/"
-#(: ==================================================
-#! ##################################################
 #! function: from E3R-CTALL : RS, RB, RQ
 #! function if  [ "$EXIT" = "guiBakAll  ...     # All BakAll??? Internal pass thru here
 #! function if [EXIT:guiBakAll()    if  [ "$EXIT" =
 #! gui Exits with guiBakAllRS or guiBakAllRB or guiBakAllCRB or guiBakAllCRQ
+#! ##################################################
 #!
 #!
 #! =====================================================================
-#! begin: if  [ "$EXIT" = "guiBakAllRS" || "guiBakAllRB" || "guiBakAllCRB || "guiBakAllCRQ" 
+#! begin: if  [ "$EXIT" = "guiBakAllRS" || "guiBakAllCRB 
 #! =====================================================================
 #! all guiBakAll? enter here to perform main functions.  
-#!    final functions RS / RB / RQ are captured after fall-thru. 
+#!    final functions RS / RB / RQ are captured via fall-thru. 
 #! 
-#! function EXIT:guiBakAllRS        Sbr_BakAllArcDts        # Quick Short version   
-#! function EXIT:guiBakAllRB        Sbr_BakAllArcDts        # Quick Short version   
-#! function EXIT:guiBakAllCRB       Sbr_BakAllArcDts         # Quick Short Version  
-#! function EXIT:guiBakAllCRQ       Sbr_BakAllArcDts         # Quick Short Version  
+#(: fx IF EXIT:guiBakAllRS        Sbr_BakAllArcDts         # Quick Short version   
+#(: fx IF EXIT:guiBakAllCRB       Sbr_BakAllArcDts         # Quick Short Version  
 #!
-#!  if  guiBakAllRS  guiBakAllRB   guiBakAllRQ"
-if [ "$EXIT" = "guiBakAllRS" ] || [ "$EXIT" = "guiBakAllRB" ] || [ "$EXIT" = "guiBakAllCRB" ] || [ "$EXIT" = "guiBakAllCRQ" ] ; then
+#!  if  guiBakAllRS  guiBakAllRB 
+#!  EXIT:guiBakAllRB  ||  EXIT:guiBakAllCRB  ||  EXIT:guiBakAllRQ  ||  EXIT:guiBakAllCRB
+if [ "$EXIT" = "guiBakAllRS" ] ||  [ "$EXIT" = "guiBakAllCRB" ]  ; then
     n=0
-	lcMsgStr="guiBakAllRS || guiBakAllRB || guiBakAllCRB ] || guiBakAllCRQ ]"
-    #~ Sbr_Splash_It "${lcMsgStr}" "yellow" "purple" "3" #! -D---  
-    Sbr_Sys_SDA_Only 1
-	Sbr_Sys_KillProc "${EXIT}"
-    export gcE3Rcontrol=${EXIT}	# maintain this value,might restore 
+    Sbr_Sys_KillProc   # dev control 
+    export gcE3Rcontrol=${EXIT} # simple, maintain this value,might restore 
     #! 
-fi  # 
 #!
-#!  Continue "Fall-Thru"  for    guiBakAllRS  guiBakAllRB   guiBakAllRQ
+#! working 250112-0550
+#!  Continue "Fall-Thru"  for    guiBakAllRS  guiBakAllRB  
 #!
-#!### E3R ReStart #######################################################
+#!### ReStart #######################################################
+#! where is guiBakAll RS  ?  Possible: Not Used, just old code. 
 #! gui BakAll RS
-#(: function EXIT:guiBakAllRS              # BakAll ReStart
-if [ "$EXIT" = "guiBakAllRS" ] ; then   # BakAll ReStart 
+#(: function EXIT:guiBakAllRS      # BakAll ReStart
     n=0
-	lcMsgStr="! BakAll + ReSTART Program !"
-    #~ Sbr_Splash_It "${lcMsgStr}" "yellow" "purple" "3" #! -D---  
-	Sbr_ClearFlagsSystem 0  	### clear lockfile so that ReStart can run.
-    Sbr_BakAllArcDts        # Quick Short version   
-    Sbr_Cbx_ReStart 1 	 
+    lcMsgStr="! BakAll + ReSTART Program !"
+    Sbr_Splash_It "${lcMsgStr}" "yellow" "purple" "3" #! -D---  
+    Sbr_ClearFlagsSystem 0      ### clear lockfile so that ReStart can run.
+    Sbr_BakAllArcDts        # Quick Short version  "Bak All Arc Dts" SubRoutine call 
+    Sbr_Cbx_ReStart 1    
 fi # end: [ "$EXIT" = "guiBakAllRS" ]
 #!
-#! gui BakAll RB
-#(: function EXIT:guiBakAllRB              # BakAll ReBoot
-if [ "$EXIT" = "guiBakAllRB" ] ; then   # BakAll ReBoot
-    n=0
-    lcMsgStr="!! BakAll  + ReBOOT : guiBakAllRB !!"
-    #~ Sbr_Splash_It "${lcMsgStr}" "yellow" "purple" "3" #! -D---  
-	Sbr_ClearFlagsSystem 0  	### clear lockfile so that ReStart can run.
-    Sbr_BakAllArcDts        # Quick Short version   
-    Sbr_Cbx_ReBoot "1"
-fi # end: [ "$EXIT" = "guiBakAllRB" ]
 #!
-#!### E3R CTA ReBoot #######################################################
-#(: function EXIT:guiBakAllCRB       # BakAll + CTA +ReBoot 
+#!
+#! where is guiBakAllCR  ?  Possible: Not Used, just old code. 
+#!### CTB ReBoot #######################################################
+#(: function EXIT:guiBakAllCRB       # BakAll + CTA + ScanList + ReBoot 
 if [ "$EXIT" = "guiBakAllCRB" ] ; then   # BakAll + CTA + ReBoot 
     n=0
-    lcMsgStr="!!!_ BakAll_CTA_ReBoot : guiBakAllCRB !!!"
-    #~ Sbr_Splash_It "${lcMsgStr}" "yellow" "purple" "3" #! -D---  
-	Sbr_ClearFlagsSystem 0  	### clear lockfile so that ReStart can run.
-    Sbr_BakAllArcDts        # Quick Short version   
+    lcMsgStr="!!! #! Util   BakAll + CTB-SL + ReBoot : guiBakAllCRB !!!"
+    Sbr_Splash_It "${lcMsgStr}" "yellow" "purple" "3" #! -D---  
+    Sbr_ClearFlagsSystem 0      ### clear lockfile so that ReStart can run.
+    Sbr_BakAllArcDts        # Quick Short version    "Bak All Arc Dts"
      #! Expand Verify -f Files : /EDIT vs /root/my-applications
-    lcFnRun="${gcMntHomeMyUsrDev}rc.z_CTA.sh"    #!  here, testing  for /Dev/Edit
-	if [ -f "$lcFnRun" ] ; then		# CTA    #! CTA has No-Scan-List, 
-		[ -f "${lcFnRun}" ]  &&  ${lcFnRun}
+    lcMsgStr="!!! #2 Util   BakAll_CTB-SL + ReBoot : guiBakAllCRB !!!"
+    Sbr_Splash_It "${lcMsgStr}" "yellow" "purple" "3" #! -D---  
+    #!
+    #!  here, testing  for /Dev/Edit
+    lcFnRun="${gcMntHomeMyUsrDev}rc.z_CTB-SL.sh"    #!  here, testing  for /Dev/Edit
+    if [ -f "$lcFnRun" ] ; then     # CTB-SL    #! CTA has No-Scan-List, 
+        [ -f "${lcFnRun}" ]  &&  ${lcFnRun}
     else
-        lcFnRun="${gcRootApps}rc.z_CTA.sh"  
-        if [ -f "$lcFnRun" ] ; then		# CTA
+        lcFnRun="${gcRootApps}rc.z_CTB-SL.sh"  #! run /root/my-apps
+        if [ -f "$lcFnRun" ] ; then     # CTB-SL
             [ -f "${lcFnRun}" ]  &&  ${lcFnRun}
         else
-            /usr/lib/gtkdialog/box_ok "ERROR" error "  Dependencie File Not Found: ${lcFnRun}"		#! -D---
+            Sbr_FnNotFound "${lcFnRun}"
         fi
     fi
-   Sbr_Cbx_ReBoot
+   Sbr_Cbx_ReBoot 1     #! Done guiBakAllCRB
+   #!
 fi # end: [ EXIT:guiBakAllCRB ]    
+#! where is guiBakAllCR  ?  Possible: Not Used, just old code. 
 #!
-#!### E3R ReQuit #######################################################
-#(: function EXIT:guiBakAllCRQ       # BakAll + CTA +ReQuit 
-if [ "$EXIT" = "guiBakAllCRQ" ] ; then   # BakAll + CTA +ReQuit 
+#!
+#!
+#!###  ReBoot Installed Menu #######################################################
+#(: function EXIT:guiMenuRB       # NOT ACTIVE
+if [ "$EXIT" = "guiMenuRB" ] ; then   # SAVE and then ReBoot 
+   n=0
+   Sbr_S2F1_MI    # internal SMP  + ReStart
+   Sbr_Cbx_ReBoot 1     #! guiMenuRB
+fi # end: [ EXIT:guiMenuRB ]    
+#!
+#!
+#!###  Save + ReBoot Installed Menu ####################################
+#(: function EXIT:guiMenuRBS       # NOT ACTIVE
+if [ "$EXIT" = "guiMenuRBS" ] ; then   # SAVE and then ReStart  
     n=0
-    lcMsgStr="!!!_ BakAll_CTA_ReQuit : guiBakAllCRQ !!!"
-    #~ Sbr_Splash_It "${lcMsgStr}" "yellow" "purple" "3" #! -D---  
-	Sbr_ClearFlagsSystem 0  	### clear lockfile so that ReStart can run.
-    Sbr_BakAllArcDts        # Quick Short version   
-     #! Expand Verify -f Files : /EDIT vs /root/my-applications
-    lcFnRun="${gcMntHomeMyUsrDev}rc.z_CTA.sh"    #!  here, testing  for /Dev/Edit
-	if [ -f "$lcFnRun" ] ; then		# CTA    #! CTA has No-Scan-List, 
-		[ -f "${lcFnRun}" ]  &&  ${lcFnRun}
-    else
-        lcFnRun="${gcRootApps}rc.z_CTA.sh"  
-        if [ -f "$lcFnRun" ] ; then		# CTA
-            [ -f "${lcFnRun}" ]  &&  ${lcFnRun}
-        else
-            /usr/lib/gtkdialog/box_ok "ERROR" error "  Dependencie File Not Found: ${lcFnRun}"		#! -D---
-        fi
-    fi
-   Sbr_Cbx_ReQuit
-fi # end: [ EXIT:guiBakAllCRQ ]     # Called by "Menu_ReBoot"
+    Sbr_S2F1_MI    # internal SMP  + ReStart
+    Sbr_Cbx_ReStart 1
+fi # end: [ EXIT:guiMenuRBS ]    
 #!
 #!
-#!
-#! =====================================================================
-#! end: BakAll Ending Routines: "BakAll" ReStart / ReBoot / RePowerOff
-#! =====================================================================
+#! =======================================================
+#! end: BakAll Ending Routines: "BakAll" ReStart / ReBoot 
+#! =======================================================
 #!
 #!
 #!
 #! =====================================================================
 #! begin: #1 Column  CBX, OneArcDts, AllArcDts , E3R, 
 #! =====================================================================
-##(: ========================================================
-#(: ft(EXIT:guiMgrOneArcDts)
+#(: ========================================================
+#(: fx IF EXIT:guiPCB_ion_RS       #! #1 # EXTERNAL #! ACTIVE
 #(: called by: Page "Main" 
+#(: param:
+##(: purpose: Backup/Archive with DTS  and  PCB internal PXB
+#(: calls: Sbr_PCB_INT_PXB
+#(: method:
+#(: sends:
+#(: rationale:
+#(: note :
+#! ######################################################################
+if [ "$EXIT" = "guiPCB_ion_RS" ] ; then  #! Page Util calls external PCB
+    n=0
+    #!
+    gcMntHomeMyUsrDev="/initrd/mnt/dev_save/MY_/usr-share/My_Dev_/"
+    gcRootApps="/root/my-applications/"
+    
+    lcFnRun="${gcRootApps}/rc.z_PCB-ion.sh"
+    Sbr_Splash_It "--- Process External {PCB-ion} + {RS} ---" "orange" "purple" "3"  
+    if [ -f "$lcFnRun" ] ; then     # ${lcFnRunBase}    
+        [ -f "${lcFnRun}" ]  &&  ${lcFnRun}
+    else
+        Sbr_FnNotFound "${lcFnRun}"
+    fi
+    #!
+    Sbr_Splash_It "=== DONE ==={1}--- Process External {PCB-ion} + {RS} ---"  "green" "red" "3"  
+    #!
+    Sbr_ClearFlagsSystem 0      ### clear lockfile so that ReStart can run.
+    Sbr_Cbx_ReStart 1    # display and no wait
+        #!
+fi # end guiEXIT:guiPCB_ion_RS
+#(: =============================================================
+#(: fx IF EXIT:guiTXN   # ACTIVE UTIL Page
+#(: called by: Page "UTL" 
+#(: param:
+##(: purpose: TXN Format on current MGR source 
+#(: calls: /initrd/mnt/dev_save/MY_/usr-share/My_Dev_/Edit_TXN/rc.z_TXN_EXE_!-!-!_.sh
+#(: method:
+#(: sends:
+#(: rationale:
+#(: note :
+#! ################################################################
+if [ "$EXIT" = "guiTXN" ] ; then   #! active on pageUTIL
+    n=0
+    Sbr_Splash_It "--- EXTERAL xterm ---
+    !!! calling  xterm  to  run rc.z_TXN_EXE.sh  + ReStart  !!!---" "yellow" "green" "3"       #! -D---
+    #!
+    #!
+    xterm -e "/initrd/mnt/dev_save/MY_/usr-share/My_Dev_/Edit_TXN/rc.z_TXN_EXE-RUN-10.sh"
+    #!
+    #!
+    Sbr_ClearFlagsSystem 0      ### clear lockfile so that ReStart can run.
+    Sbr_Cbx_ReStart 1    # display and no wait
+fi # end [ "$EXIT" = "guiEXIT:guiPXB" ]
+#(: ========================================================================
+#(: fx IF EXIT:guiPXB_ion_RS   # ACTIVE on MAIN and System Page   {{-PXB-}}
+#(: called by: Page "Main" and "System" 
+#(: param:
+##(: purpose: Backup/Archive with DTS  via   PXB internal
+#(: calls: Sbr_PCB_INT_PXB
+#(: method:
+#(: sends:
+#(: rationale:
+#(: note :
+#! ################################################################
+if [ "$EXIT" = "guiPXB_ion_RS" ] ; then   # ACTIVE on System Page
+    n=0
+    Sbr_Splash_It "---!!! calling  Sbr_PXB_INT_PXB + ReStart  !!!---" "yellow" "green" "1"       #! -D---
+    Sbr_Splash_It ".
+.---!!! calling  Sbr_PXB_INT_PXB + ReStart  !!!---
+." "blue" "yellow" "2"       #! -D---
+    Sbr_Splash_It ".
+.    
+.---!!! calling  Sbr_PXB_INT_PXB + ReStart  !!!---
+.
+." "red" "yellow" "3"       #! -D---
+    #!
+    Sbr_S2F1_MI    # internal SMP  
+    Sbr_PXB_INT     #! Active from System Page to ReStart
+    #!
+    Sbr_ClearFlagsSystem 0      ### clear lockfile so that ReStart can run.
+    Sbr_Cbx_ReStart 1    # display and no wait
+fi # end [ "$EXIT" = "guiEXIT:guiPXB" ]
+#!
+#!
+#!
+#!
+#(: ========================================================
+#(: fx IF EXIT:guiMgrOneArcDts
+#(: called by: Page "Main" , Page System
 #(: param:
 ##(: purpose: Backup/Archive with DTS, only ONE "Manager" Edit Shell Script
 #(: calls:
@@ -7215,16 +8739,18 @@ fi # end: [ EXIT:guiBakAllCRQ ]     # Called by "Menu_ReBoot"
 #(: note :  Check If "EDIT" script available. 
 #(:
 #! #########################################################
-#! function EXIT:guiMgrOneArcDts
+#(: fx IF EXIT:guiMgrOneArcDts
 if [ "$EXIT" = "guiMgrOneArcDts" ] ; then   # MGR One Arc Dts 
     n=0
+    #!
     Sbr_BakOneArcDts
-    Sbr_ClearFlagsSystem 0  	### clear lockfile so that ReStart can run.
-    Sbr_Cbx_ReStart 1 	 # display and no wait
+    #!
+    Sbr_ClearFlagsSystem 0      ### clear lockfile so that ReStart can run.
+    Sbr_Cbx_ReStart 1    # display and no wait
 fi # end [ "$EXIT" = "guiMgrOneArcDts" ]
 #!
 ##(: ========================================================
-#(: ft(guiMgrAllArcDts)
+#(: fx guiMgrAllArcDts
 #(: called by: Main GUI Fall-Thru
 #(: param:
 #(: purpose: Backup/Archive with DTS, all Major Edit Shell Scripts
@@ -7238,9 +8764,10 @@ fi # end [ "$EXIT" = "guiMgrOneArcDts" ]
 #! #########################################################
 if [ "$EXIT" = "guiMgrAllArcDts" ] ; then   # MGR All Arc Dts # vis = 0 # NOT ACTIVE 
     n=0
-    #! Sbr_Splash_It "--- gui_Mgr_ALL_Arc_dts ---# vis = 0 # NOT ACTIVE " "yellow" "red" "3"       #! -D---
-    Sbr_Splash_It "--- gui_Mgr_All_Arc_Dts ---" "yellow" "purple" "3"       #! -D---
-    Sbr_BakAllArcDts       # Quick Short version 
+    Sbr_Splash_It "--- gui_Mgr_All_Arc_Dts ---" "yellow" "purple" "1"       #! -D---
+    #!
+    Sbr_BakAllArcDts       # Quick Short BackUp version 
+    #!
     Sbr_Cbx_ReStart 1 
 fi # end [ "$EXIT" = "guiMgrAllArcDts" ]
 #(: ========================================================
@@ -7248,47 +8775,17 @@ fi # end [ "$EXIT" = "guiMgrAllArcDts" ]
 #!
 #!
 #!
-#(: ========================================================
-#(: ft(EXIT:guiMB)       # MUST BE TOP of LIST !
-#(: called by: GUI Fall-Thru 
-#(: param:
-#(: purpose:
-#(: calls:
-#(: method:
-#(: sends:
-#(: rationale:
-#(: note : EXIT:guiMB  "MUST" be the FIRST of the if [EXIT: ] routines.
-#(:         so that a call can "Fall-Thru" to find the "if  $EXIT" match-up. 
-#(:
-#(:   guiMB can generate calls to 
-#(:         external ".FnRun_" routines "external"
-#(:         internal "Sbr_" routines "local"
-#(:         internal "if  [ "$EXIT" = " Fall-Thru routines
-#(:
-#! ########################################################
-#! function EXIT:guiMB    # Sbr_Vmb_Config
-if [ "$EXIT" = 'guiMB' ] ; then n=0  ;
-    Sbr_Splash_It "--- Sbr_MB--- ???" "yellow" "purple" "1.5"       #! -D---
-    EXIT="->->->guiMB===Sbr_MB_All"
-    Sbr_Vmb_Config      # pageV pageVert
-    #
-fi # end: [EXIT:guiMB] ???
-
-#! =====================================================================
-#! end: #1 Page  CBX, E3R, MCI, MB, OneArcDts, AllArcDts 
-#! =====================================================================
-#!
 #!
 #! Fall-Thru Method 
 #!
 #!
 #! #########################################################
-#! begin: #1 Page TEST
+#! begin: #1 Page DOX Misc and TEST
 #! #########################################################
 #!
 #!
 #(: =========================================================
-#(: ft(EXIT:guiAudio)
+#(: fx IF EXIT:guiAudio
 #(: called by: Main GUI Fall-Thru and code is INTERNAL to MGR
 #(: param:
 #(: purpose: play the "startup" music
@@ -7299,26 +8796,21 @@ fi # end: [EXIT:guiMB] ???
 #(: note :
 #(:
 #! #########################################################
-#! function EXIT:guiAudio    # "Audio" button calls this if[] .
+#(: fx IF EXIT:guiAudio    
 if [ "$EXIT" = 'guiAudio' ] ; then  # Run Audio Startup Music 
-	n=0
-    Sbr_Splash_It  "mpv ===guiAudio StartUp-Sound" "yellow" "purple" "3"
+    n=0
+    Sbr_Splash_It  "mpv ===guiAudio StartUp-Sound" "yellow" "purple" "1"
     #!
     #! B5B mpv
        mpv  /usr/share/audio/bark.au &
        mpv  /usr/share/audio/2barks.wav &
     sleep 3
-        mpv /usr/share/audio/sys-login.mp3 &
-    sleep 5
-        mpv /usr/share/audio/bell.wav
+        mpv /usr/share/audio/sys-chime.mp3 &
     #!
-    Sbr_Splash_It  "mplayer ===guiAudio StartUp-Sound" "yellow" "purple" "3"
     #! B4B mplayer
      mplayer /usr/share/audio/bark.au &
     mplayer /usr/share/audio/2barks.wav &
      sleep 3
-    mplayer /usr/share/audio/sys-login.mp3 &
-    sleep 5
     mplayer /usr/share/audio/bell.wav    #!
     #!
     Sbr_Cbx_ReStart 1
@@ -7327,7 +8819,7 @@ fi # end: "$EXIT" = 'guiAudio'
 #!
 #!
 #(: =========================================================
-#(: ft(EXIT:guiBackGround)
+#(: fx IF EXIT:guiBackGround
 #(: called by: Main GUI Fall-Thru and code is INTERNAL to MGR
 #(: param:
 #(: purpose: Launch the BackGround Image
@@ -7338,16 +8830,16 @@ fi # end: "$EXIT" = 'guiAudio'
 #(: note :
 #(:
 #! #########################################################
-#! function EXIT:guiBackGround    #  Not Active
+#(: fx IF EXIT:guiBackGround    #  Not Active
 if [ "$EXIT" = 'guiBackGround' ] ; then  # Run Audio Startup Music 
-	n=0
+    n=0
     Sbr_Splash_It  "guiBackGround" "yellow" "purple"  "3"
     Sbr_Cbx_ReStart 1
 fi # end: "$EXIT" = 'guiBackGround'
 #!
 #!
 #(: ========================================================
-#(: ft(EXIT:guiTest1)    # Not Used
+#(: fx IF EXIT:guiTest1    # Not Used
 #(: called by: Main GUI Fall-Thru and code is INTERNAL to MGR
 #(: param:
 #(: purpose:    TEST
@@ -7358,9 +8850,9 @@ fi # end: "$EXIT" = 'guiBackGround'
 #(: note :
 #(:
 #! ########################################################
-#! function EXIT:guiTest1       # Not Used 
+#(: fx IF EXIT:guiTest1       # Not Used 
 if [ "$EXIT" = 'guiTest1' ] ; then n=0  ;
-	n=0
+    n=0
     /usr/lib/gtkdialog/box_splash -fg yellow -bg darkred -border true -close never -text "\
     .   guiTest1
     ." &
@@ -7368,13 +8860,13 @@ if [ "$EXIT" = 'guiTest1' ] ; then n=0  ;
         pidx=$!
         GTKPIDT1=$!
         sleep .3
-        kill ${GTKPIDT1}
+        kill ${GTKPIDT1}   2> /dev/null   
     Sbr_Cbx_ReStart 1
 fi # end: "$EXIT" = 'guiTest1'
 #!
 #(!
 #(: ========================================================
-#(: ft(EXIT:guiTest2)    # Not Used
+#(: fx IF EXIT:guiTest2    # Not Used
 #(: called by: Main GUI Fall-Thru and code is INTERNAL to MGR
 #(: param:
 #(: purpose:    TEST
@@ -7385,9 +8877,8 @@ fi # end: "$EXIT" = 'guiTest1'
 #(: note :
 #(:
 #! ########################################################
-#! function EXIT:guiTest2       # Not Used 
-if [ "$EXIT" = 'guiTest2' ] ; then n=0  ;
-	n=0
+if [ "$EXIT" = 'guiTest2' ] ; then n=0  ;   #! NOT USED
+    n=0
     /usr/lib/gtkdialog/box_splash -fg yellow -bg darkred -border true -close never -text "\
     .   guiTest2
     ." &
@@ -7395,13 +8886,13 @@ if [ "$EXIT" = 'guiTest2' ] ; then n=0  ;
         pidx=$!
         GTKPIDT2=$!
         sleep .3
-        kill ${GTKPIDT2}
+        kill ${GTKPIDT2}   2> /dev/null   
     Sbr_Cbx_ReStart 1
 fi # end: "$EXIT" = 'guiTest2'
 #!
 #(!
 #(: ========================================================
-#(: ft(EXIT:guiTest3)    # Not Used
+#(: fx IF EXIT:guiTest3    # Not Used
 #(: called by: Main GUI Fall-Thru and code is INTERNAL to MGR
 #(: param:
 #(: purpose:    TEST 
@@ -7412,9 +8903,8 @@ fi # end: "$EXIT" = 'guiTest2'
 #(: note :
 #(:
 #! ########################################################
-#! function EXIT:guiTest3    # Not Used
 if [ "$EXIT" = 'guiTest3' ] ; then n=0  ;
-	n=0
+    n=0
     /usr/lib/gtkdialog/box_splash -fg yellow -bg darkred -border true -close never -text "\
     .   guiTest3
     ." &
@@ -7422,7 +8912,7 @@ if [ "$EXIT" = 'guiTest3' ] ; then n=0  ;
         pidx=$!
         GTKPIDT3=$!
         sleep .3
-        kill ${GTKPIDT3}
+        kill ${GTKPIDT3}   2> /dev/null   
     Sbr_Cbx_ReStart 1
 fi # end: "$EXIT" = 'guiTest3'
 #!
@@ -7443,7 +8933,7 @@ fi # end: "$EXIT" = 'guiTest3'
 #!
 #!
 #(: =========================================================
-#(: ft(EXIT:guiROX)
+#(: fx IF EXIT:guiROX
 #(: called by: Main GUI Fall-Thru
 #(: param:
 #(: purpose:    lcFnRun=". rox"
@@ -7454,14 +8944,12 @@ fi # end: "$EXIT" = 'guiTest3'
 #(: note :
 #(:
 #! #########################################################
-#! function EXIT:guiROX   # Run ROX Filer App 
 if [ "$EXIT" = "guiROX" ] ; then   # NOT USED 
     n=0
     echo "------- ROX ---Show 'My_Dev_' SubDir"
-	Sbr_ClearFlagsSystem 0  	### clear lockfile so that ReStart can run.
-    # called by ROX with no parameter
-    Sbr_Cbx_ReStart & ### must ReStart with no parameter.
-    Sbr_ClearFlagsSystem  ""  #: clear lockfile, etc,  so that ReStart can run.
+    Sbr_ClearFlagsSystem 0      ### clear lockfile so that ReStart can run.
+    Sbr_Cbx_ReStart 1 &     ### must ReStart with no parameter.
+    #!
     cd /initrd/mnt/dev_save/MY_/usr-share/My_Dev_
     lcFnRun=". rox"
     . rox  
@@ -7470,10 +8958,10 @@ fi # end: EXIT:guiROX
 #!
 #!
 #(: =========================================================
-#(: ft(EXIT:guiGTKsampler)
+#(: fx IF EXIT:guiGTKsampler    # NOT USED
 #(: called by: Main GUI Fall-Thru
 #(: param:
-#(: purpose:  	lcFnRun="/initrd/mnt/dev_save/MY_/usr-share/My_Dev_/Edit_GTK/rc.z_GTK-sampler.sh"
+#(: purpose:    lcFnRun="/initrd/mnt/dev_save/MY_/usr-share/My_Dev_/Edit_GTK/rc.z_GTK-sampler.sh"
 #(: calls: GTK-sampler.sh
 #(: method:
 #(: sends:
@@ -7481,19 +8969,18 @@ fi # end: EXIT:guiROX
 #(: note :
 #(:
 #! #########################################################
-#! function EXIT:guiGTKsampler # # Run GTK Sampler App
 if [ "$EXIT" = "guiGTKsampler" ] ; then     # NOT USED
     n=0
-	Sbr_ClearFlagsSystem 0  	### clear lockfile so that ReStart can run.
-	echo "--- GTK-sampler ---"
-	lcFnRun="/initrd/mnt/dev_save/MY_/usr-share/My_Dev_/Edit_GTK/rc.z_GTK-sampler.sh"
-    [ -f "$lcFnRun" ]  &&  ${lcFnRun}     # sfs_load
-	Sbr_Cbx_ReStart 1   # no wait # guiGTKsampler
+    Sbr_ClearFlagsSystem 0      ### clear lockfile so that ReStart can run.
+    echo "--- GTK-sampler ---"
+    lcFnRun="/initrd/mnt/dev_save/MY_/usr-share/My_Dev_/Edit_GTK/rc.z_GTK-sampler.sh"
+    [ -f "${lcFnRun}" ]  &&  ${lcFnRun}     # sfs_load
+    Sbr_Cbx_ReStart 1   # no wait # guiGTKsampler
 fi # end: EXIT:guiGTKsampler
 #!
 #!
 #(: =========================================================
-#(: ft(EXIT:guiSFS)
+#(: fx IF EXIT:guiSFS   # NOT USED
 #(: called by: Main GUI Fall-Thru
 #(: param:
 #(: purpose:  lcFnRun="/usr/sbin/sfs_load"
@@ -7504,21 +8991,20 @@ fi # end: EXIT:guiGTKsampler
 #(: note :
 #(:
 #! #########################################################
-#! function EXIT:guiSFS   # Run  SFS Loader App
 if [ "$EXIT" = "guiSFS" ] ; then    # NOT USED 
     n=0
-	Sbr_ClearFlagsSystem 0  	### clear lockfile so that ReStart can run.
+    Sbr_ClearFlagsSystem 0      ### clear lockfile so that ReStart can run.
     lcFnRun="/usr/sbin/sfs_load"
-    [ -f "$lcFnRun" ]  &&  ${lcFnRun}     # Run  SFS Loader App
-	Sbr_Cbx_ReStart 1 	 # no wait
+    [ -f "${lcFnRun}" ]  &&  ${lcFnRun}     # Run  SFS Loader App
+    Sbr_Cbx_ReStart 1    # no wait
 fi # end: EXIT:guiSFS
 #!
 #!
 #(: =========================================================
-#(: ft(EXIT:guiJWD)
+#(: fx IF EXIT:guiJWD
 #(: called by: Main GUI Fall-Thru
 #(: param:
-#(: purpose:	lcFnRun="/usr/local/jwmdesk/jwmdesk"
+#(: purpose:    lcFnRun="/usr/local/jwmdesk/jwmdesk"
 #(: calls:
 #(: method:
 #(: sends:
@@ -7526,23 +9012,22 @@ fi # end: EXIT:guiSFS
 #(: note :
 #(:
 #! #########################################################
-#! function EXIT:guiJWD   # Run JWD App
+#(: fx IF EXIT:guiJWD   # Run JWD App
 if [ "$EXIT" = "guiJWD" ] ; then        # NOT USED
     n=0
-	Sbr_ClearFlagsSystem 0  	### clear lockfile so that ReStart can run.
-	lcFnRun="/usr/local/jwmdesk/jwmdesk"
-    [ -f "$lcFnRun" ]  &&  ${lcFnRun}   # jwmdesk
+    Sbr_ClearFlagsSystem 0      ### clear lockfile so that ReStart can run.
+    lcFnRun="/usr/local/jwmdesk/jwmdesk"
+    [ -f "${lcFnRun}" ]  &&  ${lcFnRun}   # jwmdesk
     Sbr_Cbx_ReStart 1   # no wait
-	#	exit 0
-	#
+    #
 fi # end: EXIT:guiJWD
 #!
 #!
 #(: ========================================================
-#(: ft(EXIT:guiPPR)
+#(: fx IF EXIT:guiPPR
 #(: called by: Main GUI Fall-Thru
 #(: param:
-#(: purpose: 	lcFnRun="/usr/local/bin/pprocess" 
+#(: purpose:    lcFnRun="/usr/local/bin/pprocess" 
 #(: calls:
 #(: method:
 #(: sends:
@@ -7550,21 +9035,21 @@ fi # end: EXIT:guiJWD
 #(: note :
 #(:
 #! ########################################################
-#! function EXIT:guiPPR   # Run Sys App
+#(: fx IF EXIT:guiPPR   # Run Sys App
 if [ "$EXIT" = "guiPPR" ] ; then    # NOT USED 
     echo "--- PPR Process --- Run System Application  ---"
     n=0
-	Sbr_ClearFlagsSystem 0  	### clear lockfile so that ReStart can run.
-	lcFnRun="/usr/local/bin/pprocess"   # pprocess
-    [ -f "$lcFnRun" ]  &&  ${lcFnRun}
-    Sbr_Cbx_ReStart 1 	 # no wait
-	exit 0
-	#
+    Sbr_ClearFlagsSystem 0      ### clear lockfile so that ReStart can run.
+    lcFnRun="/usr/local/bin/pprocess"   # pprocess
+    [ -f "${lcFnRun}" ]  &&  ${lcFnRun}
+    Sbr_Cbx_ReStart 1    # no wait
+    exit 0
+    #
 fi # end: EXIT:guiPPR
 #!
 #!
 #(: ========================================================
-#(: ft(EXIT:gui-P-MntInt) 
+#(: fx IF EXIT:gui-P-MntInt 
 #(: called by: GUI button
 #(: method: Fall-Thru and code is INTERNAL to MGR
 #(: param:
@@ -7576,17 +9061,16 @@ fi # end: EXIT:guiPPR
 #(: note :
 #(:
 #! #########################################################
-#! function EXIT:gui-P-MntInt     # Internal Code still "mount" internal
-if [ "$EXIT" = "gui-P-MntInt" ]  ; then	   # NOT USED 
+if [ "$EXIT" = "gui-P-MntInt" ]  ; then    # NOT USED 
     n=0
-	Sbr_Sys_KillProc "${EXIT}"	# gui-P-MntInt
-    Sbr_Sys_pMount_All "1"  ### Sbr -> internal
-	Sbr_Cbx_ReStart 1  # no wait
+    Sbr_Sys_KillProc    # gui-P-MntInt
+    #! Sbr_MGR_pMount_All "1"  ### Sbr -> internal
+    Sbr_Cbx_ReStart 1  # no wait
 fi # end: EXIT:gui-P-MntInt (main)
 #!
 #!
 #(: =========================================================
-#(: ft(EXIT:gui-U-MntInt) 
+#(: fx IF EXIT:gui-U-MntInt 
 #(: called by: GUI button
 #(: method: Fall-Thru and code is INTERNAL to MGR
 #(: param:
@@ -7598,12 +9082,11 @@ fi # end: EXIT:gui-P-MntInt (main)
 #(: note :
 #(:
 #! #########################################################
-#! function EXIT:gui-U-MntInt #  Internal Code calls "UnMount" Internal
-if [ "$EXIT" = "gui-U-MntInt" ]  ; then	   # NOT USED 
+if [ "$EXIT" = "gui-U-MntInt" ]  ; then    # NOT USED 
     n=0
-	Sbr_Sys_KillProc "${EXIT}"	# gui-U-MntInt
-    Sbr_Sys_uMount_All "1" ### Sbr -> internal
-	Sbr_Cbx_ReStart 1  # no wait
+    Sbr_Sys_KillProc    # gui-U-MntInt
+    #! Sbr_Sys_uMount_All "1" ### Sbr -> internal
+    Sbr_Cbx_ReStart 1  # no wait
 fi # end: EXIT:gui-U-MntInt (main)
 #!
 #!
@@ -7622,7 +9105,28 @@ fi # end: EXIT:gui-U-MntInt (main)
 #!
 #!
 #(: ========================================================
-#(: ft(EXIT:guiS2F3)
+#(: fx IF  EXIT:guiS2F1_MI 
+#(: called by: Main GUI button  "_S2F1-MI_"
+#(: method: Fall-Thru and code is INTERNAL to MGR
+#(: param:
+#(: purpose:   Internal Call for /rc.z_S2F.sh
+#(: calls:
+#(: method: calls code from /rc.z_S2F.sh,  copied internal
+#(: sends:
+#(: rationale:
+#(: note :
+#(:
+#! #####################################################################
+if [ "$EXIT" = "guiS2F1_MI" ]  ; then  #   ACTIVE
+    n=0
+        Sbr_Splash_It "--- guiS2F1  --- Close Terminal ---" "yellow" "purple" "3"       #! -D---
+    Sbr_S2F1_MI            # internal SMP  + ReStart
+        Sbr_ClearFlagsSystem 0      # so that ReStart can run.
+        Sbr_Cbx_ReStart 1  # no wait
+fi #
+#!
+#(: ========================================================
+#(: fx IF  EXIT:guiS2F3_MI 
 #(: called by: Main GUI button  "_S2F-3_"
 #(: method: Fall-Thru and code is INTERNAL to MGR
 #(: param:
@@ -7634,25 +9138,18 @@ fi # end: EXIT:gui-U-MntInt (main)
 #(: note :
 #(:
 #! ########################################################
-#! function EXIT:guiS2F1   # guiButton S2F-1 loop SMP    ACTIVE
-if [ "$EXIT" = "guiS2F1" ]  ; then  # guiButton S2F-3 loop SMP    ACTIVE
+if [ "$EXIT" = "guiS2F3_MI" ]  ; then  #   ACTIVE
     n=0
-    Sbr_MB_s2f1        # guiButton S2F-1 loop SMP
-	Sbr_ClearFlagsSystem 0  	# so that ReStart can run.
-    Sbr_Cbx_ReStart 1  # no wait
+        Sbr_Splash_It "--- guiS2F3  --- Close Terminal ---" "yellow" "purple" "3"       #! -D---
+        Sbr_S2F3_MI       # IF  EXIT:guiS2F3_MI  + ReStart
+        Sbr_ClearFlagsSystem 0      # so that ReStart can run.
+        Sbr_Cbx_ReStart 1  # no wait
 fi #
 #!
-#! ########################################################
-#! function EXIT:guiS2F3   # guiButton S2F-3 loop SMP    ACTIVE
-if [ "$EXIT" = "guiS2F3" ]  ; then  # guiButton S2F-3 loop SMP    ACTIVE
-    n=0
-    Sbr_MB_s2f3        # guiButton S2F-3 loop SMP
-	Sbr_ClearFlagsSystem 0  	# so that ReStart can run.
-    Sbr_Cbx_ReStart 1  # no wait
-fi #
+#!
 #!
 #(: ==================================================
-#(: ft(EXIT:guiMCI)	
+#(: fx IF EXIT:guiMCI   
 #(: called by: Main GUI Fall-Thru
 #(: param:
 #(: purpose: EGI Sample Project
@@ -7663,30 +9160,46 @@ fi #
 #(: note :
 #(:
 #! ##################################################
-#! function [EXIT:guiMCI]
-if [ "$EXIT" = "guiMCI" ] ; then    # Run  M.C.I. project   ACTIVE
+if [ "$EXIT" = "guiMCI" ] ; then    # Run  M.C.I. project EXT  ACTIVE
     n=0
-    Sbr_Splash_It "--- Run MCI Sample Project  ---" "yellow" "purple" "3"       #! -D---
-	Sbr_ClearFlagsSystem 0  	### clear lockfile so that ReStart can run.
-	lcFnRun="/root/my-applications/rc.z_MCI.sh"
-    [ -f "$lcFnRun" ]  &&  ${lcFnRun}
-    Sbr_Cbx_ReStart 1 	 # no wait
+    Sbr_Splash_It "--- Run {RA}  MCI Sample Project  ---" "yellow" "purple" "3"       #! -D---
+    Sbr_ClearFlagsSystem 0      ### clear lockfile so that ReStart can run.
+    lcFnRun="/root/my-applications/rc.z_MCI.sh"
+    [ -f "${lcFnRun}" ]  &&  ${lcFnRun}
+    Sbr_Cbx_ReStart 1    # no wait
 fi # end: EXIT:guiMCI
 #!
+#(: ==================================================
+#(: fx IF EXIT:guiMGS-8 
+#(: called by: Main GUI Fall-Thru
+#(: param:
+#(: purpose: EGI Sample Project
+#(: calls:
+#(: method:
+#(: sends:
+#(: rationale:
+#(: note :
+#(:
+#! ##################################################
+if [ "$EXIT" = "guiMGS-8" ] ; then    # Run  M.G.S.-8 project EXT  ACTIVE
+    n=0
+    Sbr_Splash_It "--- Run {RA} MGS-8 Sample Project  ---" "yellow" "purple" "3"       #! -D---
+    Sbr_ClearFlagsSystem 0      ### clear lockfile so that ReStart can run.
+    lcFnRun="/root/my-applications/rc.z_MGS-8.sh"
+    [ -f "${lcFnRun}" ]  &&  ${lcFnRun}
+    Sbr_Cbx_ReStart 1    # no wait
+fi # end: EXIT:guiMCI
 #!
 #!   Fall-Thru Method 
 #!
 #!
 #! ########################################################
-#! begin:  Column DUMP 
+#! === begin: pageDOX === DUMP =================== 
 #! ########################################################
 #!
-
-
-
 #!
 #(: =========================================================
-#(: ft(EXIT:guiDumpHLP)
+#(: fx IF EXIT:guiDumpHLP
 #(: called by: Main GUI Fall-Thru and code is INTERNAL to MGR
 #(: param:
 #(: purpose: dump/display Pup HELP Code
@@ -7697,18 +9210,16 @@ fi # end: EXIT:guiMCI
 #(: note :
 #(:
 #! ########################################################
-#! function [EXIT:guiDumpHLP]	DumpHELP
 if [ "$EXIT" = "guiDumpHLP" ] ; then   #  Dump HELP  ACTIVE
     echo "--- HELP --- Sbr_Dump_HLP --- ${gcSysDistroName} ---"
     n=0
-    Sbr_Dump_HLP2	# MGR_Help_Box    ### local funxtion name
+    Sbr_Dump_HLP   # MGR_Help_Box    ### local function name
     Sbr_Cbx_ReStart 1  # no wait
 fi # end: EXIT:guiDumpHLP
 #!
 #!
-#!
 #(: ========================================================
-#(: ft(EXIT:guiDumpProc)
+#(: fx IF EXIT:guiDumpProc
 #(: called by: Main GUI Fall-Thru and code is INTERNAL to MGR
 #(: param:
 #(: purpose: dump/display Proc Source Code
@@ -7719,19 +9230,16 @@ fi # end: EXIT:guiDumpHLP
 #(: note :
 #(:
 #! =========================================================
-#! function [EXIT:guiDumpProc]
 if [ "$EXIT" = "guiDumpProc" ] ; then   #  Dump Proc  ACTIVE
     echo "--- Dump/Display Program Process ---"
     n=0
-    Sbr_Dump_Proc	# MGR_Proc_Box    ### local funxtion name
+    Sbr_Dump_Proc   # MGR_Proc_Box    ### local function name
     Sbr_Cbx_ReStart 1  # no wait
 fi  # end: EXIT:guiDumpPUP
 #!
-
-
 #!
 #(: ========================================================
-#(: ft(EXIT:guiDumpFAQ)
+#(: fx IF EXIT:guiDumpFAQ
 #(: called by: Main GUI Fall-Thru and code is INTERNAL to MGR
 #(: param:
 #(: purpose: dump/display Pup FAQ Code
@@ -7742,19 +9250,16 @@ fi  # end: EXIT:guiDumpPUP
 #(: note :
 #(:
 #! #####################################################
-#! function [EXIT:guiDumpFAQ]
 if [ "$EXIT" = "guiDumpFAQ" ] ; then   #  Dump FAQ  ACTIVE
     echo "--- FAQ --- Sbr_Dump_FAQ --- ${gcSysDistroName} ---"
     n=0
-    Sbr_Dump_FAQ	# MGR_Faq_Box    ### local funxtion name
+    Sbr_Dump_FAQ    # MGR_Faq_Box    ### local function name
     Sbr_Cbx_ReStart 1  # no wait
 fi # end: EXIT:guiDumpFAQ
 #!
 #!
-
-#!
 #(: ========================================================
-#(: ft(EXIT:guiDumpPUP)
+#(: fx IF EXIT:guiDumpPUP
 #(: called by: Main GUI Fall-Thru and code is INTERNAL to MGR
 #(: param:
 #(: purpose: dump/display Pup Source Code
@@ -7764,39 +9269,39 @@ fi # end: EXIT:guiDumpFAQ
 #(: rationale:
 #(: note :
 #(:
-#! =========================================================
-#! function [EXIT:guiDumpPUP]
+#! ##############################################################
 if [ "$EXIT" = "guiDumpPUP" ] ; then   #  Dump PupState  ACTIVE
     echo "--- Dump/Display Pup State Code ---"
     n=0
-    Sbr_Dump_PUP	# MGR_Pup_Box    ### local funxtion name
+    lcMsgStr="--- guiDump---PUP_---"
+    Sbr_Splash_It ">.>.> ${lcMsgStr}" "green" "yellow" "1"  
+    Sbr_Dump_PUP    # MGR_Pup_Box    ### local function name
     Sbr_Cbx_ReStart 1  # no wait
 fi  # end: EXIT:guiDumpPUP
 #!
-
-
-
+#!
 #(: =====================================================
-#(: ft(EXIT:guiDumpSys)
+#(: fx IF EXIT:guiDumpSrc
 #(: called by: Main GUI Fall-Thru and code is INTERNAL to MGR
 #(: param:
-#(: purpose: display Dev Notes and test var.
+#(: purpose: display Src Code
 #(: calls:
 #(: method:
 #(: sends:
 #(: rationale:
 #(: note :
 #(:
-#! function [EXIT:guiDumpSRC]
-if [ "$EXIT" = "guiDumpSRC" ] ; then   #  Dump SOURCE  ACTIVE
+if [ "$EXIT" = "guiDumpSrc" ] ; then   #  Dump SOURCE  ACTIVE
     n=0
-    echo "--- Source --- Sbr_Dump_SRC ---${gcSysDistroName} ---"
-    Sbr_Dump_SRC	# MGR_Src_Box    ### local funxtion name
-    Sbr_Cbx_ReStart 1  # no wait
+    lcMsgStr="--- guiDump---SRC_---"
+    Sbr_Splash_It ">.>.> ${lcMsgStr}" "green" "yellow" "1"  
+    Sbr_Dump_SRC   # MGR_Src_Box    ### local function name
+    Sbr_Cbx_ReStart 1  # must ReStart else will drop out
 fi # end: EXIT:guiDumpSRC
 #!
+#!
 #(: =====================================================
-#(: ft(EXIT:guiDumpSys)
+#(: fx IF EXIT:guiDumpGUI
 #(: called by: Main GUI Fall-Thru and code is INTERNAL to MGR
 #(: param:
 #(: purpose: display Dev Notes and test var.
@@ -7807,16 +9312,18 @@ fi # end: EXIT:guiDumpSRC
 #(: note :
 #(:
 #! #####################################################
-#! function [EXIT:guiDumpGUI]   # NOT ACTIVE
 if [ "$EXIT" = "guiDumpGUI" ] ; then   #  Dump GUI  ACTIVE
     n=0
-    echo "--- Source --- Sbr_Dump_GUI ---${gcSysDistroName} ---"
-    Sbr_Dump_GUI	# MGR_Src_Box    ### local funxtion name
+    lcMsgStr="--- guiDump---GUI_---"
+    Sbr_Splash_It ">.>.> ${lcMsgStr}" "green" "yellow" "2"  
+    Sbr_Dump_GUI    # MGR_Src_Box    ### local function name
     Sbr_Cbx_ReStart 1  # no wait
 fi # end: EXIT:guiDumpGUI
 #!
+#!
+#!
 #(: =====================================================
-#(: ft(EXIT:guiDumpSys)
+#(: fx IF EXIT:guiDumpImg
 #(: called by: Main GUI Fall-Thru and code is INTERNAL to MGR
 #(: param:
 #(: purpose: display Dev Notes and test var.
@@ -7827,20 +9334,21 @@ fi # end: EXIT:guiDumpGUI
 #(: note :
 #(:
 #! #####################################################
-#! function [EXIT:guiDumpIMG]
-if [ "$EXIT" = "guiDumpIMG" ] ; then   #  Dump IMAGE   ACTIVE
+if [ "$EXIT" = "guiDumpImg" ] ; then   #  Dump IMAGE   ACTIVE
     n=0
-    echo "--- Source --- Sbr_Dump_IMG ---${gcSysDistroName} ---"
-    Sbr_Dump_IMG	# MGR_Src_Box    ### local funxtion name
+    lcMsgStr="--- guiDump---Img_---"
+    Sbr_Splash_It ">.>.> ${lcMsgStr}" "green" "yellow" "2"  
+    Sbr_Dump_IMG    # MGR_Src_Box    ### local function name
     Sbr_Cbx_ReStart 1  # no wait
 fi # end: EXIT:guiDumpIMG
 #!
 #!
+#!
 #(: =====================================================
-#(: ft(EXIT:guiDumpSys)
+#(: fx IF EXIT:guiDumpUPL
 #(: called by: Main GUI Fall-Thru and code is INTERNAL to MGR
 #(: param:
-#(: purpose: display Dev Notes and test var.
+#(: purpose: display Legal Notes and test var.
 #(: calls:
 #(: method:
 #(: sends:
@@ -7848,17 +9356,43 @@ fi # end: EXIT:guiDumpIMG
 #(: note :
 #(:
 #! #####################################################
-#! function [EXIT:guiDumpUPL]
 if [ "$EXIT" = "guiDumpUPL" ] ; then   #  Dump UpLegal  ACTIVE
     n=0
-    lcMsgStr="--- UPopLegal --- Sbr_Dump_UPL --- ${gcSysDistroName} ---"
-	Sbr_Dump_UPL	# MGR_UPL_Box
+    lcMsgStr="--- guiDump---UPL_---"
+    Sbr_Splash_It ">.>.> ${lcMsgStr}" "green" "yellow" "2"  
+    Sbr_Dump_UPL    # MGR_UPL_Box
     Sbr_Cbx_ReStart 1  # no wait
 fi # end: EXIT:guiDumpUPL
 #!
+#(: =====================================================
+#(: fx IF EXIT:guiDumpGXM
+#(: called by: Main GUI Fall-Thru and code is INTERNAL to MGR
+#(: param:
+#(: purpose: display gxmessage special and test var.
+#(: calls:
+#(: method:
+#(: sends:
+#(: rationale:
+#(: note :
+#(:
+#! #####################################################
+if [ "$EXIT" = "guiDumpGXM" ] ; then   #  Dump "gxmessage"  ACTIVE
+    n=0
+    lcMsgStr="--- guiDump---GXM_---"
+     gxmessage -bo -c -tim 3 -fn 'bold 40' -bg '#285577' -fg '#FFF' -bu '' $'\n\n  A buttonless gxmessage  \n\n'
+     lcMsgStr="=== ${gcMgrKey}==="
+     gxmessage -bo -c -tim 3 -fn 'bold 10' -bg '#F85577' -fg '#5555FF' -bu '' $'\n\n  "'${lcMsgStr}'"  '
+     lcMsgStr="=== PID: ${gcMgrBashPid}==="
+     gxmessage -bo -c -tim 3 -fn 'bold 10' -bg '#28F577' -fg '#FFF' -bu '' $'\n\n  "'${lcMsgStr}'"  '
+     lcMsgStr="=== ${LOGNAME}==="
+     gxmessage -bo -c -tim 3 -fn 'bold 10' -bg '#2855F7' -fg '#FF5555' -bu '' $'\n\n  "'${lcMsgStr}'"  '
+    Sbr_Cbx_ReStart 1  # no wait
+fi # end: EXIT:guiDumpGXM
+#!
+#!
 #!
 #(: =====================================================
-#(: ft(EXIT:guiDumpSys)
+#(: fx IF EXIT:guiDumpSys
 #(: called by: Main GUI Fall-Thru and code is INTERNAL to MGR
 #(: param:
 #(: purpose: display Dev Notes and test var.
@@ -7869,72 +9403,147 @@ fi # end: EXIT:guiDumpUPL
 #(: note :
 #(:
 #! #####################################################
-#! function [EXIT:guiDumpSys]
 if [ "$EXIT" = "guiDumpSys" ] ; then   #  Dump System  ACTIVE
     n=0
-    lcMsgStr="--- Sys Notes --- ${gcSysDistroName} ---"
-	Sbr_Dump_Sys
+    lcMsgStr="--- guiDump---SYS_---"
+    Sbr_Splash_It ">.>.> ${lcMsgStr}" "green" "yellow" "2"  
+    Sbr_Dump_Sys    #! bounce up to SubRoutines 
     Sbr_Cbx_ReStart 1  # no wait
 fi # end: EXIT:guiDumpSys
 #!
-#!
-#!   Fall-Thru Method 
-#!
-#!
-#(: ===Page1==================================================
-#(: ft EXIT:guiCTX  # ACTIVE
+#(: =====================================================
+#(: fx IF EXIT:guiDumpDeclare
 #(: called by: Main GUI Fall-Thru and code is INTERNAL to MGR
+#(: param:
+#(: purpose: display Declare 
+#(: calls:
+#(: method:
+#(: sends:
+#(: rationale:
+#(: note :
+#(:
+#! #####################################################
+if [ "$EXIT" = "guiDumpDeclare" ] ; then   #  Dump System  ACTIVE
+    n=0
+    lcMsgStr="--- guiDump---DECLARE_---"
+    Sbr_Splash_It ">.>.> ${lcMsgStr}" "green" "yellow" "2"  
+    Sbr_Dump_Declare
+    Sbr_Cbx_ReStart 1  # no wait
+fi # end: EXIT:guiDumpDeclare
+#!
+#!
+#!
+#(: =====================================================
+#(: fx IF EXIT:guiDumpPath
+#(: called by: Main GUI Fall-Thru and code is INTERNAL to MGR
+#(: param:
+#(: purpose: display Show_in_Path 
+#(: calls:
+#(: method:
+#(: sends:
+#(: rationale:
+#(: note :
+#(:
+#! #####################################################
+if [ "$EXIT" = "guiDumpPath" ] ; then   #  Sbr_Dump_Path  ACTIVE
+    n=0
+    lcMsgStr="--- guiDump---PATH_---"
+    Sbr_Splash_It ">.>.> ${lcMsgStr}" "green" "yellow" "2"  
+    Sbr_Dump_Path
+    Sbr_Cbx_ReStart 1  # no wait
+fi # end: EXIT:guiDumpPath
+#!
+#!
+#(: =====================================================
+#(: fx IF EXIT:gui_Dxstro_window
+#(: called by: Main GUI Fall-Thru and code is INTERNAL to MGR
+#(: param:
+#(: purpose: 
+#(: calls:
+#(: method:
+#(: sends:
+#(: rationale:
+#(: note :
+#(:
+#! #####################################################
+if [ "$EXIT" = "gui_Dxstro_Window" ] ; then   #  Dump DistroList  ACTIVE
+    n=0
+    lcMsgStr="--- gui_Dxstro_Window_---"
+    Sbr_Splash_It "=== ${lcMsgStr}" "green" "yellow" "2"  
+    Sbr_Dxstro_Window
+    Sbr_Cbx_ReStart 1  # no wait
+fi # end: EXIT:guiDxstro_window
+#!
+#!
+#! 
+#(: ==========================================================
+#(: fx EXIT:guiCtxB1B2Rs   EXIT:guiCtxB1B2Rb   EXIT:guiCtxB1B2Rq     #! NOT ACTIVE
+#(: called by: NoteBook BackUp call for RS , RB , RQ (PO).
 #(: param:
 #(: purpose:
 #(: calls:
 #(: method:
 #(: sends:
 #(: rationale:
-#(: note :
+#(: note : called via NoteBook "BackUp" 
 #(:
-#! #####################################################
-#! function  EXIT:guiCTXmain   {} Standard {_COLD_TAR_BACKUP_X_}  external ACTIVE 
-if [ "$EXIT" = "guiCTXmain" ] ; then   # CTX   {}{_COLD_TAR_BACKUP__X_}  external    ACTIVE   
-    n=0 # working CTX "A" mode
-	Sbr_ClearFlagsSystem 0  	### clear lockfile so that ReStart can run. todo: call CTB-SL
-#! ************************************************************
-#! E3R "basename" : E3R will check for two paths ***
-#! Developer EDIT :
-#! export gcRootHomeMyUsrDev="/mnt/home/MY_/usr-share/My_Dev_/" 
-#! Production : 
-#! export gcRootApps="/root/my-applications/"  # Puppy Linux always provides this. 
-#! PET install not required, 
-#!      just place downloaded scripts into /root/my-applications and append PATH.
-#! *************************************************************************************
-    #! Expand Verify -f Files : /EDIT vs /root/my-applications
-    Sbr_Splash_It "Page 1 Main : EXIT:guiCTXmain" "yellow" "purple" "3"  
-    lcFnRunBaseSd="CTX"
-    lcFnRunBaseFn="CTX"
-        lcFnRun="${gcMntHomeMyUsrDev}EDIT_${lcFnRunBaseSd}/rc.z_${lcFnRunBaseFn}.sh"    #!  here, testing  for /Dev/Edit
-        if [ -f "$lcFnRun" ] ; then		# ${lcFnRunBase}    
-            [ -f "${lcFnRun}" ]  &&  ${lcFnRun}
-        else
-            #! /root/my-applications/rc.z_.sh
-            lcFnRun="${gcRootApps}rc.z_${lcFnRunBaseFn}.sh"  
-            if [ -f "$lcFnRun" ] ; then		# ${lcFnRunBase}
-                [ -f "${lcFnRun}" ]  &&  ${lcFnRun}
-            else
-                /usr/lib/gtkdialog/box_ok "ERROR" error "  Dependencie File Not Found: ${lcFnRun}"		#! -D---
-            fi
-     fi
-    Sbr_Cbx_ReStart 1 	 # no wait # OK to use here --- {_CTX_} ---
-	exit 0
-fi # end: EXIT:guiCTXmain
+#! ### Major <button> on NoteBook "BackUp" ###
+#! #########################################################################################
+#! function   EXIT:guiCtxB1B2Rs  EXIT:guiCtxB1B2Rb  EXIT:guiCtxB1B2Rq        #! NOT ACTIVE
+if  [ "$EXIT" = "guiCtxB1B2Rs" ] || [ "$EXIT" = "guiCtxB1B2Rb" ]  || [ "$EXIT" = "guiCtxB1B2Rq" ] ; then       #! NOT ACTIVE
+        n=0 # CTX "A"utomatic mode, normally.  "PXB" can handle this standard method.
+        if [ "$EXIT" = "guiCtxB1B2Rs" ] ; then      #! ReSTART
+            Sbr_Splash_It "CTX + ReSTART" "orange" "purple" "1"  
+        fi
+        if [ "$EXIT" = "guiCtxB1B2Rb" ] ; then      #! ReBOOT   but not B64B !!! ? stack depth ? 
+            Sbr_Splash_It "CTX + ReBOOT" "orange" "purple" "1"  
+        fi
+        if [ "$EXIT" = "guiCtxB1B2Rq" ] ; then      #! ReQUIT   but not B64B !!! ? stack depth ?
+            Sbr_Splash_It "CTX + ReQUIT" "orange" "purple" "3"  
+        fi
+#! === Clear Flags ========================================================================
+        Sbr_ClearFlagsSystem 0     #! Standard Option CTX  #! clear lockfile = ReStart .
+#! === BakOne ArcDts ======================================================================
+        #~ Sbr_BakOneArcDts    #! Standard Option CTX 
+#! === BakAll ArcDts ======================================================================
+        Sbr_BakAllArcDts    #! Standard Option CTX 
+#! === Save2File ==========================================================================
+        Sbr_S2F3_MI    #! Standard Option CTX     # Save2File MI  via  SMP
+#! === PXB Internal =======================================================================
+        Sbr_PXB_INT    #! Standard Option CTX      #! Active from BackUp Page to PowerOff
+#! ========================================================================================
+        if [ "$EXIT" = "guiCtxB1B2Rs" ] ; then
+                Sbr_Cbx_ReStart 1    
+        fi
+        if [ "$EXIT" = "guiCtxB1B2Rb" ] ; then
+                Sbr_Cbx_ReBoot 1     
+        fi
+        if [ "$EXIT" = "guiCtxB1B2Rq" ] ; then
+            Sbr_Splash_It "PowerOFF ..." "orange" "grn" "1"  
+            Sbr_Splash_It "PowerOFF ..." "orange" "blu" "1"  
+            Sbr_Splash_It "PowerOFF ..." "orange" "red" "5"  
+                Sbr_Cbx_ReQuit 1     
+        fi
+        #! Normal Process will have already Ended !  via ReStart, or ReBoot, or ReQuit !
+        Sbr_Splash_It "ERROR: CTX + ReSTART / ReBOOT / ReQUIT" "orange" "black" "7"  
+        #!
+fi # end: CTXB1B2
+#!
+#! find "$BACKUP_DIR" -type d -name "backup_*" -mtime +30 -exec rm -rf {} \;
+#!
+#! ########################################################
+#! === end: pageDOX === DUMP =================== 
+#! ########################################################
 #!
 #!
 #!
-#! ========================================================
-#(: === begin: Page3=== Six CT? calls to external ==========================
-#! ========================================================
+#! ########################################################
+#(: === begin: Page3=== CT? calls to external =============
+#! ########################################################
 #!
 #!
-#(: ===Page3=== Six CT? calls to external ===============================
-#(: ft EXIT:guiCTX  # ACTIVE
+#(: ========================================================
+#(: fx EXIT:guiCTX  # ACTIVE
 #(: called by: Main GUI Fall-Thru and code is INTERNAL to MGR
 #(: param:
 #(: purpose:
@@ -7944,83 +9553,37 @@ fi # end: EXIT:guiCTXmain
 #(: rationale:
 #(: note : Group of CTX buttons on Page Utility Page3
 #(:
-#! ###1#################################################
-#! function  EXIT:guiCTX   {} Standard {_COLD_TAR_BACKUP_}   ACTIVE 
-if [ "$EXIT" = "guiCTX" ] ; then   # CTX   {}{_COLD_TAR_BACKUP_}   ACTIVE   
+#! #####################################################
+#! function  EXIT:guiCTX   {} Standard "MAIN" {_COLD_TAR_BACKUP_}   ACTIVE 
+if [ "$EXIT" = "guiCTX" ] ; then   # CTX  PCBionPXB  ACTIVE   
     n=0 # working CTX "X" mode
     #! Sbr_Splash_It "EXIT:guiCTX " "yellow" "purple" "3"  
-	Sbr_ClearFlagsSystem 0  	### clear lockfile so that ReStart can run. todo: call CTB-SL
-
-#~ #! DEV guiCTX
-#~ #! lcFnTrgE="/mnt/dev_save/MY_/usr-share/My_Dev_/Edit_CTX/rc.z_CTX.sh"
-#~ lcFnTrgE="rc.z_CTX.sh"
-#~ chmod +x "${lcFnTrgE}"
-#~ .  ${lcFnTrgE} 
-
- #~ set -xe
-   #~ #! Expand Verify -f Files : /EDIT vs /root/my-applications
-    lcFnRunBaseSd="CTX"
-    lcFnRunBaseFn="CTX"
-        lcFnRun="${gcMntHomeMyUsrDev}EDIT_${lcFnRunBaseSd}/rc.z_${lcFnRunBaseFn}.sh"    #!  here, testing  for /Dev/Edit
-        if [ -f "$lcFnRun" ] ; then		# ${lcFnRunBase}    
-            [ -f "${lcFnRun}" ]  &&  ${lcFnRun}
-        else
-            #! /root/my-applications/rc.z_.sh
-            lcFnRun="${gcRootApps}rc.z_${lcFnRunBaseFn}.sh"  
-            if [ -f "$lcFnRun" ] ; then		# ${lcFnRunBase}
+    Sbr_ClearFlagsSystem 0      ### clear lockfile so that ReStart can run. todo: call CTB-SL
+        gcRootApps="/root/my-applications/"
+        gcMntHomeMyUsrDev="/initrd/mnt/dev_save/MY_/usr-share/My_Dev_/"
+        lcFnRunBaseSd="CTX"
+        lcFnRunBaseFn="CTX"
+        lcFnRun="${gcMntHomeMyUsrDev}EDIT_${lcFnRunBaseSd}/rc.z_${lcFnRunBaseFn}.sh"    
+        #!  here, testing default for /Dev/Edit  "CTX" 
+        if [ -f "${lcFnRun}" ] ; then     # ${lcFnRunBase}    
                 [ -f "${lcFnRun}" ]  &&  ${lcFnRun}
-            else
-                /usr/lib/gtkdialog/box_ok "ERROR" error "  Dependencie File Not Found: ${lcFnRun}"		#! -D---
-            fi
-     fi
-#~ set +xe
-    Sbr_Cbx_ReStart 1 	 # no wait # OK to use here --- CTB ---
-	exit 0
+        else
+                #! here, else testing application subdir  /root/my-applications/rc.z_???.sh
+                lcFnRun="${gcRootApps}rc.z_${lcFnRunBaseFn}.sh"  
+                lcFnRun="/root/my-applications/rc.z_PCB-ion.sh"
+                if [ -f "$lcFnRun" ] ; then     # ${lcFnRunBase}
+                    [ -f "${lcFnRun}" ]  &&  ${lcFnRun}
+                else
+                    Sbr_FnNotFound "${lcFnRun}"
+                fi
+         fi
+    Sbr_Cbx_ReStart 1    # no wait # OK to use here --- CTB ---
+    exit 0
 fi # end: EXIT:guiCTX
 #!
 #!
-#(: ===Page3==================================================
-#(: ft(EXIT:guiCTA)
-#(: called by: Main GUI Fall-Thru and code is INTERNAL to MGR
-#(: param:
-#(: purpose:
-#(: calls:
-#(: method:
-#(: sends:
-#(: rationale:
-#(: note :
-#(:
-#! ###2#################################################
-#! function [EXIT:guiCTA]
-if [ "$EXIT" = "guiCTA" ] ; then   # CTA  # NOT ACTIVE
-    n=0
-    echo "--- guiCTA Cold Tar Backup  ---"
-    #! Sbr_Splash_It "Page 3 Util  : EXIT:guiCTA" "yellow" "purple" "3"  
-	#!
-	Sbr_ClearFlagsSystem 0  	### clear lockfile so that ReStart can run.
-
-    lcFnRunBaseSd="CTA"
-    lcFnRunBaseFn="CTA"
-    lcFnRun="${gcMntHomeMyUsrDev}EDIT_${lcFnRunBaseSd}/rc.z_${lcFnRunBaseFn}.sh"    #!  here, testing  for /Dev/Edit
-    if [ -f "$lcFnRun" ] ; then		# ${lcFnRunBase}    
-        [ -f "${lcFnRun}" ]  &&  ${lcFnRun}
-    else
-        #! /root/my-applications/rc.z_.sh
-        lcFnRun="${gcRootApps}rc.z_${lcFnRunBaseFn}.sh"  
-        if [ -f "$lcFnRun" ] ; then		# ${lcFnRunBase}
-            [ -f "${lcFnRun}" ]  &&  ${lcFnRun}
-        else
-            /usr/lib/gtkdialog/box_ok "ERROR" error "  Dependencie File Not Found: ${lcFnRun}"		#! -D---
-        fi
-    fi
-    Sbr_Cbx_ReStart 1 	 # no wait # OK to use here --- CTB ---
-	exit 0
-fi # end: EXIT:guiCTA
-#!
-#!
-#!
-#(: ===Page3==================================================
-#(: ft(EXIT:guiCTB)     # CTB # ACTIVE
+#(: ========================================================
+#(: fx IF EXIT:guiCTA
 #(: called by: Main GUI Fall-Thru and code is INTERNAL to MGR
 #(: param:
 #(: purpose:
@@ -8031,33 +9594,72 @@ fi # end: EXIT:guiCTA
 #(: note :
 #(:
 #! ###3#################################################
-#! function [EXIT:guiCTB-SL]
-if [ "$EXIT" = "guiCTB-SL" ] ; then   # CTB-SL  # ACTIVE
+if [ "$EXIT" = "guiCTA" ] ; then   # CTA  # ACTIVE
     n=0
-    #! Sbr_Splash_It "page 3 Util : EXIT:guiCTB-SL " "yellow" "purple" "3"  
-	Sbr_Sys_KillProc ${EXIT}  
-	Sbr_ClearFlagsSystem 0  	### clear lockfile so that ReStart can run.
-    lcFnRunBaseSd="CTB"
-    lcFnRunBaseFn="CTB"
-        lcFnRun="${gcMntHomeMyUsrDev}EDIT_${lcFnRunBaseSd}/rc.z_${lcFnRunBaseFn}.sh"    #!  here, testing  for /Dev/Edit
-        if [ -f "$lcFnRun" ] ; then		# ${lcFnRunBase}    
+    echo "--- guiCTA Cold Tar Backup Automatic ---"
+    #! Sbr_Splash_It "Page 3 Util  : EXIT:guiCTA" "yellow" "purple" "3"  
+    #!
+    Sbr_ClearFlagsSystem 0      ### clear lockfile so that ReStart can run.
+        gcRootApps="/root/my-applications/"
+        gcMntHomeMyUsrDev="/initrd/mnt/dev_save/MY_/usr-share/My_Dev_/"
+    lcFnRunBaseSd="CTA"
+    lcFnRunBaseFn="CTA"
+    lcFnRun="${gcMntHomeMyUsrDev}EDIT_${lcFnRunBaseSd}/rc.z_${lcFnRunBaseFn}.sh"    
+    #!  here, testing  for default  /Dev/Edit
+    if [ -f "$lcFnRun" ] ; then     # ${lcFnRunBase}    
+        [ -f "${lcFnRun}" ]  &&  ${lcFnRun}
+    else
+        #! else, here testing for production subdir  /root/my-applications/rc.z_???.sh
+        lcFnRun="${gcRootApps}rc.z_${lcFnRunBaseFn}.sh"  
+        if [ -f "$lcFnRun" ] ; then     # ${lcFnRunBase}
             [ -f "${lcFnRun}" ]  &&  ${lcFnRun}
         else
-            #! /root/my-applications/rc.z_.sh
+            Sbr_FnNotFound "${lcFnRun}"
+        fi
+    fi
+    Sbr_Cbx_ReStart 1    # no wait # OK to use here --- CTB ---
+    exit 0
+fi # end: EXIT:guiCTA
+#!
+#!
+#!
+#(: ========================================================
+#(: fx IF EXIT:guiCTB52     # CTB-5.2 # ACTIVE
+#(: called by: Main GUI Fall-Thru and code is INTERNAL to MGR
+#(: param:
+#(: purpose:
+#(: calls:
+#(: method:
+#(: sends:
+#(: rationale:
+#(: note :
+#(:
+#! #############################################################
+if [ "$EXIT" = "guiCTB52" ] ; then   # External 'CTB'  # ACTIVE
+    n=0
+    #! Sbr_Splash_It "page 3 Util : EXIT:guiCTB-SL " "yellow" "purple" "3"  
+    Sbr_Sys_KillProc  
+    Sbr_ClearFlagsSystem 0      ### clear lockfile so that ReStart can run.
+        gcRootApps="/root/my-applications/"
+        gcMntHomeMyUsrDev="/initrd/mnt/dev_save/MY_/usr-share/My_Dev_/"
+    lcFnRunBaseSd="CTB"
+    lcFnRunBaseFn="CTB-5.2"
+    lcFnRun="${gcRootApps}rc.z_${lcFnRunBaseFn}.sh"    
+    Sbr_Splash_It "${lcFnRun}" "yellow" "purple" "3"  
+            #! else, here, testing for production   /root/my-applications/rc.z_???.sh
             lcFnRun="${gcRootApps}rc.z_${lcFnRunBaseFn}.sh"  
-            if [ -f "$lcFnRun" ] ; then		# ${lcFnRunBase}
+            if [ -f "$lcFnRun" ] ; then     # ${lcFnRunBase}
                 [ -f "${lcFnRun}" ]  &&  ${lcFnRun}
             else
-                /usr/lib/gtkdialog/box_ok "ERROR" error "  File Not Found: ${lcFnRun}"		#! -D---
+                Sbr_FnNotFound "${lcFnRun}"
             fi
-     fi
-    Sbr_Cbx_ReStart 1 	 
-	exit 0
+    Sbr_Cbx_ReStart 1    
+    exit 0
 fi # end: EXIT:guiCTB-SL
 #!
 #!
-#(: ===Page3==================================================
-#(: ft(EXIT:guiCTB-SL4)     # ACTIVE
+#(: ========================================================
+#(: fx IF EXIT:guiCTB-SL     # ACTIVE
 #(: called by: Main GUI Fall-Thru and code is INTERNAL to MGR
 #(: param:
 #(: purpose:
@@ -8068,75 +9670,30 @@ fi # end: EXIT:guiCTB-SL
 #(: note :
 #(:
 #! #####################################################
-#! function [EXIT:guiCTB-SL4]
-if [ "$EXIT" = "guiCTB-SL4" ] ; then   # CTB-SL4   # ACTIVE
+if [ "$EXIT" = "guiCTB-SL" ] ; then   # CTB-SL   # ACTIVE
     n=0
     #! Sbr_Splash_It "page 3 Util : EXIT:guiCTB-SL-4 " "yellow" "purple" "3"  
-	Sbr_Sys_KillProc "${EXIT}" 
-	Sbr_ClearFlagsSystem 0  	### clear lockfile so that ReStart can run.
-    lcFnRun="${gcRootApps}rc.z_CTB-SL-4.sh"
+    Sbr_Sys_KillProc  
+    Sbr_ClearFlagsSystem 0      ### clear lockfile so that ReStart can run.
+    lcFnRun="${gcRootApps}rc.z_CTB-SL.sh"
+        gcRootApps="/root/my-applications/"
+        gcMntHomeMyUsrDev="/initrd/mnt/dev_save/MY_/usr-share/My_Dev_/"
     lcFnRunBaseSd="CTB"
-    lcFnRunBaseFn="CTB-SL-4"
+    lcFnRunBaseFn="CTB-SL"
     lcFnRun="${gcMntHomeMyUsrDev}EDIT_${lcFnRunBaseSd}/rc.z_${lcFnRunBaseFn}.sh"    #!  here, testing  for /Dev/Edit
-    if [ -f "$lcFnRun" ] ; then		# ${lcFnRunBase}    
-            [ -f "${lcFnRun}" ]  &&  ${lcFnRun}
-    else
-            #! /root/my-applications/rc.z_.sh
             lcFnRun="${gcRootApps}rc.z_${lcFnRunBaseFn}.sh"  
-            if [ -f "$lcFnRun" ] ; then		# ${lcFnRunBase}
+            if [ -f "$lcFnRun" ] ; then     # ${lcFnRunBase}
                 [ -f "${lcFnRun}" ]  &&  ${lcFnRun}
             else
-                /usr/lib/gtkdialog/box_ok "ERROR" error "  Dependencie File Not Found: ${lcFnRun}"		#! -D---
+                Sbr_FnNotFound "${lcFnRun}"
             fi
-     fi
-    Sbr_Cbx_ReStart 1 	 # no wait # OK to use here --- CTB ---
-	exit 0
-fi # end: EXIT:guiCTB-SL4
-#!
-
-#(: ===Page3==================================================
-#(: ft(EXIT:guiCTB-SLX)     #  ACTIVE
-#(: called by: Main GUI Fall-Thru and code is INTERNAL to MGR
-#(: param:
-#(: purpose:
-#(: calls:
-#(: method:
-#(: sends:
-#(: rationale:
-#(: note :
-#~ export gcSysDevId="CTB-SLX"    # ScanList	called by MGR, "E3+CTB+Quit"  includes UpPmnt + DnUmnt
-#~ export gcSysDevVer="4.1"
-#(:
-#! #####################################################
-#! function [ EXIT:guiCTB-SLX ] 
-if [ "$EXIT" = "guiCTB-SLX" ] ; then   # CTB-SLX   # ACTIVE
-    n=0
-    Sbr_Splash_It "page 3 Util : EXIT:guiCTB-SLX  has Up and Dn !" "yellow" "red" "3"  
-	Sbr_Sys_KillProc "${EXIT}" 
-	Sbr_ClearFlagsSystem 0  	### clear lockfile so that ReStart can run.
-    lcFnRun="${gcRootApps}rc.z_CTB-SLX.sh"
-    lcFnRunBaseSd="CTB"
-    lcFnRunBaseFn="CTB-SLX"
-    lcFnRun="${gcMntHomeMyUsrDev}EDIT_${lcFnRunBaseSd}/rc.z_${lcFnRunBaseFn}.sh"    #!  here, testing  for /Dev/Edit
-    if [ -f "$lcFnRun" ] ; then		# ${lcFnRunBase}    
-            [ -f "${lcFnRun}" ]  &&  ${lcFnRun}
-    else
-            #! /root/my-applications/rc.z_.sh
-            lcFnRun="${gcRootApps}rc.z_${lcFnRunBaseFn}.sh"  
-            if [ -f "$lcFnRun" ] ; then		# ${lcFnRunBase}
-                [ -f "${lcFnRun}" ]  &&  ${lcFnRun}
-            else
-                /usr/lib/gtkdialog/box_ok "ERROR" error "  Dependencie File Not Found: ${lcFnRun}"		#! -D---
-            fi
-     fi
-    #~ Sbr_Cbx_ReStart 1 	 # no wait # OK to use here --- CTB ---
-    Sbr_Cbx_ReQuit 1   # EXIT:guiSimPowerOff
-	exit 0
+    Sbr_Cbx_ReStart 1    # no wait # OK to use here --- CTB ---
+    exit 0
 fi # end: EXIT:guiCTB-SL
 #!
 #!
-#(: ===Page3==================================================
-#(: ft(EXIT:guiCTUnsmp)     # NOT ACTIVE
+#(: ========================================================
+#(: fx IF [ EXIT:guiCTB-SLX-RS ] [ EXIT:guiCTB-SLX-RB ][ EXIT:guiCTB-SLX-RQ ] [ EXIT:guiCTB-SLX-PO ] #! ACTIVE  
 #(: called by: Main GUI Fall-Thru and code is INTERNAL to MGR
 #(: param:
 #(: purpose:
@@ -8144,38 +9701,147 @@ fi # end: EXIT:guiCTB-SL
 #(: method:
 #(: sends:
 #(: rationale:
+#(: note :  contains commented code for testing 32/64 bit. Still testing 64bit run. 
+#(: ReStart, ReBoot, ReQuit, PowerOff
+#! #################################################################################
+if [ "$EXIT" = "guiCTB-SLX-RS" ] || [ "$EXIT" = "guiCTB-SLX-RB" ] || [ "$EXIT" = "guiCTB-SLX-RQ" ] || [ "$EXIT" = "guiCTB-SLX-PO" ] ; then   
+    n=0
+    #! test gcMgrBit32 = "1"   , maybe not necessary in MGR-11
+    Sbr_Splash_It "=== ${EXIT} ===" "yellow" "darkred" "3"  
+        #! echo ":${gcMrgBit32}:" >  /dev/console
+        #! Sbr_Splash_It "32bit={gcMrgBit32}" "yellow" "green" "3"  
+        Sbr_Sys_KillProc  
+        Sbr_ClearFlagsSystem 0      ### clear lockfile so that ReStart can run.
+        #! BakAll
+        Sbr_BakAllArcDts
+        #!
+    #!### #1 ### ReStart ###################################
+    if [ "$EXIT" = "guiCTB-SLX-RS" ] ; then   
+        lcFnRun="/root/my-applications/rc.z_CTA.sh"     #! Only Call Production : /root/my-applications 
+        if [ -f "$lcFnRun" ] ; then     # ${lcFnRunBase}    
+                Sbr_Splash_It "{1}" "yellow" "red" "1"  
+                [ -f "${lcFnRun}" ]  &&  ${lcFnRun}
+        else
+                Sbr_FnNotFound "${lcFnRun}"
+        fi
+        Sbr_Cbx_ReStart 1   
+    fi
+    #!### #2 ### ReBoot ###################################
+    if [ "$EXIT" = "guiCTB-SLX-RB" ] ; then   
+        lcFnRun="/root/my-applications/rc.z_CTA.sh"     #! Only Call Production : /root/my-applications 
+        if [ -f "$lcFnRun" ] ; then     # ${lcFnRunBase}    
+                Sbr_Splash_It "{1}" "yellow" "red" "1"  
+                [ -f "${lcFnRun}" ]  &&  ${lcFnRun}
+        else
+                Sbr_FnNotFound "${lcFnRun}"
+        fi
+        Sbr_Cbx_ReBoot 1   
+    fi
+    #!### #3 ### ReQuit ###################################
+    lcFnRun="/root/my-applications/rc.z_CTA.sh"                  
+    Sbr_Splash_It "$lcFnRun" "yellow" "green" "3"  
+    if [ "$EXIT" = "guiCTB-SLX-RQ" ] ; then   
+        lcFnRun="/root/my-applications/rc.z_CTA.sh"     #! Only Call Production : /root/my-applications 
+        if [ -f "$lcFnRun" ] ; then     # ${lcFnRunBase}    
+                Sbr_Splash_It "{1}" "yellow" "red" "11"  
+                [ -f "${lcFnRun}" ]  &&  ${lcFnRun}
+        else
+                Sbr_FnNotFound "${lcFnRun}"
+        fi
+        #! Sbr_Cbx_ReBoot 1 #! need to drop down the stack in order to  ReBoot. 
+        Sbr_Cbx_RePowerOff 1
+    fi  
+    #!### #4 ### PowerOff ###################################
+    if [ "$EXIT" = "guiCTB-SLX-PO" ] ; then   
+        lcFnRun="/root/my-applications/rc.z_CTB-SLX.sh"     #! Only Call Production : /root/my-applications 
+        if [ -f "$lcFnRun" ] ; then     # ${lcFnRunBase}    
+                Sbr_Splash_It "{1}" "yellow" "red" "1"  
+                [ -f "${lcFnRun}" ]  &&  ${lcFnRun}
+        else
+                Sbr_FnNotFound "${lcFnRun}"
+        fi
+        Sbr_Cbx_RePowerOff 1          
+    fi
+    #!
+fi # end: EXIT:guiCTB-SLX-R_B_Q_P        # ReStart vs ReBoot vs ReQuit vs RePowerOff 
+#!
+#!
+#!
+#(: =================================================================
+#(: fx IF EXIT:guiPCB_ion_RS      #! #2 # EXTERNAL #! NOT ACTIVE
+#(: called by: Main GUI Fall-Thru and code is INTERNAL to MGR
+#(: param:
+#(: purpose:
+#(: calls:
+#(: method:
+#(: sends:
+#(: rationale:
+#(: note :  
+#! ######################################################################
+if [ "$EXIT" = "guiPCB_ion_RS" ] ; then  #! #2 # EXTERNAL #! NOT ACTIVE
+    n=0
+    gcRootApps="/root/my-applications/"
+    gcMntHomeMyUsrDev="/initrd/mnt/dev_save/MY_/usr-share/My_Dev_/"
+    lcFnRun="${gcRootApps}/rc.z_PCB-ion.sh"
+    Sbr_Splash_It "{2}--- Process External {PCB-ion} + {RS} ---" "yellow" "red" "3"  
+    #!
+    lcFnRun="${gcRootApps}rc.z_PCB-ion.sh"
+    if [ -f "$lcFnRun" ] ; then     # ${lcFnRunBase}    
+            Sbr_Splash_It "{RA}   $lcFnRun" "yellow" "red" "5"  
+            [ -f "${lcFnRun}" ]  #! &&  ${lcFnRun}
+    else        # alternative FnRun
+        Sbr_FnNotFound "${lcFnRun}"
+    fi
+    #!
+    Sbr_Splash_It "=== DONE ==={2}--- Process External {PCB-ion} + {RS} --- NOT ACTIVE"  "green" "red" "3"  
+    #!
+    Sbr_ClearFlagsSystem 0      ### clear lockfile so that ReStart can run.
+    Sbr_Cbx_ReStart 1   # EXIT:guiSimPowerOff
+    #!
+fi # end
+#!
+#!
+#!
+#(: ==========================================================
+#(: fx EXIT:guiCTUnsmp     # NOT ACTIVE
+#(: called by: Main GUI Fall-Thru and code is INTERNAL to MGR
+#(: param:
+#(: purpose:  CTU  NoSnapMergePuppy
+#(: calls:
+#(: method:
+#(: sends:
+#(: rationale:
 #(: note :
 #(:
-#! =================================================
-#! function [EXIT:guiCTUnsmp] { ; n=0 ; }
-if [ "$EXIT" = "guiCTUnsmp" ] ; then    # CBX ARS ReStart   # ACTIVE
+#! #########################################################
+if [ "$EXIT" = "guiCTUnsmp" ] ; then    # CBX ARS ReStart  
     n=0
     #! Sbr_Splash_It "page 3 Util : EXIT:guiCTUnsmp " "yellow" "purple" "3"  
-	Sbr_Sys_KillProc "${EXIT}" 
-	Sbr_ClearFlagsSystem 0  	### clear lockfile so that ReStart can run.
+    Sbr_Sys_KillProc  
+    Sbr_ClearFlagsSystem 0      ### clear lockfile so that ReStart can run.
     lcFnRun="${gcRootApps}rc.z_CTU-NSMP.sh"
     lcFnRunBaseSd="CTU"
     lcFnRunBaseFn="CTU-NSMP"
     lcFnRun="${gcMntHomeMyUsrDev}EDIT_${lcFnRunBaseSd}/rc.z_${lcFnRunBaseFn}.sh"    #!  here, testing  for /Dev/Edit
-    if [ -f "$lcFnRun" ] ; then		# ${lcFnRunBase}    
+    if [ -f "$lcFnRun" ] ; then     # ${lcFnRunBase}    
             [ -f "${lcFnRun}" ]  &&  ${lcFnRun}
     else
             #! /root/my-applications/rc.z_.sh
             lcFnRun="${gcRootApps}rc.z_${lcFnRunBaseFn}.sh"  
-            if [ -f "$lcFnRun" ] ; then		# ${lcFnRunBase}
+            if [ -f "$lcFnRun" ] ; then     # ${lcFnRunBase}
                 [ -f "${lcFnRun}" ]  &&  ${lcFnRun}
             else
-                /usr/lib/gtkdialog/box_ok "ERROR" error "  Dependencie File Not Found: ${lcFnRun}"		#! -D---
+                Sbr_FnNotFound "${lcFnRun}"
             fi
      fi
-    Sbr_Cbx_ReStart 1 	 # no wait  OK to use after CTU script
-	exit 0
+    Sbr_Cbx_ReStart 1    # no wait  OK to use after CTU script
+    exit 0
 fi # end: EXIT:guiCTUnsmp
 #!
 #!
-#(: ===Page3==================================================
-#(: ft(EXIT:guiCTU)     # NOT ACTIVE
-#(: called by: Main GUI Fall-Thru and code is INTERNAL to MGR
+#(: ================================================================
+#(: fx EXIT:guiCTU         # ACTIVE
+#(: called by: Main GUI UTIL 
 #(: param:
 #(: purpose:
 #(: calls:
@@ -8185,33 +9851,33 @@ fi # end: EXIT:guiCTUnsmp
 #(: note :
 #(:
 #! #####################################################
-#! function [EXIT:guiCTU() { ; n=0 ; }
-if [ "$EXIT" = "guiCTU" ] ; then    # CTU # NOT ACTIVE
+if [ "$EXIT" = "guiCTU" ] ; then    
     echo "--- guiCTU ------------"
     n=0
-	#! Sbr_Button_Only ${EXIT}   # guiCTU   # NOT ACTIVE
-	Sbr_ClearFlagsSystem 0  	### clear lockfile so that ReStart can run.
+    #! Sbr_Button_Only ${EXIT}   # guiCTU   # NOT ACTIVE
+    Sbr_ClearFlagsSystem 0      ### clear lockfile so that ReStart can run.
     lcFnRunBaseSd="CTU"
     lcFnRunBaseFn="CTU"
     lcFnRun="${gcMntHomeMyUsrDev}EDIT_${lcFnRunBaseSd}/rc.z_${lcFnRunBaseFn}.sh"    #!  here, testing  for /Dev/Edit
-    if [ -f "$lcFnRun" ] ; then		# ${lcFnRunBase}    
+    if [ -f "$lcFnRun" ] ; then     # ${lcFnRunBase}    
+            #! /Dev/Edit
             [ -f "${lcFnRun}" ]  &&  ${lcFnRun}
     else
-            #! /root/my-applications/rc.z_.sh
+            #! /root/apps
             lcFnRun="${gcRootApps}rc.z_${lcFnRunBaseFn}.sh"  
-            if [ -f "$lcFnRun" ] ; then		# ${lcFnRunBase}
+            if [ -f "$lcFnRun" ] ; then     # ${lcFnRunBase}
                 [ -f "${lcFnRun}" ]  &&  ${lcFnRun}
             else
-                /usr/lib/gtkdialog/box_ok "ERROR" error "  Dependencie File Not Found: ${lcFnRun}"		#! -D---
+                Sbr_FnNotFound "${lcFnRun}"
             fi
      fi
-    Sbr_Cbx_ReStart 1 	 # no wait # OK to use after CTU script
-	exit 0
+    Sbr_Cbx_ReStart 1    # no wait # OK to use after CTU script
+    exit 0
 fi # end: EXIT:guiCTU
 #!
 #!
 #! ========================================================
-#(: === end: Page3=== Six CT? calls to external ==========================
+#(: === end: Page3=== calls to external programs
 #! ========================================================
 #!
 #!
@@ -8224,7 +9890,7 @@ fi # end: EXIT:guiCTU
 #!
 #!
 #(: ================================================
-#(: ft(EXIT:guiTopReStart)
+#(: fx EXIT:guiFrameTitle
 #(: called by: Main GUI Fall-Thru and code is INTERNAL to MGR
 #(: param:
 #(: purpose: Top Bar, Quick ReStart
@@ -8234,18 +9900,24 @@ fi # end: EXIT:guiCTU
 #(: rationale:
 #(: note :
 #(:
-#! =================================================
-#! function [EXIT:guiTopReStart]
-if [ "$EXIT" = "guiTopReStart" ] ; then
+#! ==================================================
+#(: fx IF EXIT:guiFrameTitle   ### main GUI 
+if [ "$EXIT" = "guiFrameTitle" ] ; then
     n=0
-	Sbr_Splash_It "Re-Start MGR from Top Bar" "yellow" "green" "1"
-	Sbr_ClearFlagsSystem 0  	### clear lockfile so that Warm Reboot can run.
+    #! "Re-Start MGR from Top Bar"
+    clear
+    #! test     if FullScreen = "0"
+    #!              then FullScreenVisible="1"
+    #!          else
+    #!              FullScreenVisible="0"
+    #!          fi 
+    Sbr_ClearFlagsSystem 0      ### clear lockfile so that Warm Reboot can run.
     Sbr_Cbx_ReStart 1
-fi  # end: EXIT:guiTopReStart
+fi  # end: EXIT:guiFrameTitle
 #!
 #!
 #(: =================================================
-#(: ft(EXIT:guiSimReStart)
+#(: fx EXIT:guiSimReStart
 #(: called by: Main GUI Fall-Thru and code is INTERNAL to MGR
 #(: param:
 #(: purpose:
@@ -8256,19 +9928,18 @@ fi  # end: EXIT:guiTopReStart
 #(: note :
 #(:
 #! =================================================
-#! function [EXIT:guiSimReStart]
 if [ "$EXIT" = "guiSimReStart" ]  ; then  
     n=0
-	Sbr_Splash_It "Simple Re-Start" "yellow" "green" "1"
-	Sbr_ClearFlagsSystem 0  	### clear lockfile so that Warm Reboot can run.
-    Sbr_Cbx_ReStart 1
-    EXIT=""	# ## force "Fall Thru" if "exit 0" fails.
-	exit 0	#! ## "exit 0' should terminate this program.
+    Sbr_Splash_It "S.I.M.P.L.E. _Re-Start" "yellow" "green" ".1"  #! -D!---
+    Sbr_ClearFlagsSystem 0      ### clear lockfile so that Warm Reboot can run.
+    Sbr_Cbx_ReStart 1   # = guiSimReStart
+    EXIT="" ### force "Fall Thru" if BASH call fails
+    exit 0  #! ## "exit 0' should terminate this program.
 fi  #  guiSimReStart
 #!
 #!
 #(: =================================================
-#(: ft(EXIT:guiSimReBoot)
+#(: fx EXIT:guiSimReBoot
 #(: called by: Main GUI Fall-Thru and code is INTERNAL to MGR
 #(: param:
 #(: purpose:
@@ -8278,20 +9949,19 @@ fi  #  guiSimReStart
 #(: rationale:
 #(: note :
 #(:
-#! =================================================
-#! function [EXIT:guiSimReBoot]
+#! ###################################################
 if [ "$EXIT" = "guiSimReBoot" ]  ; then
     n=0
-	Sbr_Splash_It " Warm ReBoot" "." "." 
-	Sbr_ClearFlagsSystem 0  	### clear lockfile so that Warm Reboot can run.
-	Sbr_Cbx_ReBoot 1
-    EXIT=""	# ## force "Fall Thru" if "exit 0" fails.
-	exit 0	#! ## "exit 0' should terminate this program.
+    Sbr_Splash_It " S.I.M.P.L.E._ Warm ReBoot"  "yellow" "green" "1"  #! -D!---
+    Sbr_ClearFlagsSystem 0      ### clear lockfile so that Warm Reboot can run.
+    Sbr_Cbx_ReBoot 1        #! = guiSimReBoot
+    EXIT="" ### force "Fall Thru" if BASH call fails
+    exit 0  #! ## "exit 0' should terminate this program.
 fi # guiSimReBoot
 #!
 #!
 #(: =================================================
-#(: ft(EXIT:guiSimPowerOff)
+#(: fx EXIT:guiSimPowerOff
 #(: called by: Main GUI Fall-Thru and code is INTERNAL to MGR
 #(: param:
 #(: purpose:
@@ -8302,58 +9972,73 @@ fi # guiSimReBoot
 #(: note :
 #(:
 #! =================================================
-#! function [EXIT:guiSimPowerOff]
+#! function  EXIT:guiSimPowerOff
 if [ "$EXIT" = "guiSimPowerOff" ] ; then
     n=0
-	Sbr_Splash_It " Power-Off  via  WrmPowerOff"  "." "."  "1"    #! -D!---
-	Sbr_ClearFlagsSystem 0  	### clear lockfile so that WrmPowerOff can run.
-    Sbr_Cbx_ReQuit 1   # EXIT:guiSimPowerOff
-    EXIT=""	### force "Fall Thru" if "exit 0" fails.
-    exit 0		#! ## "exit 0' should terminate this program.
+    Sbr_Splash_It " S.I.M.P.L.E. _Power-Off "  "yellow" "green" "1" #! -D!---
+    Sbr_ClearFlagsSystem 0      ### clear lockfile so that PowerOff can run.
+    #!
+    Sbr_Cbx_ReQuit 1   #! = guiSimPowerOff
+    #!
+    EXIT="" ### force "Fall Thru" if BASH call fails
+    exit 1      #! ## "exit 1' , error , should terminate this program quietly
 fi # guiSimPowerOff
 #(:=========================================
 #!
 #!
+#!##### simple system halt  ############################################
+#(: fx IF EXIT:guiSimHalt
+if [ "$EXIT" = "guiSimHalt" ] ; then   #  
+    n=0
+    lcMsgStr="!!!_ S.I.M.P.L.E.__Halt_ !!!"
+    Sbr_Splash_It "${lcMsgStr}" "yellow" "purple" "3" #! -D---  
+    Sbr_ClearFlagsSystem 0      ### clear lockfile so that ReStart can run.
+    #!
+    Sbr_Cbx_ReHalt 1   #! guiSimHalt
+    #!
+    EXIT="" ### force "Fall Thru" if BASH call fails
+    exit 1      #! ## "exit 1' , error , should terminate this program quietly
+    #!
+fi # guiSimHalt 
 #!
 #!
-#! end: #4 Page   ;;;  QUIT   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+#!
+#!
+#! end: ;;;  QUIT   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 #! =================================================
 #!
 #!
 #!   Fall-Thru Method 
 #!
 #!
-#! =================================================
-#! begin: #4 Page   ;;;  Menu Setup   ;;;
-#! === =============================================
+#! ================================================
+#! begin:    ;;;  Menu Setup   ;;;
+#! ================================================
 #!
 #!
 #!
-#(: =====================================================
-#(: ft(EXIT:ARB_00)  ft(EXIT:ARB_KK)   #: Active #: KK, BB, JJ, etc
-#(: ft( EXIT:ARB_00 || EXIT:ARB_KK || EXIT:ARB_BB || EXIT:ARB_JJ || EXIT:ARB_S7 || EXIT:ARB_T6 ) || et al
+#(: ==== EXIT:ARB_ORG was "Generic" for "Original-Long-List" ==============================
+#(: fx IF EXIT:ARB_00 || EXIT:ARB_ORG || EXIT:ARB_B4B || EXIT:ARB_T-6 ) || et al
 #(: called by: Main GUI Fall-Thru and code is INTERNAL to MGR
 #(: param:
 #(: purpose:
 #(: calls:
-#(: method: Install only a Two-Character "Id" into config-file
-#(:      Re-Start MGR will check config, then build matching menu.lst
+#(: method: 
 #(: sends:
 #(: rationale:
 #(: note :
 #(:
 #!   Fall-Thru Method 
 #!
-#(: ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-#(: ft( EXIT:ARB_ORG || EXIT:ARB_ "ALL"  )
+#(: =============================================================
+#(: fx Build Short Menu   
 #(: called by: Main GUI Fall-Thru and code is INTERNAL to MGR
 #(: param:
 #(: purpose: Build-Short-Menu: 
 #(: calls:
 #(: method: 
-#(:			ARB_00, KK, JJ, B5B, S1564, X64, MM, BW, T6, S7, X6, JF, B4B ]
-#(:			Install only a Two-Character "Id" into new Menu.lst, 
-#(:			and build with "default" selection. 
+#(:         ARB_00, KK, JJ, B5B, B64B, S1564, X64, MM, BW, T6, S7, X6, JF ]
+#(:         Install new "default" into new Menu.lst, 
 #(: sends:
 #(: rationale:
 #(: note : main run ( )   calls init: fx(Sbr_ARB_Init) to fetch configfile data.
@@ -8363,73 +10048,46 @@ fi # guiSimPowerOff
 #! List of Abbreviated OS names: KK, JJ, B5B, S1564, X64, MM, BW, T6, S7, X6, JF, B4B
 #! ====================================================
 #!
-#! function  Build-Short-Menu  IF  [ ARB_00, KK, JJ, B5B, S1564, X64, MM, BW, T6, S7, X6, JF, B4B ]
-if [ "$EXIT" = "ARB_00" ] || [ "$EXIT" = "ARB_KK" ] || [ "$EXIT" = "ARB_B4B" ] || [ "$EXIT" = "ARB_B5B" ] || [ "$EXIT" = "ARB_JJ" ] || [ "$EXIT" = "ARB_UMM" ] || [ "$EXIT" = "ARB_DBW" ] || [ "$EXIT" = "ARB_BC" ] || [ "$EXIT" = "ARB_FF" ]  || [ "$EXIT" = "ARB_S7" ] || [ "$EXIT" = "ARB_T6" ] || [ "$EXIT" = "ARB_X64" ] || [ "$EXIT" = "ARB_X708" ]  || [ "$EXIT" = "ARB_UIMP" ] || [ "$EXIT" = "ARB_S64" ] || [ "$EXIT" = "ARB_S1564" ]   || [ "$EXIT" = "ARB_SLXSC" ] || [ "$EXIT" = "ARB_Q7" ]  ; then
+#! BEGIN:  Build-Short-Menu []  IF  [ ARB_ORG, DBW, B64B, B4B, B5B, MM, BW, T6, KK, JJ, S1564, X64, S7, X6 ]  
+if [ "$EXIT" = "ARB_00"  ] || [ "$EXIT" = "ARB_ORG"  ] \
+|| [ "$EXIT" = "ARB_B4B" ] || [ "$EXIT" = "ARB_B5B" ] || [ "$EXIT" = "ARB_B64B" ] \
+|| [ "$EXIT" = "ARB_J5J" ] || [ "$EXIT" = "ARB_M6M" ] || [ "$EXIT" = "ARB_B64B"  ] || [ "$EXIT" = "ARB_K-K"   ] \
+|| [ "$EXIT" = "ARB_S-7" ] || [ "$EXIT" = "ARB_T-6" ] || [ "$EXIT" = "ARB_X64"   ] || [ "$EXIT" = "ARB_X708"  ] \
+|| [ "$EXIT" = "ARB_I-I" ] || [ "$EXIT" = "ARB_S64" ] || [ "$EXIT" = "ARB_S1564" ] || [ "$EXIT" = "ARB_SLXSC" ] \
+|| [ "$EXIT" = "ARB_F-F" ] || [ "$EXIT" = "ARB_Qk7" ] || [ "$EXIT" = "ARB_EOS"   ] || [ "$EXIT" = "ARB_SLK64" ] \
+|| [ "$EXIT" = "ARB_N6N" ] || [ "$EXIT" = "ARB_N7N" ] || [ "$EXIT" = "ARB_N8N" ] \
+|| [ "$EXIT" = "ARB_DBW32" ] || [ "$EXIT" = "ARB_DBW64" ] || [ "$EXIT" = "ARB_DVN9" ] \
+|| [ "$EXIT" = "ARB_DVN9"   ] ; then
+#!
+#! ALL menu options are captured here !
+#!
     n=0
-	Sbr_Sys_SDA_Only	# control: test "SDA" else  ReStart
-	Sbr_Sys_KillProc  "$EXIT"   # Build Menu permission control 
+    Sbr_Splash_It "[] Build  Menu []" "yellow" "black" "1.5"  
+    Sbr_Sys_SDA_Only ": SDA Menu" # control: test "SDA" else  ReStart
+    Sbr_Sys_KillProc   # Build Menu permission control 
     Sbr_Menu_ShortList    #  function at top of code
     export gcC3MConfigArbId="${gcC3MConfigArbId}"
     echo "${gcMgrArCfgIdd}" > "${gcMgrArbCfgFn}"  # config of menu
-fi # 
-#!  Build Short Menu : ARB_00, KK, JJ, B5B, S1564, X64, MM, BW, T6, S7, X6, JF, B4B
-#
-#! ================================================
-#! ## end: Build Short Menu  ################################
-#! ================================================
-#!
-#!
+fi # END: Build Short Menu : ARB_00, KK, JJ, B5B, S1564, X64, MM, BW, T6, S7, X6, JF, B4B
 #!
 #! ================================================
-#! ## begin: Build Long Menu   ######
+#! ## end: #! ALL menu options are captured here !
 #! ================================================
-#!
-#(: ft(EXIT:ARB_ORG) ||ft(EXIT:ARB_ORGYBYR) ||ft(EXIT:ARB_ORGGBYR) ||ft(EXIT:ARB_ORGRYBG)
-#!
-#! =================================================
-#! ## begin: Build Long "Original" Menu   
-#! =================================================
-#! function if [ EXIT:ARB_ORG ]    # ACTIVE
-if [ "$EXIT" = "ARB_ORG" ] ; then 
-    n="0"
-	Sbr_Sys_SDA_Only	# control: only run from  "SDA" && ReStart
-    #! function EXIT:ARB_OriginalMenu()  # custom long "original" is generated.
-    export lcOsSubSplClrIfg="yellow"
-    export lcOsSubSplClrIbg="blue"	
-#! -D---
-/usr/lib/gtkdialog/box_splash -fg ${lcOsSubSplClrIfg} -bg ${lcOsSubSplClrIbg} -border true --center -close never -text "\
-.     MGR - Build 'Large' Menu.lst:
-.      ${lcOsSubSplClrID}
-.      ${EXIT} = menu.lst  "&
-		RETVAL=$?
-		GtkPid_Mnu_Box_Splash=$!	
-		sleep 3
-        kill ${GtkPid_Mnu_Box_Splash}
-    #!
-    Sbr_Menu_LongList
-    Sbr_Cbx_ReStart  "1" #  Long Menu ReStart
-fi # end: MenuLongList 
-#!
-#! =====================================================
-#! ## end: LongMenuList  #######################################
-#! =====================================================
-#!
-#!
-#!
+#! 
 #!
 #! #####################################################
-#! end: #4 Page   ;;;  Menu Setup   ;;;;;;;;;;;;;;;;;;;;;;;;
+#! end: Menu Setup
 #! #####################################################
 #!
 #!
 #!
 #!
 #! ###########################################################
-#! begin: #3 Page Special 
+#! begin: Special
 #! ###########################################################
 #!
 #(: ===========================================================
-#(: ft(EXIT:guiSrcBase64)
+#(: fx IF EXIT:guiSrcBase64
 #(: called by: Main GUI Fall-Thru and code is INTERNAL to MGR
 #(: param:
 #(: purpose:
@@ -8439,18 +10097,18 @@ fi # end: MenuLongList
 #(: rationale:
 #(: note :
 #(:
-#! function [EXIT:guiSrcBase64]
+#(: fx IF EXIT:guiSrcBase64
 if [ "$EXIT" = 'guiSrcBase64' ] ; then n=0  ;
-	n=0
-	Sbr_Sys_KillProc	"${EXIT}------guiSrcBase64"  # Base64 , ReStart
+    n=0
+    Sbr_Sys_KillProc  # Base64 , ReStart
     Sbr_Dump_SRC_Base64
-    Sbr_Cbx_ReStart '' ### display
+    Sbr_Cbx_ReStart 1   ### display
 fi # end: "$EXIT" = 'guiSrcBase64'
 #(!
 #(:
 #(:
 #(: ====================================================================
-#(: ft(EXIT:guiMandelbrot)
+#(: fx IF EXIT:guiMandelbrot
 #(: called by: Main GUI Fall-Thru and code is INTERNAL to MGR
 #(: param:
 #(: purpose:
@@ -8461,28 +10119,27 @@ fi # end: "$EXIT" = 'guiSrcBase64'
 #(: note :
 #(:
 #! ###########################################################
-#! function [EXIT:guiMandelbrot]
 if [ "$EXIT" = 'guiMandelbrot' ] ; then n=0  ;
-	n=0
-	Sbr_Sys_KillProc	"${EXIT}------guiMandelbrot"
-    Sbr_Utl_Mandelbrot	# build text Graphic, very slow build, in Xterm only. 
-    Sbr_Cbx_ReStart '1' 
+    n=0
+    Sbr_Sys_KillProc
+    Sbr_Utl_Mandelbrot  # build text Graphic, very slow build, in Xterm only. 
+    Sbr_Cbx_ReStart 1 
 fi # end: "$EXIT" = 'guiMandelbrot'
 #!
 #!
 #!
 #! #######################################################################
-#! end: #3 Page Special 
+#! end: Special 
 #! #######################################################################
 #!
 #!
 #!
-#! #######################################################################
-#! begin: #4 Page : System plus Restart-Reboot-ReQuit 
-#! #######################################################################
+#! #######
+#! begin: 
+#! #######
 #!
 #(: ====================================================================
-#(: ft(EXIT:guiMainQUIT)    #: A
+#(: fx IF EXIT:guiMainQUIT    #: ACTIVE
 #(: called by: Main GUI
 #(: param:
 #(: purpose: Main Quit with trailer message.
@@ -8490,83 +10147,66 @@ fi # end: "$EXIT" = 'guiMandelbrot'
 #(: method:
 #(: sends:
 #(: rationale:
-#(: note :
+#(: note :  Main Gui <button> will "Fall Thr" down to all "EXIT:gui???" routines. 
+#(: note :  all "EXIT:gui???" routines will call "Sbr_???" written at top of Source Code.    
 #(:
 #! ###########################################################
-#! ft [EXIT:guiMainQUIT]       
 if [ "$EXIT" = "guiMainQUIT" ]  ; then
-	n=0
+    n=0
+    #! Main Quit Green Button
+    #! not called because main ( ) screen titling is quicker / more important.
+    #! must clear two times because active XTerm screen data. 
+    clear   #! clears twice from bottom half of Penguin Display
+    clear   #! clears twice from bottom half of Penguin Display
+    Sbr_ClearFlagsSystem "0"   ### no display
     lcMsgStr="=== MainQUIT ===" && Sbr_Str2DevTrm "${lcMsgStr}" "1" "7"
     lcMsgStr="[ '$EXIT' = 'guiMainQUIT+' ]" && Sbr_Str2DevTrm "${lcMsgStr}" "2" "7"
-    lcMsgStr="---${gcSysDevDob}---" && Sbr_Str2DevTrm "${lcMsgStr}" "3" "7"
+    lcMsgStr="---${gcMgrSysDob}---" && Sbr_Str2DevTrm "${lcMsgStr}" "3" "7"
     lcMsgStr="=== MainQUIT ===" && Sbr_Str2DevTrm "${lcMsgStr}" "1" "7"
-	Sbr_ClearFlagsSystem "0"   ### no display
-    Sbr_ClearFlagsQuit  "0"    ### no display
-			#! list of flags to kill:
-			#! rm -f "${MGR_TouchCBXstatus}"
-			#! rm -f "${MGR_BackUpStatus}"
-			#! rm -f "${MGR_LockFile}"
-			#! rm -f "${MGR_ReStart_flg}"
-    echo
-	lcMsgStr=" " && Sbr_Str2DevTrm "${lcMsgStr}" "2" "7"
-    lcMsgStr="... MGR : ReadMe info ! ... " && Sbr_Str2DevTrm "${lcMsgStr}" "2" "7"
-    echo    # Str2DevTrm
-    lcMsgStr="->->->  Hit 'Enter' to clear Terminal"
-    Sbr_Str2DevTrm "$lcMsgStr" "3" "5"
-    Sbr_Str2DevTrm "$lcMsgStr" "2" "6"
-    Sbr_Str2DevTrm "$lcMsgStr" "6" "7"
-   #!
-    Sbr_Splash_Quit "*======== MGR_Main-Quit ========*"
+#! ############################################################
+        #!
+        #! Fall-Thru passes thru here via Main Quit Green Button
+        #!
+#! ############################################################
     #!
-lcMsgStr="<<<  Q.U.I.T. program " && Sbr_Str2DevTrm "$lcMsgStr" "2" "5"
-lcMsgStr="-------------------------------------" && Sbr_Str2DevTrm "$lcMsgStr" "2" "5"
-    #! caution: "halt"  will Kill the whole system. Dead System, no way out. 
-    #! return && exit 0 ### will jump stack, then must "Quit" again to clear stack.
-	exit 0  
-    return  ### proper sequence must be "exit" then "return" down the "stack"
+    Sbr_Splash_Pup  
+    lcMsgStr="->->->  Hit 'Enter' to clear Terminal" && Sbr_Str2DevTrm "${lcMsgStr}" "3" "0"
+    exit 0  
     #! IF Xterm, THEN IF ROX is running, THEN  MGR halts right here, in Xterm. 
     #! System has an orphaned routine (ROX) still on the stack.
 fi
 #! ft [EXIT:guiMainQUIT]
 #!
 #!
-##! #######################################################################
-#! end: #4 Page : System ReStart-Reboot-ReQuit 
-#! #######################################################################
-#!
 #!
 #!
 #(: ====================================================================
-#(: ft(EXIT:guiNoteBookWidget)
+#(: fx IF EXIT:guiNoteBookWidget     #! NOT USED
 #(: called by: Main GUI Fall-Thru and code is INTERNAL to MGR
 #(: param:
-#(: purpose:  flip +/- gcNBWC
+#(: purpose:  flip +/- gcNBW    #! NOT USED
 #(: calls:
-#(: method:
+#(: method: MGR-8  does not use GTK "notebook" widget.
 #(: sends:
 #(: rationale:
 #(: note :
 #(:
-#! ###########################################################
-#! function [EXIT:guiNoteBookWidget]    # Not Used 
-if [ "$EXIT" = 'guiNoteBookWidget' ] ; then n=0  ;
-	n=0
-	Sbr_Sys_KillProc	"${EXIT}------guiNoteBookWidget"
-
-    Sbr_Cbx_ReStart '1' 
+#! #####################################################################
+if [ "$EXIT" = 'guiNoteBookWidget' ] ; then  #! NOT USED
+    n=0
+    Sbr_Sys_KillProc 
+    Sbr_Cbx_ReStart 1 
 fi # end: "$EXIT" = 'guiNoteBookWidget'
 #!
 #!
 #!
-#! ###################################################################################
-#! begin: Bottom of MGR Fall-Thru 
-#! ;;;  MGR_Fall_Thru_Trap  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-#! ###################################################################################
-#!
+#! #####################################################################
+#! begin: Bottom of MGR Fall-Thru _Trap 
+#! #####################################################################
 #!
 #!
 #(: ====================================================================
-#(: ft(EXIT='') #  FALL-THRU trap for 'loose' code
+#(: fx IF EXIT=''   #  FALL-THRU trap for 'loose' code
 #(: called by: Fall-Thru
 #(: param:
 #(: purpose:     FALL-THRU trap for 'loose' code
@@ -8585,25 +10225,25 @@ Sbr_Str2DevTrm "$lcMsgStr" "2" "1"
 Sbr_Str2DevTrm "$lcMsgStr" "2" "2"
 Sbr_Str2DevTrm "$lcMsgStr" "2" "5"
 #!
-Sbr_Splash_Quit "*===Fall-Thru===Loose-Code===Quit===*"
+Sbr_ClearFlagsSystem  0   ### no display
+Sbr_Splash_Pup
+Sbr_Splash_Banner "*===Fall-Thru===Loose-Code===Quit===*"
 #!
 lcMsgStr="  " && Sbr_Str2DevTrm "$lcMsgStr" "2" "5"
 lcMsgStr="<-<-<-  FALL-THRU trap for 'loose' code  " && Sbr_Str2DevTrm "$lcMsgStr" "2" "5"
 lcMsgStr="-------------------------------------" && Sbr_Str2DevTrm "$lcMsgStr" "2" "5"
-	Sbr_ClearFlagsSystem  0   ### no display
-    Sbr_ClearFlagsQuit   "1"   ### yes display
-            #! list of flags to be killed :
-            #! rm -f "${MGR_TouchCBXstatus}"
-            #! rm -f "${MGR_BackUpStatus}"
-            #! rm -f "${MGR_LockFile}"
-            #! rm -f "${MGR_ReStart_flg}"
-            #! rm -f "/tmp/MGR_Page_Control.flg"
+    echo " "
     echo "FALL-THRU has final standard 'exit 0'"
-	echo "... Will Pop the Stack if Layered ..."
-    exit 0
-    return
+    echo "... Will Pop the Stack if Layered ..."
+    echo " "
 #! ### end:   "EXIT:QUIT" "EXIT:QUIT+"
 #!
+    gxmessage -title "${0}"  -name "${0}" -font bold -timeout 1  -fg yellow -bg darkred -center -wrap "
+    <.<.<  Fall-Thru-Q.U.I.T. program >.>.>"
+#!      
+    sleep 1
+    exit 0
+    return
 #!
 #!
 #!
@@ -8611,7 +10251,170 @@ lcMsgStr="-------------------------------------" && Sbr_Str2DevTrm "$lcMsgStr" "
 #! end: Bottom of MGR Fall-Thru 
 #! ###################################
 #!
-#! Text from Murga Presentation 
 #!
 #!
-#! ###################################
+#! ####################################
+#! ### NOTES ##########################
+#! ####################################
+#!
+#! that's all !
+#! gae
+#! =========================================================================
+#! GTK is almost the same, across 22 Puppy Linux OX, but some differences.
+#! "gcMrgAdjOut" memvar (etc)  tested against DISTRO_SPECS like this: 
+#!      case "${gcSysDistroName}" in  
+#!         "bionicpup64")      gcMrgAdjOut="false" ;;
+#! MGR-8 +  does use BASH "pagebook" method. 
+#! MGR-9 +  does use BASH "pagebook" method. 
+#! MGR-11 + uses GTK NoteBook method for primary GUI , also BASH "pagebook". 
+#! Debian BookWorm has a serious GTK formatting issue, but the code runs. 
+#! =========================================================================
+#!
+#! ##########
+#!  Eagle-Cad
+#!  https://mega.nz/folder/LOgVDahA#fBwQyz-er_iwzbRscN8_wA
+#! ##########
+#!
+#! ************************************************************
+#! some NOTES: 
+#!
+#! ************************************************************
+#! PET install not required, 
+#!      just place downloaded scripts into /root/my-applications and append PATH. 
+#! *************************************************************************************
+#!  
+#!
+#! --- 
+#! Message Box Routines : 
+#! ---
+#! #:    lcMsgStr="=== ${gcMgrKey}==="
+#! #:    gxmessage -bo -c -tim 3 -fn 'bold 10' -bg '#285577' -fg '#FFF' -bu '' $'\n\n  "'${lcMsgStr}'"  '
+#!
+#! #: Sbr_Box_Message :  
+#! #: ... custom rewrite of gtkdialog Box_Help   by  GAE
+#! #: ... used by 'HELP' , 'Distro', 'Proc', 'FAQ' 
+#!
+#! #: gxMessage : 
+#! #: ...    used by: PUP, GUI, SRC, IMG, UPL, SYS. 
+#! #: ...    expects plain text . 
+#! #: ...    normally displays 45 char long, then wraps . 
+#! #: ...    user mounse can expand line-length to 72++ .
+#! "--- "
+export gcColorReset="\\e[0m"
+export gcColorString="$(trim "${string//$'\\e[0m'}")"
+#!
+join_by() {
+    local arg arr=() sep="$1"
+    shift
+    for arg in "$@"; do
+        if [ 0 -lt "${#arr[@]}" ]; then
+            arr+=("${sep}")
+        fi
+        arr+=("${arg}") || break
+    done
+    printf "%s" "${arr[@]}"
+}
+jointox() {
+x="$2"
+for (( i=3; i <= $#; i++ )); do
+    x="$x$1${!i}"
+done
+}
+joinisx() {
+sep=,
+local x
+jointox "$sep" "$@"
+}
+Sbr_Sys_ya3() {
+n=0
+liststr=""
+for item in list
+do
+    liststr=$item,$liststr
+done
+LEN=`expr length $liststr`
+LEN=`expr $LEN - 1`
+liststr=${liststr:0:$LEN}
+}
+export -f Sbr_Sys_ya3
+#(: =====================================================
+#(: fx Sbr_fnEchoDateTime  # Not Used 
+#(: called by: L:7174
+#(: param:
+#(: purpose: if system file is Not Found
+#(: calls:
+#(: method:
+#(: sends:
+#(: rationale:
+#(: note : 
+#(: <variable>vWindow</variable>
+#(: <input>Sbr_fnEchoDateTime</input>
+#(: <action this-is-window="escape" signal="key-press-event" condition="command_is_true( [[ \$KEY_RAW = 0x9 ]] && echo true )">EXIT:exit</action>
+#! ###########################################################
+#! function Sbr_fnEchoDateTime() {   # NOT ACTIVE
+#!   <input>Sbr_fnEchoDateTime</input>  in main gui ? developmental
+#!   lcSysDts="`date +%y%m%d-%H%M-%S`"   
+#!   echo "${lcGuiFrameTitle}...${lcSysDts}"
+#! }
+#! export -f Sbr_fnEchoDateTime
+#
+#! $ a=(1 "a b" 3)
+#! $ b=$(IFS=, ; echo "${a[*]}")
+#! $ echo $b
+#! 1,a b,3
+#!
+#!
+#! example of PID test
+#! while [ "`pidof snapmergepuppy`" ]; do sleep 1 ; echo "PID-TEST"; done
+#!
+#! ###########################################################
+#! Distro List :
+export gcDistroList=""
+#! <b><span foreground='"'red'"'>"#! iso_NoblePup32-24.04-__K:6.1.115___240907"</span></b>
+#! <b><span foreground='"'blue'"'>"#! iso_BionicPup32-19.03-K5.9--- K:5 __32  231209"</span></b>
+#! <b><span foreground='"'brown'"'>"iso-bionicpup64-8.0-uefi_ _ _ _ _ _ _ _K:4__64_231219"</span></b>
+#! <span foreground='"'blue'"'>  "iso-BionicPup32-8.0+30_BionicBeaver_____220407"</span>
+#! <b><span foreground='"'red'"'>"iso-UpupTahr-6.0.6-k4.1.30-uefi_K:4.1___190211"</span></b>
+#! <span foreground='"'blue'"'>  "iso_ManticPup32-23.10+1.iso_____Kernal:6.1_231209"</span>
+#! <span foreground='"'blue'"'>  "iso-JammyPup32-22.04+8_JammyJellyfish___22123"</span>
+#! <span foreground='"'blue'"'>  "iso-UPupFF+D-20.12+4_Focal-Fossa________201210"</span>
+#! <span foreground='"'blue'"'>  "iso-KineticPup32-22.10+2________________230604"</span>
+#! <span foreground='"'blue'"'>   "iso-Slacko-7.0_DpupS7_14.2________________220205"</span>
+#! <span foreground='"'blue'"'>   "iso-Xenial-64_7.5_XL_______________________220401"</span>
+#! <span foreground='"'blue'"'>   "iso-S15Pup-64_22.12+1-T___________________220922"</span>
+#! <span foreground='"'blue'"'>   "iso-Quirky_April-7.0.1F-uefi______________200511"</span>
+#! <span foreground='"'blue'"'>   "iso_devuanpup-9.7.0-chimaera_4.0_i386____211206"</span>
+#! <span foreground='"'blue'"'>   "iso_LxPupSc-slacko-20.01+0-T-k64_________200129"</span>
+#! <span foreground='"'blue'"'>   "iso_slacko64_14.2_32-674-bit_compatible___220227"</span>
+#! <span foreground='"'blue'"'>   "iso_BookwormPup32-B4-231101___220227"</span>
+#! <span foreground='"'green'"'>"____________________________________________"</span>
+
+#. - - - - - - - - - - - - - - - - - - - - - - - 
+#!
+#! MGR 10  utilizes  GTK 'notebook' as the basic graphical presentation method. 
+#!
+#! MGR 11  utilizes TWO different main GUI code methods, 
+    #!      BASH 'Page' based main GUI code 'pages'
+    #!      GTK 'NoteBook' based main GUI code 'pages' 
+#!
+#! MGR-11 
+#! "Manager" for project development across 22 Puppy OS , 
+    #!      [ Debian BookWorm 32/64 has GTK problems for < window > width control. ] 
+    #! all "cased, cloned, hacked" by gae, 240101 initially. 
+#! ***************************************************************************
+#! for MGR with "Deep Thought" theme. 
+        #! Screen : so gcMrgGuiWid="1200"
+#! for MGR with "Default" theme. 
+        #! Screen : so gcMrgGuiWid="1100"
+        #!
+        #! more tests required to differentiate various "themes" and screen dimensions 
+        #!  which alter font size and screen usage. 
+        #!
+#. - - - - - - - - - - - - - - - - - - - - - - - 
+#!
+#!
+#! #####################################################################
+#! note   # 
+#! find "$BACKUP_DIR" -type d -name "backup_*" -mtime +30 -exec rm -rf {} \;
+#! #####################################################################
+#! #####################################################################
