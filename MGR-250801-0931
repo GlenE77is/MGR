@@ -1,12 +1,28 @@
 #!/bin/bash
 #!  MGR-11.2A  #! "Manager"    
+#! ======================================================================
 #!  Menu Framework for project development across 22 Puppy OS 
 #!  *** demo of embedded images  
 #!  *** demo of double-click < button > 
 #!  *** GTK "NoteBook" paging and BASH paging, 
 #!  *** ReWrite Menu & ReBoot across 22 Puppy OS. 
 #!  LineCnt#10419 (not for the faint of heart)
-#! 
+#! ======================================================================
+#!  Comments: 
+#! The BASH coding and GTK coding are standard. 
+#! The "GTK MENU" has this process:
+#! -- All GTK menu selections are passed out via the "EXIT" GTK var, 
+#! -- All GTK menu selections fall thru 
+#! to a set of BASH if [ "$EXIT" = "???" ] sub-modules 
+#! ...... which are placed in bottom of script code 
+#! -- All BASH " if []" modules call a set of BASH sub-routines 
+#! ...... which are placed in the top of the script code . 
+#! ===> This process keeps BASH language code from interacting 
+#!       with GTK language code.
+#! The Graphic Images are EMBEDDED in the source code file 
+#!      and written to /root/tmp . 
+#! ======================================================================
+#!
 export gcMgrSysDob="250801-0723"
 #! 
 export gcMGRname="Manager" 
