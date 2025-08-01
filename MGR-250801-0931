@@ -1,6 +1,11 @@
 #!/bin/bash
-#!
-#!  L#10419
+#!  MGR-11.2A  #! "Manager"    
+#!  Menu Framework for project development across 22 Puppy OS 
+#!  *** demo of embedded images  
+#!  *** demo of double-click < button > 
+#!  *** GTK "NoteBook" paging and BASH paging, 
+#!  *** ReWrite Menu & ReBoot across 22 Puppy OS. 
+#!  LineCnt#10419 (not for the faint of heart)
 #! 
 export gcMgrSysDob="250801-0723"
 #! 
