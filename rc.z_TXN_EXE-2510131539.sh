@@ -1,6 +1,6 @@
 #!/bin/bash
 #
-#(: rc.z_TXN_exe.sh
+#(: rc.z_TXN_EXE-RUN.sh     ### Executable Source Code ### 
 #
 #(: TXN-Normal.sh 
 #(:    derived from TXN_Pull_All_Code.sh  
@@ -8,42 +8,78 @@
 #(: note:  culls '# ' 
 #(: note:  keeps '# <tab>'
 #(:
+clear
 
+export gcSysDevDob="251013-1539"     
+
+#~ gcSelect="$1"
+#~ set -xe
+  #~ lcMsgStr="---TXN Running on '${gcSelect}'"
+  #~ gxmessage -name "---timeout 5 ---"   -fg green -bg lightyellow -timeout 3 -center  -wrap "
+  #~ ${lcMsgStr}"
+
+#~ if [ ! $1 ] ; then 
+    #~ gcSelect="MGR-10"
+#~ fi
+
+    #~ lcMsgStr="---TXN Running on '${gcSelect}'"
+  #~ gxmessage -name "---timeout 5 ---"   -fg green -bg lightyellow -timeout 3 -center  -wrap "
+  #~ ${lcMsgStr}"
+#~ set +xe
+#~ exit 0
 
 lcSetCtrl=1
-set +x   # list of lines 
-set +e   # line of error asdf
+#~ set +x   # list of lines = off
+#~ set +e   # line of error asdf = off
 
-# ##############
-#~ gcSelect=""
-
+# ############## Must Select from this list.  Source must have these names. 
+# ############## Must Select from this list.  Source must have these names. 
+# ############## Must Select from this list.  Source must have these names. 
+# Real Name might be :  rc.z_MGR-9.sh, duplicate file as "rc.z_MGR.sh"
+# #########################################################################
 #~ export gcSelect="CTX"
 #~ export gcSelect="CTB"
 #~ export gcSelect="CTB-SL"
-export gcSelect="MGR"
+
+#~ export gcSelect="MGR" #! old call is not used. Must be "MGR" and "=V#" 
+
+#~ export gcSelect="MGR-9"
+#~ export gcSelect="MGR-10"
+
+export gcSelect="MGR-11"
+
 #~ export gcSelect="MGS"
 #~ export gcSelect="MGT"
 #~ export gcSelect="MCI"
 #~ export gcSelect="E3R"
 #~ export gcSelect="TXN"
-# ############## 0:CTX, 1:CTB, 2:CTB-SL, 3:MGR, 4:MCI, 5:E3R, 6:TXN
-
+#! ############## 0:CTX, 1:CTB, 2:CTB-SL, 3:MGR, 4:MCI, 5:E3R, 6:TXN
+#! ############## Must Select from this list.  Source must have these names. 
+#!
 #(: 
 export gcSysDevDob="230705-0700"
 export gcSysDevDob="230707-1800"
 export gcSysDevDob="230708-0921"
+export gcSysDevDob="250118-1013"
+export gcSysDevDob="250405-0809"
+export gcSysDevDob="251013-1539"     
+
 #(: ${gcSysDevDob}
 #(:
+#! Must run rc.z_TXN_CALL-RUN.sh first in order to initiate X-Term and visible trace.  
+#!      xterm -e "/initrd/mnt/dev_save/MY_/usr-share/My_Dev_/Edit_TXN/rc.z_TXN_EXE-RUN.sh"
+#! Else, run via Geany Execute to initiate X-Term. 
 
+#! ###########################################################################################
+    #~ lcMsgStr="---TXN --- execute via GEANY ---"
+  #~ gxmessage -name "---timeout 5 ---"   -fg red -bg lightyellow -timeout 3 -center  -wrap "
+  #~ ${lcMsgStr}"
+    lcMsgStr="---TXN --- execute via GEANY ---
+    ---TXN Running on _${gcSelect}"
+  gxmessage -name "---timeout 5 ---"   -fg red -bg lightyellow -timeout 3 -center  -wrap "
+  ${lcMsgStr}"
+#! ###########################################################################################
 
-#~ if [ ! -z $gcSelect ] ; then 
-	#~ n=0
- 	#~ gxmessage -name "TXN"  -fg yellow -bg green  -center -timeout 7 "---$gcSelect---7seconds"
-#~ else
-	#~ n=0
- 	#~ gxmessage -name "TXN"  -fg yellow -bg red  -center -timeout 7 "---NO Selection---"
-	#~ exit
-#~ fi
 
 case $gcSelect in 
     "0"|"CTX") 
@@ -70,11 +106,39 @@ export gcSrcFnId="MCI" # ID for Source Code file
 export gcSrcSubDir="/initrd/mnt/dev_save/MY_/usr-share/My_Dev_/Edit_MCI/"
 export gcTrgFnId="MCI" 
 ;;
-    "4"|"MGR") 
+    "4"|"MXR") 
 export gcSrcDirId="MGR" # Directory
 export gcSrcFnId="MGR" # ID for Source Code file
 export gcSrcSubDir="/initrd/mnt/dev_save/MY_/usr-share/My_Dev_/Edit_MGR/"
 export gcTrgFnId="MGR" 
+;;
+    "MGR") 
+export gcSrcDirId="MGR" # Directory
+export gcSrcFnId="MGR" # ID for Source Code file
+export gcSrcSubDir="/initrd/mnt/dev_save/MY_/usr-share/My_Dev_/Edit_MGR/"
+export gcTrgFnId="MGR" 
+export gcTrgFnVer=""
+;;
+    "MGR-9") 
+export gcSrcDirId="MGR" # Directory
+export gcSrcFnId="MGR-9" # ID for Source Code file
+export gcSrcSubDir="/initrd/mnt/dev_save/MY_/usr-share/My_Dev_/Edit_MGR/"
+export gcTrgFnId="MGR" 
+export gcTrgFnVer="-9"
+;;
+    "MGR-10") 
+export gcSrcDirId="MGR" # Directory
+export gcSrcFnId="MGR-10" # ID for Source Code file
+export gcSrcSubDir="/initrd/mnt/dev_save/MY_/usr-share/My_Dev_/Edit_MGR/"
+export gcTrgFnId="MGR" 
+export gcTrgFnVer="-10"
+;;
+    "MGR-11") 
+export gcSrcDirId="MGR" # Directory
+export gcSrcFnId="MGR-11" # ID for Source Code file
+export gcSrcSubDir="/initrd/mnt/dev_save/MY_/usr-share/My_Dev_/Edit_MGR/"
+export gcTrgFnId="MGR" 
+export gcTrgFnVer="-11"
 ;;
     "5"|"E3R") 
 export gcSrcDirId="E3R" # Directory
@@ -96,8 +160,44 @@ esac
 
 
 
-# #################################################################################################
-# #################################################################################################
+#! ##########################################################################
+#! ##########################################################################
+#! ##########################################################################
+
+    lcMsgStr="\\033[10G\\033[1;31m*** \\033[1;32m {_$0_} \\033[1;35m***\\033[0;39m"
+
+      dialog  --title "_${gcSelect}_" --timeout 11  --yes-label "$(gettext '_RUN_TXN_EXE_')" --no-label "$(gettext 'NOT_Run__')" --yesno "
+.     Wait 11 seconds to NO Run')" 6 45 
+      RETVAL=$?
+
+ 	if [ $RETVAL -ne 0 ] ; then   # # No Flag = No Save  # 32 green
+       lcMsgStr="TXN: ne 0:${retval}: ... NOT RUN  TXN EXE ... " 
+       /bin/echo -e    ""
+       /bin/echo -e    "\\033[10G\\033[1;31m*** \\033[1;31m $lcMsgStr \\033[1;35m***\\033[0;39m" 
+       /bin/echo -e    "\\033[10G\\033[1;31m*** \\033[1;31m $lcMsgStr \\033[1;35m***\\033[0;39m" 
+       /bin/echo -e    "\\033[10G\\033[1;31m*** \\033[1;31m $lcMsgStr \\033[1;35m***\\033[0;39m" 
+       echo "${lcMsgStr}"  >/dev/console
+        exit
+        #
+    else        # 31 red 
+        lcMsgStr="TXN: eq 0:${retval}: ... RUN TXN EXE ... " 
+       /bin/echo -e    ""
+       /bin/echo -e    "\\033[10G\\033[1;31m*** \\033[1;32m $lcMsgStr \\033[1;35m***\\033[0;39m" 
+       /bin/echo -e    "\\033[10G\\033[1;31m*** \\033[1;32m $lcMsgStr \\033[1;35m***\\033[0;39m" 
+       /bin/echo -e    "\\033[10G\\033[1;31m*** \\033[1;32m $lcMsgStr \\033[1;35m***\\033[0;39m" 
+        echo "${lcMsgStr}"  >/dev/console
+    fi
+#~ exit 
+#! ##########################################################################
+#! ##########################################################################
+#! ##########################################################################
+
+ 	#~ gxmessage -name "TXN"  -fg yellow -bg red  -center -timeout 3 "---$gcSelect---"
+ 	#~ gxmessage -name "TXN"  -fg yellow -bg purple  -center -timeout 3 "---$gcSelect---"
+ 	#~ gxmessage -name "TXN"  -fg yellow -bg green  -center -timeout 3 "---$gcSelect---"
+
+ 	#~ gxmessage -name "Canceled"  -fg yellow -bg red  -center -timeout 3 "---CANCELED---"
+    #~ exit
 
 #########################################################################
 # NOTE: 
@@ -139,7 +239,7 @@ export gcSrcAll="/initrd/mnt/dev_save/MY_/usr-share/My_Dev_/Edit_${gcSrcDirId}/r
 #~ PATH=/bin:/sbin:/usr/bin:/usr/sbin:/usr/local/bin:/usr/X11R7/bin:/etc/rc.d:/usr/lib/gtkdialog/:/MY_/usr-share/My_Dev_/Edit_TXN
 PATH=$PATH:/etc/rc.d:/usr/lib/gtkdialog/:/MY_/usr-share/My_Dev_/Edit_TXN
 
-
+ 	#~ gxmessage -name "TXN"  -fg yellow -bg green  -center -timeout 1 "---$gcSelect---7-seconds"
 
 #(:;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 function Txn_SetVerDts() {     # ACTIVE
@@ -168,7 +268,7 @@ export gcTxnZeroRun="$0"
 
 export gcTxnDts="`date +%y%m%d-%H%M-%S`"     
 export gcTxnFnOut="${gcSrcFnId}-Txn-`date +%y%m%d-%H%M-%S`"     
-
+export gcTxnDtsOut="" #! "`date +%y%m%d-%H%M-%S`"     
 # === begin: Config Reader ==============================================
 gcTxnConfigFN="/root/my-applications/bin/Txn_config"	
 gcTxnConfigTrgPrefix=""			
@@ -194,35 +294,48 @@ export -f Txn_SetVerDts
 
 
     
+                    #;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+                    #~ function X-PBKP_validate_BACKUP_location() { # $PBKP_BACKUP_PATH
+
+                        #~ if [ "${1}" != "" ]; then 
+                            #~ IFS="/" read -r a direntry level2 level3 level4 <<< "${1}"
+                            #~ #                /mnt     /home  /psubidir                /mnt/sda2/etc
+                            #~ if [ "$direntry" = "mnt" ] && [ "$level2" != "" ] ; then
+                                #~ echo -n "${1}"
+                            #~ elif [ "$direntry"/"$level2" = "initrd/mnt" ] && [ "$level3" != "" ] ; then
+                                #~ echo -n "${1}"
+                            #~ fi
+                        #~ else
+                            #~ echo -n "$PBKP_LOCDEFAULT"
+                        #~ fi
+                    #~ } # end: fx(X-PBKP_validate_BACKUP_location)
+
+                    #~ echo "${PBKP_LOCDEFAULT}"    | PBKP_validate_BACKUP_location
+                    #~ echo "'\${PBKP_BACKUP_PATH}'"
+                    #~ echo "'${PBKP_validate_BACKUP_location $gcSrcAll}'"
+
+
+
+
 #;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-#~ function X-PBKP_validate_BACKUP_location() { # $PBKP_BACKUP_PATH
-
-	#~ if [ "${1}" != "" ]; then 
-		#~ IFS="/" read -r a direntry level2 level3 level4 <<< "${1}"
-		#~ #                /mnt     /home  /psubidir                /mnt/sda2/etc
-		#~ if [ "$direntry" = "mnt" ] && [ "$level2" != "" ] ; then
-			#~ echo -n "${1}"
-		#~ elif [ "$direntry"/"$level2" = "initrd/mnt" ] && [ "$level3" != "" ] ; then
-			#~ echo -n "${1}"
-		#~ fi
-    #~ else
-		#~ echo -n "$PBKP_LOCDEFAULT"
-	#~ fi
-#~ } # end: fx(X-PBKP_validate_BACKUP_location)
-
-#~ echo "${PBKP_LOCDEFAULT}"    | PBKP_validate_BACKUP_location
-#~ echo "'\${PBKP_BACKUP_PATH}'"
-#~ echo "'${PBKP_validate_BACKUP_location $gcSrcAll}'"
-
-
-
-
-#;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-function Txn_ReStart() { 
+function Txn_ReStart() {    #! Not Called  
     n=0
     #~ ${gcTxnZeroRun}
 } # end: Txn_ReStart
 export -f Txn_ReStart
+
+
+function Txn_Loop_Splash () {       #! Not Called : max nbr of clients reached 
+        #~ echo -n "__${gcSelect}_ ${lciLineCnt} ___"
+        echo -n "__${lciLineCnt}__"
+
+		#~ lcMsgStr="${lcpSrcFn} TXN # ${lciLineCnt}"
+		#~ /usr/lib/gtkdialog/box_splash -fg black -bg yellow -timeout 1  -text "..${lcMsgStr}" &
+		#~ GTKPIDIFN=$!
+		#~ sleep ${lcSplashSleep} 	# must wait, else box_splash will not have time to display message
+		#~ kill ${GTKPIDIFN}
+}
+export -f Txn_Loop_Splash
 
 
 ########################################################################
@@ -278,8 +391,10 @@ lcFnTrg0="/initrd/mnt/dev_save/MY_/usr-share/My_Dev_/Edit_${gcExeId}/TXN_code-0.
    grep -v '^$' ${lcFnSrcAll} > ${lcFnTrg0}
 
         echo "<<<"
-        echo "=== DONE bulding 'Fn0' copy of original Source without blank lines ==="
-
+        echo " " 
+/bin/echo -e "\\033[1G\\033[1;35m*** \\033[1;31m 'BEGIN bulding copy of original Source without blank lines' \\033[1;35m***\\033[0;39m" 
+        echo " " 
+        sleep 1
 #~ read
 #~ exit
 
@@ -296,8 +411,11 @@ lcFnTrg1="/initrd/mnt/dev_save/MY_/usr-share/My_Dev_/Edit_${gcExeId}/TXN_code-1.
    grep -v '^$'  ${lcFnSrc0} > ${lcFnTrg1}
 
         echo "<<<"
-        echo "=== DONE bulding '1' copy of original Source without blank lines ==="
-                   
+        echo " " 
+/bin/echo -e "\\033[1G\\033[1;35m*** \\033[1;32m 'DONE bulding copy of original Source without blank lines' \\033[1;35m***\\033[0;39m" 
+        echo " " 
+        sleep 3
+
 #~ read
 #~ exit 0
 
@@ -310,23 +428,53 @@ lcFnTrg1="/initrd/mnt/dev_save/MY_/usr-share/My_Dev_/Edit_${gcExeId}/TXN_code-1.
     echo ">>> so Src1 is code only. "
     echo ""
 
+        echo " " 
+/bin/echo -e    "\\033[10G\\033[1;35m*** \\033[1;31m 'BEGIN bulding {Cm} Comments' \\033[1;35m***\\033[0;39m" 
+        echo " " 
+        sleep 1
     ###
     echo " "
 
     lcFnSrcCode1="/initrd/mnt/dev_save/MY_/usr-share/My_Dev_/Edit_TXN/TXN_code-1.sh"
 
-    lcFnTrgCodeC="/initrd/mnt/dev_save/MY_/usr-share/My_Dev_/Edit_TXN/TXN_code-C.sh"
-    echo " " > ${lcFnTrgCodeC}  
-    chmod +x ${lcFnTrgCodeC}
+    #! "Cm"
+    lcFnTrgCodeCm="/initrd/mnt/dev_save/MY_/usr-share/My_Dev_/Edit_TXN/TXN_code-Cm.sh"
+    echo " " > ${lcFnTrgCodeCm}  
+    chmod +x ${lcFnTrgCodeCm}
 
-    grep  '#(:'  ${lcFnSrcCode1} > ${lcFnTrgCodeC}           # "." transfers SrcFile if  "#(:"   
+    grep  '#(:'  ${lcFnSrcCode1} > ${lcFnTrgCodeCm}           # "." transfers SrcFile if  "#(:"   
 
-                    # FnAllComment: OK # # OK # # OK # # OK # 
+        echo " " 
+/bin/echo -e    "\\033[10G\\033[1;35m*** \\033[1;32m 'DONE bulding {Cm} Comments' \\033[1;35m***\\033[0;39m" 
+        echo " " 
+        sleep 1
 
-    echo "=== DONE bulding 'C' Comments ==="
+    #! "fx"
+    lcFnTrgCodeFx="/initrd/mnt/dev_save/MY_/usr-share/My_Dev_/Edit_TXN/TXN_code-Fx.sh"
+    echo " " > ${lcFnTrgCodeFx}  
+    chmod +x ${lcFnTrgCodeFx}
 
-#~ read
-#~ exit 
+    grep  '#(: fx'  ${lcFnSrcCode1} > ${lcFnTrgCodeFx}           # "." transfers SrcFile if  "#(: fx"   
+
+        lcMsgStr "=== DONE bulding ${lcFnTrgCodeFx} Comments ==="
+        echo " " 
+/bin/echo -e    "\\033[10G\\033[1;35m*** \\033[1;32m DONE bulding {Fx} Comments \\033[1;35m***\\033[0;39m" 
+        echo " " 
+        sleep 1
+
+### ERROR ### ambigous redirect 
+    #! "ft"
+    lcFnTrgCodeFt="/initrd/mnt/dev_save/MY_/usr-share/My_Dev_/Edit_TXN/TXN_code-Ft.sh"
+    echo " " > ${lcFnTrgCodeFt}  
+    chmod +x ${lcFnTrgCodeFt}
+
+    grep  '#(: ft'  ${lcFnSrcCode1} > ${lcFnTrgCodeFt}           # "." transfers SrcFile if  "#(: fx"   
+
+        lcMsgStr "=== DONE bulding {Ft} Comments ==="
+        echo " " 
+/bin/echo -e    "\\033[10G\\033[1;35m*** \\033[1;32m DONE bulding {Ft} Comments \\033[1;35m***\\033[0;39m" 
+        echo " " 
+        sleep 1
 
 
 
@@ -368,66 +516,85 @@ echo "=== while IFS ====== SCANNING  ${line} to CULL program comments"
 echo "====================================================================="
 echo "::: begin: IFS at Line # ${lciLineCnt} ::: "
 
-#~ if [ lcSetCtrl ] ; then ### IFS always returns a non'0' value
-    #~ set -e
-#~ fi
+# control :
+# if [ lcSetCtrl ] ; then
+    # set -x
+    # set -e
+# fi
 
-#~ GTKPIDIFN=9999999
+#! this is KSH KORN notation, not always valid in BOURNE shell. 
+#! will always gen err flg !  -e will detect this err flg.
+#! only option is to skip over error, by set +e .
+#!  `date -%H%M-%S`
 
-# this is KSH notation, not always valid in BOURNE shell. 
-# will always gen err flg !  -e will detect this err flg.
-# only option is to skip over error, by set +e .
-#  `date -%H%M-%S`
+#~ read
 
-echo "--- while IFS=    read -r line;  ============================="
+#~ exit
+#~ set -e
+
+echo "--- while IFS=  LOOP =  read -r line;  ============================="
+echo "--- while IFS=  LOOP =  read -r line;  ============================="
+echo "--- while IFS=  LOOP =  read -r line;  ============================="
+echo "--- while IFS=  LOOP =  read -r line;  ============================="
+
 while IFS=    read -r line; 
 # feeds whole file !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 do 
-# feeds whole file !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+# parse and feed whole file !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
-	#! =================================================================
+	#! === incr counter ================================================
     (("lciLineCnt++")) 
-	#! =================================================================
+    #!
+	lcSplashSleep=".1"
+    #! === ID each Source Line ========================================
+    #!
 	#! Flipping Working Splash Five Colors : Blk, Yel, Ora, Red, Grn 
-    if [ $(expr $lciLineCnt % 100) = "20" ]; then
-        echo -n "_${lciLineCnt}"
-		lcMsgStr="${lcpSrcFn} TXN # ${lciLineCnt}"
-		/usr/lib/gtkdialog/box_splash -fg black -bg yellow -timeout 1  -text "..${lcMsgStr}" &
-		GTKPIDIFN=$!
-		sleep .01 	# must wait, else box_splash will not have time to display message
-		kill ${GTKPIDIFN}
+	#! Flipping Working Splash Five Colors : Blk, Yel, Ora, Red, Grn 
+	#! Flipping Working Splash Five Colors : Blk, Yel, Ora, Red, Grn 
+
+#~ case "[ $(expr $lciLineCnt % 100)" in   #! TARGET 
+   #~ "10") Txn_Loop_Splash ;;
+   #~ "20") Txn_Loop_Splash ;;
+   #~ "30") Txn_Loop_Splash ;;
+   #~ "40") Txn_Loop_Splash ;;
+   #~ "50") Txn_Loop_Splash ;;
+   #~ "60") Txn_Loop_Splash ;;
+   #~ "70") Txn_Loop_Splash ;;
+   #~ "80") Txn_Loop_Splash ;;
+   #~ "90") Txn_Loop_Splash ;;
+    #~ *) 
+    #~ ;;  #: default "T"erminal mode for use with Geany "T"erminal process.
+#~ esac
+
+    if [ $(expr $lciLineCnt % 100) = "10" ]; then
+        Txn_Loop_Splash
     fi
-    if [ $(expr $lciLineCnt % 100) = "40" ]; then
-        echo -n "_${lciLineCnt}"
-		lcMsgStr="${lcpSrcFn} TXN # ${lciLineCnt}"
-		/usr/lib/gtkdialog/box_splash -fg yellow -bg green -timeout 1  -text "...${lcMsgStr}" &
-		GTKPIDIFN=$!
-		sleep .01 	# must wait, else box_splash will not have time to display message
-		kill ${GTKPIDIFN}
+    if [ $(expr $lciLineCnt % 100) = "20" ] ; then
+        Txn_Loop_Splash
     fi
-    if [ $(expr $lciLineCnt % 100) = "60" ]; then
-        echo -n "_${lciLineCnt}"
-		lcMsgStr="${lcpSrcFn} TXN # ${lciLineCnt}"
-		/usr/lib/gtkdialog/box_splash -fg orange -bg blue -timeout 1  -text "....${lcMsgStr}" &
-		GTKPIDIFN=$!
-		sleep .01 	# must wait, else box_splash will not have time to display message
-		kill ${GTKPIDIFN}
+    if [ $(expr $lciLineCnt % 100) = "30" ] ; then
+        Txn_Loop_Splash
     fi
-    if [ $(expr $lciLineCnt % 100) = "80" ]; then
-        echo -n "_${lciLineCnt}"
-		lcMsgStr="${lcpSrcFn} TXN # ${lciLineCnt}"
-		/usr/lib/gtkdialog/box_splash -fg red -bg yellow -timeout 1  -text ".....${lcMsgStr}" &
-		GTKPIDIFN=$!
-		sleep .01 	# must wait, else box_splash will not have time to display message
-		kill ${GTKPIDIFN}
+    if [ $(expr $lciLineCnt % 100) = "40" ] ; then
+        Txn_Loop_Splash
     fi
-    if [ $(expr $lciLineCnt % 100) = "100" ]; then
-        echo -n "_${lciLineCnt}"
-		lcMsgStr="${lcpSrcFn} TXN # ${lciLineCnt}"
-		/usr/lib/gtkdialog/box_splash -fg green -bg orange -timeout 1  -text ".....${lcMsgStr}" &
-		GTKPIDIFN=$!
-		sleep .01 	# must wait, else box_splash will not have time to display message
-		kill ${GTKPIDIFN}
+    if [ $(expr $lciLineCnt % 100) = "50" ] ; then
+        Txn_Loop_Splash
+    fi
+    if [ $(expr $lciLineCnt % 100) = "60" ] ; then
+        Txn_Loop_Splash
+    fi
+    if [ $(expr $lciLineCnt % 100) = "70" ] ; then
+        Txn_Loop_Splash
+    fi
+    if [ $(expr $lciLineCnt % 100) = "80" ] ; then
+        Txn_Loop_Splash
+    fi
+    if [ $(expr $lciLineCnt % 100) = "90" ] ; then
+        Txn_Loop_Splash
+    fi
+    if [ $(expr $lciLineCnt % 100) = "100" ] ; then
+        Txn_Loop_Splash
     fi
 	#! =================================================================
 
@@ -438,19 +605,19 @@ do
     lcLineVar="$line"   # transfer to 'var' 
     lciVar=""
 
-	#! =================================================================
+	#! === parse line ==============================================================
     for i in $(seq 1 ${#lcLineVar}); do   # 2 bytes 
-            n=0        
+            #~ n=0        
             # "lcLineVar" is the WHOLE "line" 
             lcLineVarX="$(echo -e "${lcLineVar}" | sed -e 's/^[[:space:]]*//')"
             lciVar2="${lcLineVarX:i-1:2}"  # 2 bytes from ltrim var
             lciVar3="${lcLineVarX:i-1:3}"  # 3 bytes from ltrim var
   
-            #! CULL  "BashComment" : prob: only works at left margin, not tabbed, not spaced 
+            #! CULL  "BashComment" : problem: only works at left margin, not tabbed, not spaced 
             #! so, to Cull program comments, we setup to extract remainder via  grep -v into #2
             #! TRAP all remainining "comments" . 
             if  [ "${lciVar2}" = "#~" ] || [ "${lciVar2}" = "# " ]  || [ "${lciVar2}" = "#:" ]    ;  then
-                n=0
+                #~ n=0
                 break  > /dev/null   # end of line parse. 
             else
 							#! still must cull "#(:"     #### old 'fox' char3 style comment
@@ -459,13 +626,20 @@ do
 								#~ break  > /dev/null   # end of line parse. 
 							#~ fi
                 #! KEEP "notes" 
-                n=0
+                #~ n=0
                 #: keep "#:" code notes
                 #:
                 #! keep "#!" system notes
                 #! 
                 #!## Build WHOLE "line" into Fn2  
                 echo "${lcLineVar}" >> ${lcFnTrg2}    # OK output to file. 
+
+		#~ lcMsgStr="${lcLineVar} # ${lciLineCnt}"
+		#~ /usr/lib/gtkdialog/box_splash -fg green -bg yellow -timeout 1  -text ".....${lcMsgStr}" &
+		#~ GTKPIDIFN=$!
+		#~ sleep ${lcSplashSleep} 	# must wait, else box_splash will not have time to display message
+		#~ kill ${GTKPIDIFN}
+
                 break   # end of line parse loop, break to "while IFS=    read -r line;"
                 #!
             fi # fall-thru to 'continue' iterating "line" 
@@ -473,11 +647,14 @@ do
     done   # includes spaces.evaluates to the value of $var, unless $var isn't set in which case it evaluates to the text "default"
 	#! =================================================================
 
-# feeds whole file !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+# NOW! feed whole file !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 done < "${lcFnSrc1}"  
-# feeds whole file !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+# NOW! feed whole file !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
 echo ""
+echo "====================================================================="
+echo "::: end: IFS at ${lciLineCnt} ::: "
+echo "::: end: IFS at ${lciLineCnt} ::: "
 echo "::: end: IFS at ${lciLineCnt} ::: "
 echo "====================================================================="
 echo "=== while IFS ====== SCANNING Fn1 to CULL program comments"
@@ -485,12 +662,11 @@ echo "====================================================================="
 echo ""
 sleep 1
 
-#~ if [ lcSetCtrl ] ; then 
-    #~ set +e
-#~ fi
-
-#~ read
-#~ exit
+# control :
+# if [ lcSetCtrl ] ; then
+    # set -x
+    # set -e
+# fi
 
 
 ### 11 ######################################################################
@@ -505,6 +681,7 @@ sleep .1
 lcFnSrc2="/initrd/mnt/dev_save/MY_/usr-share/My_Dev_/Edit_${gcExeId}/${gcExeId}_code-2.sh" # Fn"2"  
 # function Sbr_CDW_EGI_Short() {Fn SrcRun  for GEANY
 
+#! _code-RUN.sh
 lcFnTrgRun="/initrd/mnt/dev_save/MY_/usr-share/My_Dev_/Edit_${gcExeId}/${gcExeId}_code-RUN.sh" # TXN_code-RUN.sh"
 #~ echo "# ${lcFnTrgRun} " > ${lcFnTrgRun}  
 echo "#" > ${lcFnTrgRun}  
@@ -529,18 +706,28 @@ lcFnSrc2="/initrd/mnt/dev_save/MY_/usr-share/My_Dev_/Edit_${gcExeId}/${gcExeId}_
 # CTB_Txn_ gcTrgFnId dts.sh
 #~ lcFnRunIdDts="/initrd/mnt/dev_save/MY_/usr-share/My_Dev_/Edit_${gcExeId}/${gcTrgFnId}_Txn_${gcTxnDts}.sh" # ID DTS
 
-lcFnSrcId_Dts="/initrd/mnt/dev_save/MY_/usr-share/My_Dev_/Edit_${gcSrcDirId}/${gcTrgFnId}_TXN_${gcTxnDts}.sh" # ID DTS
+#~ lcFnSrcIdDts="/initrd/mnt/dev_save/MY_/usr-share/My_Dev_/Edit_${gcSrcDirId}/${gcTrgFnId}_TXN.sh" # ID 
 
-lcFnSrcIdDts="/initrd/mnt/dev_save/MY_/usr-share/My_Dev_/Edit_${gcSrcDirId}/${gcTrgFnId}_TXN.sh" # ID 
+#~ lcFnSrcId_Dts="/initrd/mnt/dev_save/MY_/usr-share/My_Dev_/Edit_${gcSrcDirId}/${gcTrgFnId}_TXN_${gcTxnDts}.sh" # ID DTS
 
-echo "lcFnRunIdDts=> "   # Build Special lcFnSrcIdDts   file.sh
-echo "${lcFnSrcIdDts}"   # Build Special lcFnSrcIdDts   file.sh
+#! TrgFnId plus dts 
+ lcTrgFnId_Dts="/initrd/mnt/dev_save/MY_/usr-share/My_Dev_/Edit_${gcSrcDirId}/${gcTrgFnId}${gcTrgFnVer}_TXN_${gcTxnDts}.sh" # ID DTS
+#! ==========--------------------------------------------------------------------=======-----========-----------------
+#~ echo "lcFnRunIdDts=> "   # Build Special lcFnSrcIdDts   file.sh
+#~ echo "${lcFnSrcIdDts}"   # Build Special lcFnSrcIdDts   file.sh
 
-cp -v  "$lcFnSrc2"   "$lcFnSrcIdDts" > /dev/null 
-chmod +x ${lcFnSrcIdDts}
+#~ cp -v  "$lcFnSrc2"   "$lcFnSrcIdDts" > /dev/null 
+#~ chmod +x ${lcFnSrcIdDts}
 
-cp -v  "$lcFnSrc2"   "$lcFnSrcId_Dts" > /dev/null 
-chmod +x ${lcFnSrcId_Dts}
+#~ cp -v  "$lcFnSrc2"   "$lcFnSrcId_Dts" > /dev/null 
+#~ chmod +x ${lcFnSrcId_Dts}
+
+cp -v  "$lcFnSrc2"   "$lcTrgFnId_Dts" > /dev/null 
+chmod +x ${lcTrgFnId_Dts}
+
+#! working
+#~ cp -v  "$lcFnSrc2"   "rc.z_${lcFnSrcId_Dts}" > /dev/null 
+#~ chmod +x ${lcFnSrcId_Dts}
 
 #~ set +e
 ### working (end) TXN_RUN 
@@ -559,8 +746,8 @@ chmod +x ${lcFnSrcId_Dts}
 echo ""
 #~ echo "#=== END ==========================================================="
 echo ""
-echo "Build into:    Target Fn = :Txn_code-RUN-${gcSrcFnId}.sh:"
-echo "Build into:    Distro Fn = :"
+#~ echo "Build into:    Target Fn = :Txn_code-RUN-${gcSrcFnId}.sh:"
+#~ echo "Build into:    Distro Fn = :"
 echo "${gcFnOrgIdDts}.sh:"
 echo "Final Build: {${gcFnOrgIdDts##/*/}}"
 gcFnOrgIdDtscut="$(echo $gcFnOrgIdDts} | cut -d '/' -f9)"
@@ -571,7 +758,7 @@ echo "#================================================================="
 
 #~ sync
 
-#~ gxmessage -name "IIF" -bg yellow    -center -timeout 1  "_${lcpSrcFn} TXN # DONE " &
+#~ gxmessage -name "IFS" -bg yellow    -center -timeout 1  "_${lcpSrcFn} TXN # DONE " &
 ### ???
 
 		#~ /usr/lib/gtkdialog/box_splash -fg yellow -bg red -border true  -timeout 1 -text "TXN # DONE  ${lciLineCnt}" &
@@ -632,7 +819,7 @@ gcFnTrgX2="/initrd/mnt/dev_save/MY_/usr-share/My_Dev_/Edit_${gcExeId}/${gcSrcFnI
 gcTxnDts="`date +%y%m%d-%H%M-%S`"     
 gcFnTrgX="/initrd/mnt/dev_save/MY_/usr-share/My_Dev_/Edit_${gcExeId}/${gcSrcFnId}_Txn_${gcTxnDts}.sh"
 gcFnOrgIdDts="/initrd/mnt/dev_save/MY_/usr-share/My_Dev_/Edit_${gcSrcDirId}/${gcTrgFnId}_Txn_${gcTxnDts}.sh" # ID DTS
-
+#!            /initrd/mnt/dev_save/MY_/usr-share/My_Dev_/Edit_TXN
 #~ export lcFnOrgIdDts="${lcFnOrgIdDts}"
 
 Txn_SetVerDts
@@ -657,8 +844,8 @@ echo ""
 echo "SrcId: ${gcSrcFnId}:   SrcFn = :${gcSrcFn}:"
 echo "SrcAll: ${gcSrcAll}:"
 echo ""
-echo "Build into:    Target Fn = :Txn_code-RUN-${gcSrcFnId}.sh:"
-echo "Build into:    Distro Fn = :"
+#~ echo "Build into:    Target Fn = :Txn_code-RUN-${gcSrcFnId}.sh:"
+#~ echo "Build into:    Distro Fn = :"
 echo "${gcFnOrgIdDts}:"
 echo "Final Build: {${gcFnOrgIdDts##/*/}}"   #  ONLY FN : "CTB-SL-4.0-230117.sh"
 
@@ -682,25 +869,28 @@ echo "================================================ read ==========="
 
 
 #~ exit
+ 	#~ gxmessage -name "TXN"  -fg yellow -bg red -border -center -timeout 11 "---$gcSelect--- Ready-to-Run"
 
+#~ exit
 
 Txn_Run ${gcSrcFnId}  ${gcSrcFn} ${gcSrcAll}  # process FnSrcAll into Fn0, Fn1, Fn2, FnX
 
+export gcTxnDtsOut="`date +%y%m%d-%H%M-%S`"     #! only for DONE display
 
-#~ echo ""
-#~ echo ""
-#~ echo ""
+echo ""
+echo ""
+echo ""
 echo "#################################################################"
-echo "=== DONE: === TXN === ${gcSysDevDob}=== Main ===================="
-echo "=== DONE: === TXN === ${gcSysDevDob}=== Main ===================="
-echo "=== DONE: === TXN === ${gcSysDevDob}=== Main ===================="
+echo "=== Start: === TXN === ${gcTxnDts} ======================="
+echo "===  DONE: === TXN === ${gcTxnDtsOut} ===================="
 echo "#################################################################"
 echo ""
 echo ""
 
 
+sleep 33
+read    #! causes XTerm to pause so to view scroll-back messages. 
 
-#~ read
 #~ exit
 ### DONE ###
 
