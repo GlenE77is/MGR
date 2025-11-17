@@ -1,0 +1,516 @@
+#!/bin/bash
+#
+#! rc.z_PCB-ion.sh     
+#!  " Pup Cold Backup "  
+#!  reads saveDATA  (  "subDir"   or  "file.4fs" ) as spec'd in PupState . 
+#!  producing  "Tar.Gz" fileout . 
+#!  minor updates from "mow" code have been inserted.  
+#!  updates compatible with PupPexDvn64 
+#!
+########################################
+export gcSysDevDob="251027-1122"    #! added Pup-EXon-Dvn64 code.
+########################################
+
+#! Function.....: create a TarGz backup of the current saveDATA entity  ( /saveDATA or save.4fs )
+#! Author.......: GlenE77is, @ ResearchGate.net.
+#! Disclaimer...: The author makes no guarantees about the compatibility of this software with your system, 
+#! and accepts no responsibility for negative impact which may ocurr on your system, or your data.
+#! ==============================================================================================
+#! Note:  Generates a BackUp of "/saveDATA/DIRECTORY" or "saveFILE.4fs" 
+#!     System info is from PUPSTATE,  no choice required. 
+#!     Must be Frugal install (mode #13 or #12)
+#! =====================================================================================================
+#! NOTE: 
+#!  PCB.sh began as a simple rewrite from 1.3.1 aimed at /saveDIRectory and /file.4fs "FRUGAL" install. 
+#!     deprecated all code for original method of exporting/e2fsck/restore.
+#!  Now calling "ionice -c 1"  (realtime)  to prioritize PCB higher than any other network processes. 
+#! =====================================================================================================
+        #! Note:
+        #! function "PXB_TarGzBackIt" has 3 'cd' :
+        #! *cd #1 save original subdir :
+        #!       ${CWDIR} 
+        #! *cd #2   TarGz runs from /subdir/saveFILE 
+        #!       ${1%/*} is target dest subdir /saveFILE 
+        #! *cd #3 restore original subdir :
+        #!       ${CWDIR} 
+#! ==============================================================================================
+#
+echo "(=== running:  $0   Puppy-Linux  Pup-Cold-Bakup === ionice -c 1 ===)"
+#
+#==============
+. /etc/rc.d/PUPSTATE
+#==============
+export gcPXBId="pcb"     # not used to build "destfile" 
+export gcPXBBackUpId="PCB" # label the TarGz Output File 
+export gcPXBRunId="PCB-ion"     # Label the Project 
+#==============
+export gcPXBRunVer="-ion"     #  may update this "version label"                 # Not Used
+export gcPXBRunFn="PCB-${gcPXBRunVer}"     # ${gcPXBRunFn}  used in main gui     # Not Used
+#==============
+export gcPXBSave="`echo -n "$PUPSAVE" | cut -f 3 -d ','`"
+#==============
+#! expand PATH
+PATH=$PATH:/usr/lib/gtkdialog/:/root/my-applications/ 
+#==============
+#!
+#(: ================================================================
+#(: fx(PXB_Splash_It)    # ACTIVE  #  copy from "CTB" "MCI" "MGR" 
+#(: Standard Splash : param "Str" "fg" "bg" "sleep" "opt"
+#(: called by:  
+#(: param:  "Str" "fg" "bg" "sleep" "opt"
+#(: purpose: Standard MGR Splash
+#(: method:  /usr/lib/gtkdialog/box_splash
+#(: sends:
+#(: rationale:
+#(: note : 
+#(: ================================================================
+#(:
+function PXB_Splash_It() {   #! ACTIVE  #! copy from MGR  #! auth : gae 
+	#!  Standard Sbr_Splash_It : param "Str" "fg" "bg" "sleep" "opt"
+		n=0 
+	lcMsgStr="$1"
+	lcMsgColorFg="$2"   # ForeGround
+	if [ ! $2  ] ; then 
+		lcMsgColorFg="yellow"   # good default 
+	fi    
+	#!
+	lcMsgColorBg="$3"   # BackGround
+	if [ ! $3  ] ; then 
+		lcMsgColorBg="blue"  # good default
+	fi    
+	#!
+	#! gather "sleep" param 
+	lcMsgSlp="$4"       
+	#! test for Param is Sleep 
+	if [ ! $4 ] ; then  # Sleep safe default
+		lcMsgSlp="1"  # < 1  usually does not make it to the screen, timing issues. 
+	fi
+	#! test for NoParam is Sleep quick
+	if [ "0" -eq $4 ] ; then  # Sleep quick
+		lcMsgSlp=".5"  # < .5  usually does not make it to the screen, timing issues. 
+	fi   #! else keep the sleep param as sent originally 
+		#! -D---
+	/usr/lib/gtkdialog/box_splash -fg ${lcMsgColorFg} -bg ${lcMsgColorBg} -border true  -close never -text "${lcMsgStr}     " &
+		RETVAL=$?
+		GTKPID_Splash_It=$!
+		sleep ${lcMsgSlp}
+	#!   if NOT $5 flag, then KILL.  This is Normal.
+	if [ ! $5 ] ; then  #! IF   " No Option #5 " ;   THEN   kill pid now. 
+		kill ${GTKPID_Splash_It}  #! now !
+	fi    
+	} #
+	export -f PXB_Splash_It
+	#!
+#;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+function PXB_Splash_Wait() {   #! Big MAIN splash # ACTIVE : auth is "mow" : 
+    #! "mow" code generates Splash, with lingering. 
+    #! PXB_Splash_Wait "${lcMsgStr}" #  will kill ${GcPidSplashWait}  later
+    #!_____________________________________________________________________
+    /usr/lib/gtkdialog/box_splash -fg ${2} -bg ${3} -border true -close never \
+    -text "
+    ${1}   
+    .                          " &
+    #! will wait for TarOpt RunTime process, then kill. 
+    export GcPidSplashWait=$!
+    #~ echo "=== (_Splash_Wait_)_${GcPidSplashWait}_===" #! terminal trace
+    } # end: PXB_Splash_Wait
+    export -f PXB_Splash_Wait
+#!
+#(: ======================================================
+#(: fx Sbr_PXB_Chk_PEX  #!  ACTIVE
+#(: called by:
+#(: param:
+#(: purpose:
+#(: calls:
+#(: method:
+#(: sends:
+#(: rationale:
+#(: note :
+#(:
+function Sbr_PXB_Chk_PEX() { 
+n=0
+lcMsgStr="
+   (Pup-Cold-BackUp:PCB)+(PEX:EXTron) 
+        === before ===
+      ionice -c 1 snapmergepuppy  ()
+         "
+    echo "${lcMsgStr}"
+    PXB_Splash_It "${lcMsgStr}" "yellow" "purple" "3" "" & sleep 1
+    #! #! Top Splash
+
+#! begin === PEX === SnapMergePuppy Control ===========================
+. /etc/rc.d/PUPSTATE
+#! copy from pup_PEX-Dvn64 
+if [ $PUPMODE -ne 13 ] ; then
+	echo "save2flash: Wrong PUPMODE ($PUPMODE)"
+	exit 1
+fi
+#!
+if pidof -s X Xorg `cat /etc/windowmanager 2>/dev/null` >/dev/null 2>&1 ; then
+	if [ -z "$DISPLAY" ] ; then
+		export DISPLAY=':0'
+	fi
+	if [ -z "$WAYLAND_DISPLAY" ] ; then
+		export WAYLAND_DISPLAY='wayland-0'
+	fi
+	if [ -z "$XDG_RUNTIME_DIR" ] ; then
+		export XDG_RUNTIME_DIR='/tmp/runtime-root'
+	fi
+fi
+#!
+if pidof snapmergepuppy 2>/dev/null ; then
+	echo "snapmergepuppy is running"
+	exit 1
+fi
+#!
+if [ "$1" = "pup_event" ] ; then
+	RUNPS="`busybox ps`"
+	#some apps should not be disturbed by this background stuff...
+	if [ "`echo "$RUNPS" | grep -w -E 'make|cc|gcc|imake|cmake|new2dir|xorriso|xorrecord|xine|gxine|petget|wget|axel|dotpup|mplayer|gmplayer|gcurl|gimv|burniso2cd|growisofs|cdrecord|pcdripper|xfmedia|xmms|ripoff|pdvdrsab|pburn|mhwaveedit|installpkg\.sh|downloadpkgs\.sh|removepreview\.sh'`" != "" ] ; then
+		exit 1
+	fi
+fi
+#! working replace with dialog splash 
+if [ -n "$DISPLAY" -o -n "$WAYLAND_DISPLAY" ] ; then
+usr/lib/gtkdialog/box_splash -fg yellow -bg purple -border true  -close never -text " 
+    $(gettext "_PEX-Save RAM")
+    " &&  
+   GTKPIDmgrarcdtsB=$!   2>/dev/null  
+    sleep 3
+    kill ${GTKPIDmgrarcdtsB}
+	#~ yaf-splash -bg orange -placement top -close never -text " 
+    #~ $(gettext "_PEX-Save RAM")
+    #~ " &
+	#~ YAFPID=$!
+else
+	echo "...PEX: Saving RAM to 'pup_save'..."
+fi
+#!
+    kill ${GTKPID_Splash_It} #! Top Splash
+#!
+#! === end === PEX =====================================================
+} #! end Sbr_PXB_Chk_PEX
+export Sbr_PXB_Chk_PEX
+#!
+#;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+function PXB_CleanUp() {    # ACTIVE
+    n=0
+    rm -f /tmp/gtkdialog_splash_border.svg
+    rm -f /tmp/gtkdialog_splash_bg.svg
+    rm -f /tmp/gtkdialog_splash_bg.svg
+    rm -f /tmp/snapmergepuppy-error
+    rm -f /tmp/flagnextpassthru
+} # end: fx(PXB_CleanUp)
+export -f PXB_CleanUp
+#!
+#;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+#;;; begin: TarGzBackIt ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+#;;; begin: TarGzBackIt ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+#;;; begin: TarGzBackIt ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+#!
+#! REQUIRED: === PXB_TarGzBackIt ========================================================
+function PXB_TarGzBackIt() {   # PXB_TarGzBackIt  # $PBKP_PUPSAVE_PATH $PXB_BackUp_PATH
+    n=0
+
+        #! TarGzBackIt has 3 'cd' :
+        #! *cd #1 save original subdir :
+        #!       ${CWDIR} 
+        #! *cd #2   TarGz runs from /subdir/saveFILE 
+        #!       ${1%/*} is target dest subdir /saveFILE 
+        #! *cd #3 restore original subdir :
+        #!       ${CWDIR} 
+    #! sequence of these modules is critical in order to provide req var for splash !
+    echo ""
+    echo "(TarGz)" && echo ""
+    #! original PHB Calc PBKP_MBrequired()  # saveDATA fileSIZE  via $1 [$PBKP_PUPSAVE_PATH]
+	pxba=$(du -c -m -s "$1")   
+    #! -c = --total, -m = --block-size=1m, -s = --summarize
+	read -r pxbab pxba <<< "$pxba"
+    #! RAM space required is size of Src_DATA  entity. 
+    lcMBreq="${pxbab}"
+	#! === Time Length of TarGz process = 2.6GHz == depends on processor speed ==="
+    let  lcTimeReq32="${lcMBreq} / 3"  
+    let  lcTimeReq64="${lcMBreq} / 6"  
+    #!
+    #~ #! orig: destfile=".${2}"/"`expr "${1}" | awk -F / '{print $NF}'`".${gcPXBBackUpId}-`date +%Y.%m.%d_%H%M.%S`
+    #~ #! destfile is the 'base' of the SaveFILE name   "$PBKP_PUPSAVE_PATH"  / "$PXB_BackUp_PATH"
+    # -------------------------------------------------------------------
+    #! awk $NF prints only the last column in a record
+	destfile=".${2}"/"`expr "${1}" | awk -F / '{print $NF}'`"-${gcPXBBackUpId}-`date +%y%m%d_%H%M.%S`
+    #! $NF refers to the last field in a given record
+    # -------------------------------------------------------------------
+        echo  "=== $destfile ==="
+        #! >>> CD <<<
+        CWDIR=$PWD      # save "P"rocess "W"orking "D"irectory /root  (optional)
+        echo "### (TarGz) save 'home dir' PWD is ${PWD} === "   && echo " "  
+        #!
+        sync    # now run sync
+        #!
+        #! >>> CD <<< 
+        cd ${1%/*}  
+        echo "###_CD_### (TarGz) running on /saveDATA  ${1%/*} === "  && echo " "  #! change dir to  "/saveDATA"  
+		#! Tar-Var-Set loading 
+        TAROPT="-z"
+        TAREXT='.tar.gz'
+        TAROPT="-c -z --checkpoint=1000" 
+        destfile=${destfile}${TAREXT} 
+        echo ": PXB_Splash_Wait (${gcPXBRunId}) :  "
+        #! sequence of these modules is critical in order to provide req var for splash !
+        #! Splash_Wait is from "mow" , and splash stays on screen until Tar.Gz is done. 
+        #!
+        # top: "Big Red Background" Splash-Wait, kill splash after TarGz 
+        PXB_Splash_Wait "(${gcPXBRunId}__${gcPxbSysDevDob})) 
+  .
+  .        Pup-COLD-Backup
+  .     with EXtron special code 
+  .
+  .      PCB_External
+  .    ' ionice -c 1 tar -c -z  '   
+  .
+  .   --- Creating   Tar.Gz  ---
+  .   --- SaveDATA size: ${lcMBreq} MB
+  .   --- Please Wait ---
+  .   --- ... ${lcTimeReq32} seconds on 32bit
+  .   --- ... ${lcTimeReq64} seconds on 64bit
+  .
+  . Source: 
+  ${gcPXBSave} 
+  .  
+  . Target: (into same subdir as Source)
+        ${destfile##*/}
+  .  "  "yellow" "purple"
+  # bot: Big Red Background Splash-Wait, kill splash after TarGz 
+#!
+    # TarGz parameters :  DestFn  SourceFn
+    destfile=${destfile}  
+    sourcefile=${1##*/}
+#!
+#! TarOpt code taken from rc.z_CTA.sh "Cold-Tar-Backup" (Auto) 
+#!
+#!;;; ionnice -c 1  realtime is best for security     
+#!;;; ionnice -c 2  best effort  
+#=== ionice TarGz ======================================================================
+    ionice -c 1 tar ${TAROPT} -f ${destfile##*/} ${1##*/}/   --checkpoint=1000
+#=== ionice TarGz ======================================================================
+#!;;; ionnice -c 1  realtime is best for security     
+#!;;; ionnice -c 2  best effort  
+        #! >>> CD <<<
+        cd "$CWDIR"  # change dir back to original   (optional) 
+        #~ echo "###_CD_### (TarGz) restore 'home dir' $CWDIR ===" && echo ""
+        RETVAL=$?
+		sleep 3
+        kill ${GcPidSplashWait}   # Big Red Background Splash   
+#!
+} #
+export -f PXB_TarGzBackIt
+
+#! ;;; end TarGzBackIt ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+#! ;;; end TarGzBackIt ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+#! ;;; end TarGzBackIt ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+#####################################   PXB-ion #######################################
+##################################### Execution #######################################
+#####################################   main()  #######################################
+#####################################   main()  #######################################
+#####################################   main()  #######################################
+#!  #! added: puppex-dev64 ___ Pup-EXon-Dvn64 code.
+#!
+#! Fall-Thru to this "MAIN" 
+########################################
+export gcPxbSysDevDob="251102-1200"    #! added: puppex-dev64 ___ Pup-EXon-Dvn64 code.
+########################################
+
+lcMsgStr="
+   === MAIN() (${gcPXBRunId}) ===
+     (Pup-Cold-BackUp)+(PEX) 
+ "
+/usr/lib/gtkdialog/box_splash -fg yellow -bg purple -border true -close never -text "${lcMsgStr}" & sleep 2
+export GcPidSplashA=$!  #! First Splash will wait for  kill ${GcPidSplashA} 
+#!
+echo "( main ) ==="  # > /dev/console
+. /etc/rc.d/PUPSTATE
+export PUPMODE
+#! --- Frugal only --- first possible check
+case $PUPMODE in
+	12|13) ok=1 ;;  
+	*) ERRORMSG="only (12|13)" ;;
+esac
+#!
+PXB_CleanUp     #! test for causing lingering string.
+#!
+#! Find and verify path of currently mounted save file.
+export gcSaveDataName="`echo $PUPSAVE | cut -f 3 -d ","`"    
+if [ ! -e "/mnt/home${gcSaveDataName}" ]; then   # Error Trapped 
+	/usr/lib/gtkdialog/box_ok "Pupsave Backup" error "'/mnt/home${gcSaveDataName}' does not exist!"   ### ShowError
+    sleep 5
+	PXB_CleanUp
+	exit 1
+fi
+#------------------------------------------------------------------------
+#! Case ERRORMSG catch-all
+if [ "$ERRORMSG" ] ; then
+	PXB_CleanUp
+	echo "$ERRORMSG"
+	ERRORMSG="<b><span foreground='"'red'"'>${ERRORMSG}</span></b>"
+	exit 1
+fi # end: if [ "$ERRORMSG" ] 
+#--------------------------------------------------------------------
+# Export constants / variables
+export PBKP_PUPSAVE_PATH="/mnt/home${gcSaveDataName}"
+#~ export PBKP_PUPSAVE_NAME="${gcSaveDataName##*/}" #${SF##*/} = basename $SF  #! err
+echo "(Gui) ==="  # > /dev/console
+#! ==========================================================================================
+#! FALL-THRU ;;; MAIN GUI was originally in this code paragraph  ;;; 
+#!  EXIT="PCB_Back_It" ;;; default < button > as if a Gui <button> Selection had been made ! 
+#! #! subroutine "PXB_TarGzBackIt" RUNs on 'SaveDATA DIRECTORY' and 'saveDATA File.4fx'  
+#! ==========================================================================================
+echo "(Main) ==="  # > /dev/console
+#!
+#! begin === PEX === SnapMergePuppy Control ===========================
+. /etc/rc.d/PUPSTATE
+#! PEX
+if [ $PUPMODE -ne 13 ] ; then
+	echo "save2flash: Wrong PUPMODE ($PUPMODE)"
+	exit 1
+fi
+#! PEX
+if pidof -s X Xorg `cat /etc/windowmanager 2>/dev/null` >/dev/null 2>&1 ; then
+	if [ -z "$DISPLAY" ] ; then
+		export DISPLAY=':0'
+	fi
+	if [ -z "$WAYLAND_DISPLAY" ] ; then
+		export WAYLAND_DISPLAY='wayland-0'
+	fi
+	if [ -z "$XDG_RUNTIME_DIR" ] ; then
+		export XDG_RUNTIME_DIR='/tmp/runtime-root'
+	fi
+fi
+#! PEX
+if pidof snapmergepuppy 2>/dev/null ; then
+	echo "=== ERROR === snapmergepuppy is running ==="
+	exit 1
+fi
+#! PEX
+#~ if [ "$1" = "pup_event" ] ; then
+	#~ RUNPS="`busybox ps`"
+	#~ #some apps should not be disturbed by this background stuff...
+	#~ if [ "`echo "$RUNPS" | grep -w -E 'make|cc|gcc|imake|cmake|new2dir|xorriso|xorrecord|xine|gxine|petget|wget|axel|dotpup|mplayer|gmplayer|gcurl|gimv|burniso2cd|growisofs|cdrecord|pcdripper|xfmedia|xmms|ripoff|pdvdrsab|pburn|mhwaveedit|installpkg\.sh|downloadpkgs\.sh|removepreview\.sh'`" != "" ] ; then
+		#~ exit 1
+	#~ fi
+#~ fi
+#!  PEX
+if [ -n "$DISPLAY" -o -n "$WAYLAND_DISPLAY" ] ; then
+usr/lib/gtkdialog/box_splash -fg yellow -bg purple -border true  -close never -text " 
+    $(gettext "_PEX-Save RAM")
+    " &&  
+   GTKPIDmgrarcdtsB=$!   2>/dev/null  
+    sleep 3
+else
+	echo "...PEX: Saving RAM to 'pup_save'..."
+fi
+#!
+#! === end === PEX =====================================================
+
+    kill ${GcPidSplashA}  #! First Splash - top of screem
+#!
+    n=0
+lcMsgStr="
+   (Pup-Cold-BackUp)+(PEX) === (${gcPXBRunId}
+      ionice -c 1 snapmergepuppy  ()
+         "
+    echo "${lcMsgStr}"
+    PXB_Splash_It "${lcMsgStr}" "yellow" "purple" "3" "0"
+    #!
+#! ========================
+ionice -c 1 snapmergepuppy    
+#! ========================
+    sleep 3
+    #!
+    kill ${GTKPID_Splash_It} #! kill 'PXB_Splash_It' for snapmergepuppy
+    #! ### dox for "  ionice -c 1 snapmergepuppy  "  
+    #! 1 = realtime  first access (not shared) to hard-drive best security   
+    #! 2 = best effort  /  shared access with any higher priority    
+    #!====================================================================================
+    #! author's system note:
+    #!  snapmergepuppy usual parameters:  
+    #!      "/initrd/pup_ro1" into "/initrd/pup_rw" 2>/dev/null 
+    #!  snapmergepuppy message output to terminal is:
+    #!      "Merging  /initrd/mnt/tmpfs/pup_rw  onto  /mnt/home/pup_UpupN7-SDA/upupnn+bwsave-7"
+    #!  description:
+    #!    * Where "/initrd/mnt/tmpfs/pup_rw" is the current Read/Write layer.
+    #!    * Where "/mnt/home/pup_UpupN7-SDA/upupnn+bwsave-7" is the "/saveDATA" entity. 
+    #!====================================================================================
+
+#! === call call call =================================================
+#!
+PXB_TarGzBackIt "$PBKP_PUPSAVE_PATH" "$PCB-BackUp_Path" 
+#!
+#! === call call call =================================================
+
+#! working
+    kill ${GcPidSplashWait0}
+    kill ${GcPidSplashWait} #! ? from Tar.Gz
+    sleep 1
+    kill ${GTKPID_Splash_It} #! ? from Tar.Gz 
+    sleep 1
+
+    #=== CD 
+    lcMsgStr="=== (CD) restore original CWDIR ==="
+    echo "${lcMsgStr}"
+    PXB_Splash_It "${lcMsgStr}" "yellow" "purple" "3" 
+    #!
+    #~ echo "${lcMsgStr}"  ####_CD_### (TarGz) restore original CWDIR ===" 
+    cd "$CWDIR"  # change dir back to original   (not required) 
+    echo " "
+    #!
+    lcMsgStr="=== (Cleanup) ==="
+    echo "${lcMsgStr}"
+    PXB_Splash_It "${lcMsgStr}" "yellow" "purple" "3" 
+
+#!================================
+    #! Fall-Thru Trapped EXIT
+    kill ${GTKPIDmgrarcdtsB}   2>/dev/null   
+    #!
+    PXB_CleanUp
+    #! gxmessage is writing to a new buffer
+    gxmessage -title "${0}"  -name "${0}" -font bold -timeout 3  -fg yellow -bg darkred -center -wrap "    <.<.<  PCB .. Fall-Thru-Q.U.I.T. >.>.>"
+    #!
+    #! Final Splash and "OK" wait    # generates    ( w d :    message on Xterm screen. 
+    #! so, clear the gxmessage buffer 
+    clear
+    #! the main targz output is in a previous Xterm buffer, and is retained by Xterm. 
+    #! Just scroll up via mouse.
+    #!
+    #! ############################################################################
+    #! special for PXB Internal , call MGR subroutines to Clear and ReStart MGR.
+    #! Sbr_ClearFlagsSystem 0       # clear lockfile so that MGR ReStart can run.
+    #! Sbr_Cbx_ReStart 1            # display and no wait
+    #! ############################################################################
+    #!
+exit 0
+#!
+#!================================
+
+
+
+### END of Source Code #################################################
+
+#==============================================================================
+#! NOTE: 
+#! production stored /root/my-applications
+#! Edit/Executable stored /mnt/home/MY_/usr-share/My_Dev_/Edit_PCB
+#!
+#! =====================================================================================================
+#! NOTE: 
+#!  PCB.sh began as a simple rewrite from 1.3.1 aimed at /saveDIRectory and /file.4fs "FRUGAL" install. 
+#!     deprecated alll code for original method of exporting/e2fsck/restore.
+#!  Now calling "ionice -c 1"   (realtime)  to prioritize PCB higher than any other processes. 
+#! =====================================================================================================
+#
+### END of NOTES ##################################################################
+
+
+
+	
+    
+    
