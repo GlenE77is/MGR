@@ -1,4 +1,4 @@
-*(: MGR_Murga_Page_Text.txt
+*(: MGR_Murga_Page_Text.txt === DOB="230210" 
 
  Menu Framework, Double-Click + Embedded-Image Button in Bash+GTK Script
 
